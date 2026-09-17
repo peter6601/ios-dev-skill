@@ -56,16 +56,62 @@ agents/
 
 ## 安裝
 
+> **只裝這個 repo 不夠。** `ios-dev` 是路由器，它自己不做事，做事的是它叫到的 skill。
+> 照下面三步裝；第 3 步的腳本會列出你還缺哪些相依。
+
+### 1. 先裝相依（必裝 4 個）
+
+少了這四個，`/ios-dev` 會啟動但主線走不完：
+
+```bash
+# superpowers plugin：writing-plans／subagent-driven-development／TDD／verification
+# 在 Claude Code 裡輸入
+/plugin install superpowers@claude-plugins-official
+
+# Step 4 架構形狀、async ownership 契約
+npx skills add https://github.com/efremidze/swift-architecture-skill -a claude-code -g -y
+npx skills add https://github.com/AvdLee/Swift-Concurrency-Agent-Skill -a claude-code -g -y
+
+# 6 個 agent 開工必讀它的 references
+git clone https://github.com/AvdLee/SwiftUI-Agent-Skill.git ~/.claude/vendor/SwiftUI-Agent-Skill
+ln -s ~/.claude/vendor/SwiftUI-Agent-Skill/swiftui-expert-skill ~/.claude/skills/swiftui-expert-skill
+```
+
+`npx skills` 一定要帶 `-a claude-code`：互動模式預設勾的那組 agent 不含 Claude Code，裝了也讀不到。
+
+### 2. 建議裝（缺了該情境會降級）
+
+```bash
+# SwiftUI：寫、畫面 pattern、拆 View、效能；swarm 系列
+npx skills add superagents-lab/xcode27-skills --skill swiftui-specialist --skill swiftui-whats-new-27 -a claude-code -g -y
+npx skills add https://github.com/Dimillian/Skills --skill swiftui-ui-patterns --skill swiftui-view-refactor --skill swiftui-performance-audit --skill bug-hunt-swarm --skill review-swarm --skill orchestrate-batch-refactor -a claude-code -g -y
+
+# grill 系列（Step 3 需求訪談），在 Claude Code 裡輸入
+/plugin install mattpocock-skills@claude-plugins-official
+```
+
+共識審查（review 路線 A）另見下面「共識審查」一節。
+
+### 3. 裝本 repo
+
 ```bash
 git clone https://github.com/peter6601/ios-dev-skill.git
 cd ios-dev-skill
 ./install.sh
 ```
 
-`install.sh` 把 `skills/*` symlink 到 `~/.claude/skills/`、`agents/*.md` symlink 到 `~/.claude/agents/`。
-目標已存在就跳過、不覆蓋。移除用 `./install.sh --uninstall`（只移除指向本 repo 的 symlink）。
+`install.sh` 把 `skills/*` symlink 到 `~/.claude/skills/`、`agents/*.md` symlink 到 `~/.claude/agents/`，
+目標已存在就跳過、不覆蓋；**裝完會印一張相依檢查表**（必裝／建議／選配各缺哪些、缺了會怎樣）。
+
+```bash
+./install.sh --check       # 只檢查相依，不動任何檔案
+./install.sh --uninstall   # 只移除指向本 repo 的 symlink
+```
 
 agent 檔裡的路徑寫死 `~/.claude/skills/…`，所以請裝在預設位置。
+
+執行時也有一道提醒：`/ios-dev` 進場會檢查這次情境要用的 skill／agent 裝了沒，缺的寫進確認畫面的
+「提醒」行並改走 router §9 的替代路徑——不會默默略過。
 
 量測腳本可以單獨用，不需要 Claude：
 
@@ -73,32 +119,19 @@ agent 檔裡的路徑寫死 `~/.claude/skills/…`，所以請裝在預設位置
 python3 skills/ios-dev/scripts/swiftui-metrics.py path/to/YourApp --top 15
 ```
 
-## 依賴
+## 依賴一覽
 
-`ios-dev` 是路由器，它自己不做事，做事的是它叫到的 skill。下表沒裝的部分，
-router §9 有替代路徑，進場時會在確認畫面提醒你——不會默默略過。
-
-### 第三方 skill
-
-```bash
-# 架構、併發
-npx skills add https://github.com/efremidze/swift-architecture-skill -a claude-code -g -y
-npx skills add https://github.com/AvdLee/Swift-Concurrency-Agent-Skill -a claude-code -g -y
-
-# SwiftUI：寫、畫面 pattern、拆 View、效能；swarm 系列
-npx skills add superagents-lab/xcode27-skills --skill swiftui-specialist --skill swiftui-whats-new-27 -a claude-code -g -y
-npx skills add https://github.com/Dimillian/Skills --skill swiftui-ui-patterns --skill swiftui-view-refactor --skill swiftui-performance-audit --skill bug-hunt-swarm --skill review-swarm --skill orchestrate-batch-refactor -a claude-code -g -y
-```
-
-一定要帶 `-a claude-code`：`npx skills` 互動模式預設勾的那組 agent 不含 Claude Code，裝了也讀不到。
-
-| 依賴 | 誰用它 | 來源 |
-|---|---|---|
-| `swiftui-expert-skill` | 6 個 agent 都讀它的 references；`trace-analyzer` 跑它的 script | [AvdLee/SwiftUI-Agent-Skill](https://github.com/AvdLee/SwiftUI-Agent-Skill)——作者是 clone 後 symlink 到 `~/.claude/skills/swiftui-expert-skill` |
-| `app-store-preflight` | `store-preflight-auditor` | [truongduy2611/app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills) |
-| `xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer` | `build-analyzer` | [AvdLee/Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill) |
-| `asc-*` | Phase 4 出貨 | [rorkai/app-store-connect-cli-skills](https://github.com/rorkai/app-store-connect-cli-skills) |
-| 專案層 framework skill | 靠 description 自動載入 | [dpearson2699/swift-ios-skills](https://github.com/dpearson2699/swift-ios-skills)（裝在專案層，不加 `-g`） |
+| 依賴 | 層級 | 誰用它 | 來源 |
+|---|---|---|---|
+| `swiftui-expert-skill` | 必裝 | 6 個 agent 都讀它的 references；`trace-analyzer` 跑它的 script | [AvdLee/SwiftUI-Agent-Skill](https://github.com/AvdLee/SwiftUI-Agent-Skill) |
+| `swift-architecture-skill` | 必裝 | Step 4、`architecture-auditor` | [efremidze/swift-architecture-skill](https://github.com/efremidze/swift-architecture-skill) |
+| `swift-concurrency` | 必裝 | async 契約、`concurrency-auditor` | [AvdLee/Swift-Concurrency-Agent-Skill](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill) |
+| `swiftui-specialist`、`swiftui-whats-new-27` | 建議 | 實作 SwiftUI | [superagents-lab/xcode27-skills](https://github.com/superagents-lab/xcode27-skills) |
+| `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor` | 建議 | 畫面、拆 View、效能、重閘門、除錯、批次重構 | [Dimillian/Skills](https://github.com/Dimillian/Skills) |
+| `app-store-preflight` | 選配 | `store-preflight-auditor` | [truongduy2611/app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills) |
+| `xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer` | 選配 | `build-analyzer` | [AvdLee/Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill) |
+| `asc-*` | 選配 | Phase 4 出貨 | [rorkai/app-store-connect-cli-skills](https://github.com/rorkai/app-store-connect-cli-skills) |
+| 專案層 framework skill | 選配 | 靠 description 自動載入 | [dpearson2699/swift-ios-skills](https://github.com/dpearson2699/swift-ios-skills)（裝在專案層，不加 `-g`） |
 
 ### Plugin
 

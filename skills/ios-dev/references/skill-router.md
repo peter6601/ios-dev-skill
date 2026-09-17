@@ -162,7 +162,10 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 ## 9. 本表引用的名字與沒裝時的替代
 
 安裝指令與來源見 repo 根目錄 `README.md`。進場時用 Glob 檢查 `~/.claude/skills/<name>/SKILL.md`
-與 `~/.claude/agents/<name>.md`；缺的照下表替代，並寫進確認畫面的「提醒」行。
+與 `~/.claude/agents/<name>.md`（只查這次情境 §1 那一列會用到的，不必全掃；skill 也可能裝在
+`~/.claude/commands/`）；缺的照下表替代，並寫進確認畫面的「提醒」行。
+**第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README 的「先裝相依」；其中
+`swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
 - **本 repo 附的**：skill `ios-dev`、`ios-critique`、`ios-harden`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
 - **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight`、`asc-*`
