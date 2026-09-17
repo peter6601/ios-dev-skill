@@ -84,7 +84,7 @@ check_deps() {
   done <<< "$DEPS"
   echo
   if [ "$missing_required" -gt 0 ]; then
-    echo "缺 $missing_required 個必裝相依：/ios-dev 會啟動，但主線走不完。安裝指令在 README 的「先裝相依」。"
+    echo "缺 $missing_required 個必裝相依：/ios-dev 會啟動，但主線走不完。安裝指令在 README「安裝」的第 1 步。"
   elif [ "$missing_other" -gt 0 ]; then
     echo "必裝的都在。另有 $missing_other 個建議／選配沒裝——/ios-dev 進場時會在確認畫面提醒，並改走 router §9 的替代路徑。"
   else

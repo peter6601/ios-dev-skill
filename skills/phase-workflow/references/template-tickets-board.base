@@ -1,0 +1,71 @@
+filters:
+  and:
+    - file.ext == "md"
+    - 'tags.contains("phase-ticket")'
+formulas:
+  is_blocked: 'if(status == "blocked", "🔴", "")'
+properties:
+  ticket:
+    displayName: Ticket
+  title:
+    displayName: 標題
+  stage:
+    displayName: Stage
+  type:
+    displayName: 類型
+  status:
+    displayName: 狀態
+  estimate:
+    displayName: 估計(d)
+  owner:
+    displayName: 負責
+  pr:
+    displayName: PR
+views:
+  - type: cards
+    name: 🗂️ 看板（依狀態分欄）
+    groupBy:
+      property: status
+      direction: ASC
+    order:
+      - ticket
+      - title
+      - type
+      - stage
+    sort:
+      - property: stage
+        direction: ASC
+      - property: ticket
+        direction: ASC
+  - type: table
+    name: 📋 全部 ticket（依 Stage）
+    groupBy:
+      property: stage
+      direction: ASC
+    order:
+      - ticket
+      - title
+      - type
+      - status
+      - estimate
+      - owner
+      - pr
+    sort:
+      - property: ticket
+        direction: ASC
+  - type: table
+    name: 🚧 進行中 / 卡住
+    filters:
+      or:
+        - status == "in-progress"
+        - status == "review"
+        - status == "blocked"
+    order:
+      - ticket
+      - title
+      - status
+      - owner
+      - pr
+    sort:
+      - property: status
+        direction: ASC

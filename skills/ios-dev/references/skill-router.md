@@ -164,10 +164,10 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 安裝指令與來源見 repo 根目錄 `README.md`。進場時用 Glob 檢查 `~/.claude/skills/<name>/SKILL.md`
 與 `~/.claude/agents/<name>.md`（只查這次情境 §1 那一列會用到的，不必全掃；skill 也可能裝在
 `~/.claude/commands/`）；缺的照下表替代，並寫進確認畫面的「提醒」行。
-**第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README 的「先裝相依」；其中
+**第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
-- **本 repo 附的**：skill `ios-dev`、`ios-critique`、`ios-harden`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
+- **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`ios-critique`、`ios-harden`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
 - **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight`、`asc-*`
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補
@@ -178,7 +178,6 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 | 引用的名字 | 它在流程裡的角色 | 沒裝時的替代 |
 |---|---|---|
 | `office-hours` | Phase 0 產品思考，產 Design Doc | `superpowers:brainstorming` |
-| `phase-workflow` | 把 design doc／PM spec 展開成根文件＋ticket bundle | `superpowers:writing-plans` 產根文件，人工切 ticket；每張 ticket 保留「架構約束」段（`plan-template.md`） |
 | `ios-investigate` | 五階段除錯，沒有 root cause 不修 code | `superpowers:systematic-debugging` |
 | `ios-review` | 兩輪 fix-first 的 pre-landing review | 派 `swiftui-reviewer`＋`concurrency-auditor`，主 session 一次修復；review 路線 C 因此不可用，最低走 B |
 | `ios-polish`／`ios-distill` | 出貨前打磨／去蕪存菁 | 以 `ux-critique` 的 findings 為準做一次修復；沒有就跳過並註明 |
