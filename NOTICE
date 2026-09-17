@@ -1,0 +1,34 @@
+ios-dev-skill
+Copyright (c) 2026 peter6601 — MIT License (see LICENSE)
+
+This repository includes skills adapted from third-party work. Each adaptation
+was rewritten for iOS / SwiftUI and translated into Traditional Chinese; the
+originals are used under the terms of their own licenses.
+
+------------------------------------------------------------------------
+gstack — https://github.com/garrytan/gstack
+Copyright (c) 2026 Garry Tan — MIT License (LICENSES/MIT-gstack.txt)
+
+Adapted into:
+  skills/ios-review        from gstack's review skill
+  skills/ios-investigate   from gstack's investigate skill
+  skills/careful-ios       from gstack's careful skill
+  skills/office-hours      from gstack's office-hours skill
+
+Changes: checklists, bug patterns, guarded commands and interview questions
+rewritten for the Swift / SwiftUI / UIKit / StoreKit stack; the hook script
+skills/careful-ios/bin/check-careful-ios.sh is an independent implementation.
+
+------------------------------------------------------------------------
+Impeccable — https://github.com/pbakaus/impeccable
+Copyright 2025 Paul Bakaus — Apache License 2.0 (LICENSES/Apache-2.0-impeccable.txt)
+
+Adapted into:
+  skills/ios-critique      from the critique skill
+  skills/ios-harden        from the harden skill
+  skills/ios-distill       from the distill skill
+  skills/ios-polish        from the polish skill
+
+Changes: web / CSS guidance replaced with SwiftUI, Human Interface Guidelines,
+Dynamic Type, VoiceOver and String Catalog equivalents; examples rewritten in
+Swift. These four files are modified versions of the originals.

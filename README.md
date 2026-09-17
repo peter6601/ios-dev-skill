@@ -70,14 +70,21 @@ cd ios-dev-skill
 
 ## 裡面有什麼
 
-**4 個 skill**
+**11 個 skill**
 
-| Skill | 做什麼 |
-|---|---|
-| [`ios-dev`](skills/ios-dev/SKILL.md) | 入口。路由 ＋ 規劃流程 ＋ 4 份 reference ＋ SwiftUI 量測腳本 |
-| [`phase-workflow`](skills/phase-workflow/SKILL.md) | 把 design doc 或 PM spec 展開成根文件 ＋ ticket；只規劃不寫 code |
-| [`ios-critique`](skills/ios-critique/SKILL.md) | 設計審查的評分準則（`ux-critique` agent 讀它） |
-| [`ios-harden`](skills/ios-harden/SKILL.md) | 韌性檢查的準則（`resilience-auditor` agent 讀它） |
+| 階段 | Skill | 做什麼 |
+|---|---|---|
+| 入口 | [`ios-dev`](skills/ios-dev/SKILL.md) | 路由 ＋ 規劃流程 ＋ 4 份 reference ＋ SwiftUI 量測腳本 |
+| 開工前 | [`office-hours`](skills/office-hours/SKILL.md) | 產品思考：要解決什麼、給誰用、最小版本是什麼。只產 design doc |
+| 規劃 | [`phase-workflow`](skills/phase-workflow/SKILL.md) | 把 design doc 或 PM spec 展開成根文件 ＋ ticket；只規劃不寫 code |
+| 除錯 | [`ios-investigate`](skills/ios-investigate/SKILL.md) | 五階段除錯；沒找到 root cause 不准改 code。內建 iOS 常見 bug pattern 表 |
+| Review | [`ios-review`](skills/ios-review/SKILL.md) | 上線前兩輪 review；機械式的直接修，要判斷的一次問完 |
+| 打磨 | [`ios-distill`](skills/ios-distill/SKILL.md) | 去掉不必要的複雜度：View 結構、State、導航層級 |
+| 打磨 | [`ios-polish`](skills/ios-polish/SKILL.md) | 出貨前最後一哩：對齊、間距、互動狀態、動畫 |
+| 打磨 | [`ios-critique`](skills/ios-critique/SKILL.md) | 設計審查 10 維度（`ux-critique` agent 讀它當尺） |
+| 打磨 | [`ios-harden`](skills/ios-harden/SKILL.md) | 邊界狀態、i18n、Accessibility（`resilience-auditor` agent 讀它當尺） |
+| 出貨 | [`localize-strings`](skills/localize-strings/SKILL.md) | 掃硬編碼字串，產 `Localizable.xcstrings` 條目 |
+| 護欄 | [`careful-ios`](skills/careful-ios/SKILL.md) | 破壞性指令執行前先警告（force-push、刪專案檔、清 Simulator…），附 hook 腳本 |
 
 **9 個 agent**（全部唯讀，只出報告不改 code）
 
@@ -132,16 +139,12 @@ Claude Code 裡輸入：
 
 ## 沒有公開的 skill
 
-流程裡還會提到幾個作者自用、沒有公開的 skill。沒裝時 `/ios-dev` 會自動改走替代：
+流程裡還會提到兩個作者自用、跟個人筆記庫綁得很深而沒有公開的 skill。它們都是可選步驟，沒裝就跳過：
 
-| 名字 | 用途 | 替代 |
+| 名字 | 用途 | 沒裝時 |
 |---|---|---|
-| `office-hours` | 開工前的產品思考 | `superpowers:brainstorming` |
-| `ios-investigate` | 除錯 | `superpowers:systematic-debugging` |
-| `ios-review` | 上線前 review | `swiftui-reviewer` ＋ `concurrency-auditor` |
-| `ios-polish`、`ios-distill` | 出貨前打磨 | 照 `ux-critique` 的報告修一次 |
-| `careful-ios` | 破壞性指令護欄 | 無，人工確認 |
-| `second-brain`、`work-log-writer`、`localize-strings` | 紀錄、在地化、維護期知識庫 | 跳過 |
+| `second-brain` | 維護期知識庫 | 跳過（流程寫的是「有才讀、有才回寫」） |
+| `work-log-writer` | 工作紀錄 | 跳過，或用你自己的紀錄方式 |
 
 <details>
 <summary>名詞對照</summary>
@@ -159,9 +162,18 @@ Claude Code 裡輸入：
 ## 測試
 
 ```bash
-python3 -m unittest discover -s skills/ios-dev/scripts -p "test_*.py"
+python3 -m unittest discover -s skills/ios-dev/scripts -p "test_*.py"   # SwiftUI 量測腳本
+python3 skills/careful-ios/bin/test_check_careful_ios.py                   # careful-ios 的 hook
 ```
+
+## 致謝
+
+幾個 skill 是從別人的作品改寫成 iOS／SwiftUI 版本的，完整聲明見 [`NOTICE`](NOTICE)：
+
+- `ios-review`、`ios-investigate`、`careful-ios`、`office-hours` 的骨架來自 [garrytan/gstack](https://github.com/garrytan/gstack)（MIT）
+- `ios-critique`、`ios-harden`、`ios-distill`、`ios-polish` 改寫自 [pbakaus/impeccable](https://github.com/pbakaus/impeccable)（Apache-2.0）的 `critique`／`harden`／`distill`／`polish`
 
 ## License
 
-MIT。第三方 skill 各有自己的授權；本 repo 只引用名字，不含它們的內容。
+MIT。改寫自他人作品的 8 個 skill 另受原作授權約束（見 [`NOTICE`](NOTICE) 與 `LICENSES/`）。
+「相依一覽」裡的第三方 skill，本 repo 只引用名字，不含它們的內容。

@@ -167,7 +167,7 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 **第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
-- **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`ios-critique`、`ios-harden`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
+- **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
 - **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight`、`asc-*`
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補
@@ -177,12 +177,12 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 
 | 引用的名字 | 它在流程裡的角色 | 沒裝時的替代 |
 |---|---|---|
-| `office-hours` | Phase 0 產品思考，產 Design Doc | `superpowers:brainstorming` |
-| `ios-investigate` | 五階段除錯，沒有 root cause 不修 code | `superpowers:systematic-debugging` |
-| `ios-review` | 兩輪 fix-first 的 pre-landing review | 派 `swiftui-reviewer`＋`concurrency-auditor`，主 session 一次修復；review 路線 C 因此不可用，最低走 B |
-| `ios-polish`／`ios-distill` | 出貨前打磨／去蕪存菁 | 以 `ux-critique` 的 findings 為準做一次修復；沒有就跳過並註明 |
-| `careful-ios` | 破壞性指令護欄 | 無替代；破壞性指令前人工確認 |
-| `second-brain`、`work-log-writer`、`localize-strings` | Phase 4–6 的紀錄、在地化與維護期知識庫 | 跳過；回寫步驟本來就是「有才寫」 |
+| `second-brain` | Phase 6 維護期知識庫（功能 MOC） | 跳過；「有第二大腦才讀」「有才回寫」本來就是條件式 |
+| `work-log-writer` | Phase 5 工作紀錄 | 跳過，或請使用者用自己的紀錄方式 |
+
+本 repo 附的 skill 若被使用者自己移除，退回這些通用替代：`office-hours`→`superpowers:brainstorming`；
+`ios-investigate`→`superpowers:systematic-debugging`；`ios-review`→派 `swiftui-reviewer`＋`concurrency-auditor`
+（此時 review 路線 C 不可用，最低走 B）。
 
 ## 10. 輔助 skill 的介入時機（輸入 → 產出）
 
