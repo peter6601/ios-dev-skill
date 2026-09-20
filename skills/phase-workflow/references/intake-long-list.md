@@ -32,7 +32,7 @@ Skill 流程 Step 2 用。
 
 ✅ 規模估計（ticket 數）:
      由上面頁面數 + 模組數推估 — 約 {N} 張 ticket
-     分流：{中型 4-8 / 大型 >8}
+     分流：{中型 1-8 / 大型 >8}（只決定輸出幾份檔，不決定要不要進本 skill）
 
 ==== Secondary（影響規則細節）====
 
@@ -61,7 +61,7 @@ Skill 流程 Step 2 用。
 ==== Domain（影響 template 選用）====
 
 ✅ Domain: iOS（預設）/ macOS / web / 其他
-   （iOS 自動套既有系統紅線檔保護規則 + SwiftUI MVVM + Figma node 規範；其他 domain 跳過 iOS-specific section）
+   （iOS 自動套既有系統紅線檔保護規則 + Figma node 規範；架構 pattern 依 §0 選型，不預設 MVVM；其他 domain 跳過 iOS-specific section）
 
 ✅ 跨團隊 deps:
      - Backend: {YES/NO} {DESCRIPTION}
@@ -105,18 +105,22 @@ skill 列完 checklist 後，跟使用者說：
 
 根據 checklist 第 5 項（規模估計），決定後續輸出：
 
+門檻的唯一真相在 `SKILL.md` 的「規模分流邏輯」：**1–8 中型／>8 大型**。
+進不進本 skill 由責任邊界決定（`SKILL.md`「何時用」），**不由 ticket 數決定**——
+只有兩張 ticket 的新模組照樣要中型規劃，這裡不得把它退回短 plan。
+
 ```python
-if estimated_tickets < 4:
-    advise_user("規模太小，不需要 phase-workflow。建議直接寫一份 design doc + /writing-plans")
-    exit
-elif 4 <= estimated_tickets <= 8:
+if estimated_tickets is None or estimated_tickets == 0:
+    # 估不出來就回去問頁面數／模組數，不要用「數量少」當作不需要規劃的理由
+    ask_again("規模估計")
+elif 1 <= estimated_tickets <= 8:
     size = "medium"
-    outputs = ["overview.md", "{FEATURE_CONTEXT_FILE}.md",
+    outputs = ["overview.md", "context.md",
                "tickets/README.md", "tickets/<id>.md (每 ticket 一檔)", "tickets/board.base",
                "ai-prompts.md"]
 elif estimated_tickets > 8:
     size = "large"
-    outputs = ["overview.md", "sprint-roadmap.md", "architecture/", "{FEATURE_CONTEXT_FILE}.md",
+    outputs = ["overview.md", "sprint-roadmap.md", "architecture/", "context.md",
                "tickets/README.md", "tickets/<id>.md (每 ticket 一檔)", "tickets/board.base",
                "coordination/", "ai-prompts.md"]
 

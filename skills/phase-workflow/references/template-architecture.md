@@ -6,6 +6,9 @@ status: active
 updated: {TODAY}
 ---
 
+> **本檔的 `networking-*.md` 只是主題命名範例。** 實際主題與檔名由 Step 3 決定，
+> 產出後所有連結都要改成真的存在的 `architecture/<topic>.md`；沒產出的主題就把那一列刪掉。
+
 # Architecture — Backend Integration Overview
 
 > **Status**：v1（{TODAY}）
@@ -35,7 +38,7 @@ updated: {TODAY}
 | {DOMAIN} 內部架構 / 新增元件清單 | [`../overview.md`](../overview.md) § 技術模組清單 |
 | Sprint 時程 / Stage 規劃 | [`../sprint-roadmap.md`](../sprint-roadmap.md) |
 | 未決題追蹤（backend / PM / Design） | [`../coordination/open-questions.md`](../coordination/open-questions.md) |
-| AI 行為準則 / 已決事項 | [`../{FEATURE_CONTEXT_FILE}.md`](../{FEATURE_CONTEXT_FILE}.md) |
+| AI 行為準則 / 已決事項 | [`../context.md`](../context.md) |
 
 ---
 

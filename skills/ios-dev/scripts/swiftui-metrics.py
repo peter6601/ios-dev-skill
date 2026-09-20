@@ -13,6 +13,11 @@ String literals and comments are blanked before measuring, so a `Text("}")` or a
 commented-out block can no longer close a brace count early.  Every `var body`
 in a file is measured, not just the first one.
 
+Conformance is parsed from the declaration, not pattern-matched on `struct X:`, so
+generic views (`struct G<C: View>: View`), `where` clauses and `extension X: View`
+all count — and a helper type that merely exposes `var body: some View` does not.
+`isPresented:` only counts under a real presentation modifier.
+
 Usage:
   swiftui-metrics.py <path> [--body 80] [--state 5] [--ispres 1] [--top 15] [--json]
 
@@ -22,8 +27,16 @@ import argparse, glob, json, os, re, sys
 
 EXCLUDE = re.compile(r"(^|/)(\.build|DerivedData|Pods|Packages|.*Tests?|Preview Content|Previews?)(/|$)")
 BODY_RE = re.compile(r"var\s+body\s*:\s*some\s+View\s*\{")
-OWNER_RE = re.compile(r"\b(?:struct|class|extension)\s+(\w+)")
-VIEW_RE = re.compile(r"struct\s+(\w+)\s*:\s*[^{]*\bView\b")
+DECL_RE = re.compile(r"\b(struct|class|actor|enum|extension)\s+(\w+)")
+ONCHANGE_RE = re.compile(r"\.onChange\s*\(\s*of\s*:")
+
+# `isPresented:` only counts as a modal gate when it is the argument label of one
+# of these.  A `func record(isPresented:)` or a plain call is not a presentation.
+PRESENTATION_MODIFIERS = {
+    "sheet", "fullScreenCover", "popover", "alert", "confirmationDialog",
+    "inspector", "navigationDestination", "fileImporter", "fileExporter",
+    "fileMover", "photosPicker",
+}
 
 
 def blank_noise(src):
@@ -134,33 +147,149 @@ def blank_noise(src):
     return "".join(out)
 
 
-def bodies_of(clean):
-    """Every `var body` in the file, as (owner type name, line count, balanced)."""
+def _match_brace(clean, i):
+    """Index just past the `}` that closes the `{` at `i` (or len on imbalance)."""
+    depth, j = 1, i + 1
+    while j < len(clean) and depth:
+        if clean[j] == "{":
+            depth += 1
+        elif clean[j] == "}":
+            depth -= 1
+        j += 1
+    return j, depth == 0
+
+
+def _skip_generics(clean, i):
+    """Step over a `<...>` generic parameter clause so it can't be read as inheritance."""
+    if i < len(clean) and clean[i] == "<":
+        depth = 0
+        while i < len(clean):
+            if clean[i] == "<":
+                depth += 1
+            elif clean[i] == ">":
+                depth -= 1
+                if depth == 0:
+                    return i + 1
+            elif clean[i] == "{":
+                break
+            i += 1
+    return i
+
+
+def type_decls(clean):
+    """Every type declaration: name, brace range, and whether it conforms to View.
+
+    Handles generic clauses (`struct G<C: View>: View`), `where` clauses, leading
+    attributes, and `extension X: View` — all of which the old single regex missed.
+    """
+    decls = []
+    for m in DECL_RE.finditer(clean):
+        i = m.end()
+        while i < len(clean) and clean[i] in " \t":
+            i += 1
+        i = _skip_generics(clean, i)
+        brace = clean.find("{", i)
+        if brace == -1:
+            continue
+        header = clean[i:brace].split("where", 1)[0]
+        inherit = header.split(":", 1)[1] if ":" in header else ""
+        end, _ = _match_brace(clean, brace)
+        decls.append(dict(kind=m.group(1), name=m.group(2), start=brace, end=end,
+                          conforms=bool(re.search(r"\bView\b", inherit))))
+    return decls
+
+
+def bodies_of(clean, decls):
+    """Every `var body` in the file, tagged with the type that declares it.
+
+    Owner is the innermost declaration whose braces contain the body; a body with
+    no enclosing declaration is reported as `?` and left in (losing a gate is worse
+    than one line asking a human to look).
+    """
     found = []
     for m in BODY_RE.finditer(clean):
-        start, depth, i = m.end(), 1, m.end()
-        while i < len(clean) and depth:
-            c = clean[i]
-            if c == "{":
-                depth += 1
-            elif c == "}":
-                depth -= 1
-            i += 1
-        owner = "?"
-        for om in OWNER_RE.finditer(clean, 0, m.start()):
-            owner = om.group(1)
-        found.append(dict(view=owner, lines=clean[start:i].count("\n"), balanced=depth == 0,
+        start = m.end()
+        i, balanced = _match_brace(clean, m.end() - 1)
+        owner = None
+        for d in decls:
+            if d["start"] < m.start() < d["end"] and (owner is None or d["start"] > owner["start"]):
+                owner = d
+        found.append(dict(view=owner["name"] if owner else "?",
+                          owner_known=owner is not None,
+                          conforms=owner["conforms"] if owner else None,
+                          lines=clean[start:i].count("\n"), balanced=balanced,
                           text=clean[start:i]))
     return found
+
+
+def _enclosing_call(clean, pos):
+    """Name of the `.foo(` whose own argument list contains `pos`, else None."""
+    depth, i = 0, pos - 1
+    while i >= 0:
+        c = clean[i]
+        if c in ")]}":
+            depth += 1
+        elif c in "([{":
+            if depth:
+                depth -= 1
+            elif c != "(":
+                return None
+            else:
+                j = i - 1
+                while j >= 0 and clean[j] in " \t\n":
+                    j -= 1
+                k = j
+                while k >= 0 and (clean[k].isalnum() or clean[k] == "_"):
+                    k -= 1
+                return clean[k + 1:j + 1] if k >= 0 and clean[k] == "." else None
+        i -= 1
+    return None
+
+
+def count_is_presented(clean):
+    return sum(1 for m in re.finditer(r"\bisPresented\s*:", clean)
+               if _enclosing_call(clean, m.start()) in PRESENTATION_MODIFIERS)
+
+
+def _first_argument(clean, i):
+    """The text of the argument starting at `i`, up to its own `,` or `)`."""
+    depth, out = 0, []
+    while i < len(clean):
+        c = clean[i]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            if not depth:
+                break
+            depth -= 1
+        elif c == "," and not depth:
+            break
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def should_onchange(clean):
+    """`.onChange(of: <expr>.should*/did*)` — line breaks, `$binding` and `?.` included."""
+    hits = []
+    for m in ONCHANGE_RE.finditer(clean):
+        last = re.search(r"(\w+)\s*$", _first_argument(clean, m.end()))
+        if last and re.match(r"(?:should|did)\w*$", last.group(1)):
+            hits.append(last.group(1))
+    return hits
 
 
 def measure(path):
     raw = open(path, encoding="utf-8", errors="ignore").read()
     src = blank_noise(raw)
-    views = VIEW_RE.findall(src)
+    decls = type_decls(src)
+    views = sorted({d["name"] for d in decls if d["conforms"]})
     if not views:
         return None
-    bodies = bodies_of(src)
+    all_bodies = bodies_of(src, decls)
+    # Only a View's own `body` requirement is a SwiftUI view body.  A helper type
+    # that happens to expose `var body: some View` is not a View and is not a gate.
+    bodies = [b for b in all_bodies if b["view"] in views or not b["owner_known"]]
     worst = max(bodies, key=lambda b: b["lines"], default=None)
     branches = 0
     if worst:
@@ -174,14 +303,15 @@ def measure(path):
         body_view=worst["view"] if worst else "-",
         bodies=[{k: v for k, v in b.items() if k != "text"} for b in bodies],
         unbalanced=[b["view"] for b in bodies if not b["balanced"]],
+        uncertain_owner=[b["view"] for b in bodies if not b["owner_known"]],
         branches=branches,
         state=len(re.findall(r"@State\b", src)),
         bool_toggles=len(re.findall(r"@State\s+(?:private\s+)?var\s+(?:is|show|should|has|did)\w*\s*(?::\s*Bool)?\s*=\s*(?:true|false)", src)),
-        isPresented=len(re.findall(r"isPresented:", src)),
-        subviews=max(len(re.findall(r"(?:@ViewBuilder\s+)?(?:private\s+)?(?:var|func)\s+\w+[^{\n]*->?\s*some\s+View", src)) - len(bodies), 0),
-        onX=len(re.findall(r"\.onChange\(|\.onAppear|\.onReceive|\.onDisappear", src)),
+        isPresented=count_is_presented(src),
+        subviews=max(len(re.findall(r"(?:@ViewBuilder\s+)?(?:private\s+)?(?:var|func)\s+\w+[^{\n]*->?\s*some\s+View", src)) - len(all_bodies), 0),
+        onX=len(re.findall(r"\.onChange\s*\(|\.onAppear|\.onReceive|\.onDisappear", src)),
         task_blocks=len(re.findall(r"Task\s*\{", src)),
-        should_onchange=re.findall(r"\.onChange\(of:\s*[\w.]*\.(should\w+|did\w+)", src),
+        should_onchange=should_onchange(src),
     )
 
 
@@ -255,6 +385,9 @@ def main():
             print(f"  {r['file']}: onChange watches {', '.join(sorted(set(r['should_onchange'])))}")
         if r["unbalanced"]:
             print(f"  {r['file']}: UNBALANCED braces in {', '.join(r['unbalanced'])} — measure by hand")
+    for r in rows:
+        if r["uncertain_owner"]:
+            print(f"  {r['file']}: {len(r['uncertain_owner'])} body/bodies with no enclosing type — owner uncertain, check by hand")
     return 1 if violators else 0
 
 

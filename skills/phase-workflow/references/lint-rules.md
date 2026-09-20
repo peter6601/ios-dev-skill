@@ -9,10 +9,13 @@
 
 | 檔類 | frontmatter 標記 | 位置 |
 |---|---|---|
-| Reference 文件 | `type: phase-doc` | `Projects/<Project>/<feature>/*.md` |
-| Ticket 檔 | `tags: [phase-ticket]` | `Projects/<Project>/<feature>/tickets/*.md` |
+| Reference 文件 | `type: phase-doc` | `<output_root>/*.md` |
+| Ticket 檔 | `tags: [phase-ticket]` | `<output_root>/tickets/*.md` |
 
-你有自己的 vault 健檢腳本（定期 `os.walk` 掃全庫那種）就把以下規則加進去；沒有就在 Step 6 收尾與 Phase A → B 切換前，照這份清單手動跑一次（pull 模式：列出問題，使用者批准才修）。
+`<output_root>` 是 Step 1 決定的：預設 `<ios-repo>/docs/features/<feature>/`，
+使用者明確給 external workspace 時才是 `<workspace>/Projects/<Project>/<feature>/`。
+
+你有自己的文件健檢腳本（定期 `os.walk` 掃全庫那種）就把以下規則加進去；沒有就在 Step 6 收尾與 Phase A → B 切換前，照這份清單手動跑一次（pull 模式：列出問題，使用者批准才修）。
 
 ---
 
@@ -27,6 +30,11 @@
 ### B. Broken Refs（交叉引用斷鏈）
 - [ ] ticket 的 `## Refs` 區塊每個 relative link target 必須存在
 - [ ] reference 文件互相引用的 `[text](./x.md)` target 必須存在
+- [ ] **每個非外部 link 的 target 都在 SKILL.md 的 Output manifest 上**——連到 manifest 沒有的檔
+      （例如 `pages/*.md`、stage／module 彙總檔）就算檔案碰巧存在也是錯，那不是本 skill 的產物
+- [ ] **中型不得出現大型專屬檔的連結**（`sprint-roadmap.md`、`architecture/`、`coordination/`）
+- [ ] **沒有 wikilink**：全文不得出現 `[[...]]`，產出要在 GitHub render
+- [ ] 模板留下的條件標記（`{IF_LARGE：…}`）全部已處理掉，成品裡不得殘留
 - （這是 Karpathy「缺失的交叉引用」檢查；relative link 斷鏈 = graph 出現孤點）
 
 ### C. 孤兒 ticket（orphan）
@@ -52,7 +60,7 @@
 ## Phase-Doc Lint — <feature> (<date>)
 
 ### 🔴 Broken Refs (N)
-- tickets/4-S2.md → Refs 指向 architecture/networking-rest.md § 2.5.9（檔案存在但無此 section）
+- tickets/4-S2.md → Refs 指向 architecture/<topic>.md § 2.5.9（檔案存在但無此 section）
 
 ### 🟡 Frontmatter 缺欄 (N)
 - tickets/5-U1.md → 缺 estimate
@@ -70,6 +78,6 @@
 
 | 時機 | 怎麼跑 |
 |---|---|
-| 定期排程 | 你的 vault 健檢排程自動帶到（若已加上述規則）|
+| 定期排程 | 你的文件健檢排程自動帶到（若已加上述規則）|
 | 手動 | 「跑 phase-doc lint <feature>」或「lint 一下 <feature> 文件」|
 | Phase A → B 切換前 | 進入修正期前跑一次，確保初版文件無斷鏈 |

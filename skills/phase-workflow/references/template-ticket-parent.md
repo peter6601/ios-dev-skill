@@ -1,7 +1,9 @@
 # {STAGE_OR_MODULE_NAME} Tickets
 
-> 依 [`sprint-roadmap.md § 2`](../sprint-roadmap.md) 的中層細節拆出的 operational 層 tickets
-> 每個 sub-ticket 可直接複製貼上到 GitHub Projects 建 issue（多人專案）
+> **備用模板**：預設是「一個 ticket 一個檔」（`template-ticket-single.md`）＋`tickets/README.md` 當索引。
+> 只有在不用 `board.base`、需要一份 narrative grouping 檔時才用這份；用了就要把它列進該次的產出清單，
+> 否則 `tickets/README.md` 不得連到它。
+> 依 [`sprint-roadmap.md § 2`](../sprint-roadmap.md)（大型才有）的中層細節拆出的 operational 層 tickets
 > 回到索引：[`README.md`](./README.md)
 
 ---
@@ -22,7 +24,7 @@
 ### `{ticket_id_1}` {ticket_title_1}
 
 **Refs**:
-- {REF_LINK_1 — pages/0X.md § Y / architecture/X.md § Z / Q-number}
+- {REF_LINK_1 — ../overview.md § Y / ../architecture/<topic>.md § Z / coordination 的 Q-number}
 - {REF_LINK_2}
 
 **Files**:

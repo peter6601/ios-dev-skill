@@ -1,12 +1,9 @@
 ---
 name: ios-dev
 description: iOS 開發工作流的唯一入口 skill。任何 iOS 開發需求都從這裡進：Step 0 先認七種情境（新專案／大功能、小功能、純畫面、修正、優化、重構、接 ticket）與內容軸（功能／畫面），秀出這次會載入的 skill 與派出的 agent 讓使用者確認一次，再交棒或走 Phase 0（產品思考）→ Phase 1（規劃）。任何會改變行為的任務**開發前都要做架構影響檢查**（五問 → 直接擴充／局部整理／模組邊界）；命中模組邊界的工作交 phase-workflow 切 ticket（與 ticket 數無關），之後每張 ticket 用 `/ios-dev tickets/<T>.md` 接回來開發。觸發場景：「我要開發 XXX 功能」、「新增 XXX 需求」、「開始做 XXX」、「修 XXX bug」、「優化 XXX」、「重構 XXX」、「接 T3」、「做下一張 ticket」。
-metadata:
-  user-invokable: true
-  args:
-    - name: feature
-      description: 功能或需求的簡短描述（選填，也可以在對話中說明）
-      required: false
+user-invocable: true
+arguments: [feature]
+argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說明]"
 ---
 
 > 呼叫方式：`/ios-dev [功能或需求的簡短描述 | ticket 路徑]`。描述是選填的，也可以在對話中再說明。
@@ -25,7 +22,7 @@ metadata:
 |---|---|
 | `references/skill-router.md` | 每次進場。Step 0 的流程、七情境組合表、兩軸分流、輕／重與門檻，全在那裡 |
 | `references/architecture-impact-check.md` | **任何會改變行為的任務，開發前**。五問、中型觸發條件、presentation 轉移表、async ownership 契約、重構路徑 |
-| `references/handoff-checklist.md` | 交棒情境 3–7 時。把該情境那一段原樣印進交棒訊息 |
+| `references/handoff-checklist.md` | 交棒情境 3–7 時。交棒訊息帶三段：「開發前」＋「共通收尾」＋該情境段 |
 | `references/plan-template.md` | Step 6 寫實作計畫時。含重閘門的 agent 清單與統一修復規則 |
 
 ---
@@ -36,7 +33,7 @@ metadata:
 
 只有三件事寫在這裡：
 
-- **交棒後誰持有收尾**：情境 1（無 PM spec）與情境 2 留在本 skill 往 Step 1；情境 1 有 PM spec 立即交棒 `phase-workflow` 入口 B；情境 3–7 交棒給下游 skill 執行，但交棒訊息**一定要附上 `references/handoff-checklist.md` 該情境那一段**——下游 skill 不知道還有輕／重閘門、review 路線與回寫。
+- **交棒後誰持有收尾**：情境 1（無 PM spec）與情境 2 留在本 skill 往 Step 1；情境 1 有 PM spec 立即交棒 `phase-workflow` 入口 B；情境 3–7 交棒給下游 skill 執行，但交棒訊息**一定要附上 `references/handoff-checklist.md` 的三段拼接：「開發前」全文 ＋「共通收尾」全文 ＋ 該情境那一段**——下游是獨立 context，只貼情境段的話輕／重怎麼判、review 三路線、人工核准前的禁止事項與回寫順序全都讀不到。
 - **開發前一定要有架構結論**：情境 2–7 在確認畫面就要講出這次是「直接擴充／局部整理／模組邊界」，依據是 `references/architecture-impact-check.md` 的五問。命中中型觸發條件就改走 router §2 的中型路線，**與 ticket 數無關**。
 - `careful-ios` 與 `verification-before-completion` 不進 bundle、永遠生效。
 - 同名兩份的 skill 一律用無前綴的本機版（router §9）。

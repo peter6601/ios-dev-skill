@@ -25,10 +25,10 @@
 ```bash
 npx skills add https://github.com/efremidze/swift-architecture-skill -a claude-code -g -y
 npx skills add https://github.com/AvdLee/Swift-Concurrency-Agent-Skill -a claude-code -g -y
-
-git clone https://github.com/AvdLee/SwiftUI-Agent-Skill.git ~/.claude/vendor/SwiftUI-Agent-Skill
-ln -s ~/.claude/vendor/SwiftUI-Agent-Skill/swiftui-expert-skill ~/.claude/skills/swiftui-expert-skill
+npx skills@latest add https://github.com/AvdLee/SwiftUI-Agent-Skill --skill swiftui-expert-skill -a claude-code -g -y
 ```
+
+裝完確認 `~/.claude/skills/swiftui-expert-skill/SKILL.md` 讀得到——6 個 agent 開工就是讀這條路徑。
 
 再到 Claude Code 裡輸入：
 
@@ -126,8 +126,9 @@ python3 skills/ios-dev/evals/run_evals.py --run           # 全套約 $20–25�
 | 建議 | `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`review-swarm`、`bug-hunt-swarm`、`orchestrate-batch-refactor` | 對應情境降級 | [Dimillian/Skills](https://github.com/Dimillian/Skills) |
 | 建議 | `mattpocock-skills`（plugin） | 需求訪談改用 `superpowers:brainstorming` | [mattpocock/skills](https://github.com/mattpocock/skills) |
 | 建議 | `consensus-plan`、`consensus-review` | 沒有 Codex 交叉審查，改走純 agent 路線 | [peter6601/ai-review](https://github.com/peter6601/ai-review) |
-| 選配 | `app-store-preflight` | `store-preflight-auditor` 沒有規則庫 | [truongduy2611/app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills) |
-| 選配 | `xcode-project-analyzer` 等 4 個 | `build-analyzer` 不能用 | [AvdLee/Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill) |
+| 選配 | `app-store-preflight-skills` | `store-preflight-auditor` 沒有規則庫 | [truongduy2611/app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills) |
+| 選配 | `xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis` | `build-analyzer` 不能用 | [AvdLee/Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill) |
+| 選配 | `xcode-build-fixer` | `build-analyzer` 照樣能分析，但沒有東西可以接著修 | 同上 |
 | 選配 | `asc-*` | 沒有 App Store Connect 出貨流程 | [rorkai/app-store-connect-cli-skills](https://github.com/rorkai/app-store-connect-cli-skills) |
 
 <details>
@@ -151,6 +152,8 @@ Claude Code 裡輸入：
 
 **執行時也會提醒**：`/ios-dev` 進場會檢查這次要用的 skill 裝了沒，缺的會寫在確認畫面上，不會默默略過。
 
+> **外部契約的基準**：本 repo 寫到的 `ai-review` 指令、旗標與狀態名，以 [peter6601/ai-review](https://github.com/peter6601/ai-review) 的 **main** 為準。要核對請對 main，不要釘某個歷史 commit——`submit-preflight` 這類已退役的指令只存在於舊 commit。
+
 ## 沒有公開的 skill
 
 流程裡還會提到兩個作者自用、跟個人筆記庫綁得很深而沒有公開的 skill。它們都是可選步驟，沒裝就跳過：
@@ -163,13 +166,14 @@ Claude Code 裡輸入：
 <details>
 <summary>名詞對照</summary>
 
-- **workspace**：放跨 repo 規劃文件的地方（建議是 git 管理的 Obsidian vault）。沒有就用 iOS repo 的 `docs/`。
+- **workspace**：**選配**。放跨 repo 規劃文件的地方（建議是 git 管理的 Obsidian vault）。不給的話 `phase-workflow` 就寫進 iOS repo 的 `docs/features/<功能>/`，流程完全一樣。
 - **第二大腦**：一個功能的維護期知識庫。沒有就跳過，流程寫的是「有才讀」。
 - **§0 架構形狀**：開發前的架構產出，四段——pattern、模組邊界、state 與 presentation、async 契約。之後每張 ticket 都拿它當尺。
 - **輕／重**：審查強度。跟「要不要做架構設計」是兩件事。
 - **Phase A／B**：A＝初版建構期（規劃＋連續跑 ticket）；B＝之後的修正期，每個 PR 恢復完整把關。
 - **紅線檔**：開發期間要保護的既有主檔。可以改，但要最小化、只加不改、向下相容。
 - **看板**：`phase-workflow` 產的 `board.base` 需要 Obsidian 才看得到；不用 Obsidian 其餘照常。
+- **產出會不會被 commit**：不會。`phase-workflow` 預設只產檔並列出 diff，commit／merge／PR 要你明講。
 
 </details>
 
@@ -179,6 +183,8 @@ Claude Code 裡輸入：
 python3 -m unittest discover -s skills/ios-dev/scripts -p "test_*.py"   # SwiftUI 量測腳本 ＋ 引用完整性檢查
 python3 skills/ios-dev/evals/test_run_evals.py                             # 路由評測的 parser 與 fixture（不呼叫模型）
 python3 skills/careful-ios/bin/test_check_careful_ios.py                   # careful-ios 的 hook
+python3 test_install_sh.py                                                 # 安裝腳本（含四種 locale）
+bash -n install.sh && ./install.sh --check                                 # 語法 + 相依表
 ```
 
 ## 致謝

@@ -1,6 +1,6 @@
 ---
 name: store-preflight-auditor
-description: App Store 送審前靜態稽核 agent（唯讀）。對照 app-store-preflight 的 rules 與 by-app-type guidelines，掃 Info.plist、entitlements、PrivacyInfo.xcprivacy、Localizable 文案、訂閱／IAP 相關字串與 metadata，回報可能被拒的項目與對應 guideline 條號。用於 Phase 4 出貨，可與 localize-strings 平行。輸入：專案根目錄；選填：app 類型（subscription／social／health／kids／macOS 等）與 App Store 文案檔路徑。
+description: App Store 送審前靜態稽核 agent（唯讀）。對照 app-store-preflight-skills 的 rules 與 by-app-type guidelines，掃 Info.plist、entitlements、PrivacyInfo.xcprivacy、Localizable 文案、訂閱／IAP 相關字串與 metadata，回報可能被拒的項目與對應 guideline 條號。用於 Phase 4 出貨，可與 localize-strings 平行。輸入：專案根目錄；選填：app 類型（subscription／social／health／kids／macOS 等）與 App Store 文案檔路徑。
 tools: Read, Grep, Glob
 ---
 
@@ -8,9 +8,9 @@ tools: Read, Grep, Glob
 
 ## 開工前必讀（用 Read 工具載入）
 
-1. `~/.claude/skills/app-store-preflight/SKILL.md` — 掃描流程
-2. `~/.claude/skills/app-store-preflight/references/rules/**/*.md` — 逐條規則（privacy、metadata、subscription、design、entitlements）
-3. `~/.claude/skills/app-store-preflight/references/guidelines/by-app-type/<類型>.md` — 使用者指定類型時再讀；沒指定就讀 `all_apps.md`
+1. `~/.claude/skills/app-store-preflight-skills/SKILL.md` — 掃描流程
+2. `~/.claude/skills/app-store-preflight-skills/references/rules/**/*.md` — 逐條規則（privacy、metadata、subscription、design、entitlements）
+3. `~/.claude/skills/app-store-preflight-skills/references/guidelines/by-app-type/<類型>.md` — 使用者指定類型時再讀；沒指定就讀 `all_apps.md`
 
 ## 檢查重點
 

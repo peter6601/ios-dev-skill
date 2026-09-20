@@ -166,14 +166,21 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 
 ## 9. 本表引用的名字與沒裝時的替代
 
-安裝指令與來源見 repo 根目錄 `README.md`。進場時用 Glob 檢查 `~/.claude/skills/<name>/SKILL.md`
-與 `~/.claude/agents/<name>.md`（只查這次情境 §1 那一列會用到的，不必全掃；skill 也可能裝在
-`~/.claude/commands/`）；缺的照下表替代，並寫進確認畫面的「提醒」行。
+安裝指令與來源見 repo 根目錄 `README.md`。進場時檢查這次情境 §1 那一列會用到的（不必全掃）。
+skill 三種安裝形狀任一存在就算裝了，三個 pattern 都要查：
+
+```
+~/.claude/skills/<name>/SKILL.md
+~/.claude/commands/<name>/SKILL.md
+~/.claude/commands/<name>.md
+```
+
+agent 查 `~/.claude/agents/<name>.md`。缺的照下表替代，並寫進確認畫面的「提醒」行。
 **第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
 - **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
-- **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight`、`asc-*`
+- **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`asc-*`
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補
 - **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）

@@ -1,14 +1,14 @@
 ---
 name: ios-review
 description: >
-  iOS 專案的 Pre-landing PR Review。分析 diff 中的 Swift Concurrency 安全性、
-  Memory Leak / Retain Cycle、Main Thread Violation、StoreKit 正確性、SwiftUI State 管理、
-  Accessibility、以及 App Store 審核風險。採用兩輪 Review（CRITICAL + INFORMATIONAL）與
-  Fix-First 流程（能自動修的直接修、需要判斷的批次詢問）。
-  觸發場景：使用者說「review」、「code review」、「PR review」、「幫我看一下 code」、
-  「檢查這個 branch」、「pre-landing」、「review 這個 PR」、「上線前檢查」，
-  或即將 merge / push 時主動建議使用。
-  即使使用者只是說「看一下」或「幫我 check」，只要上下文涉及 iOS code 變更，都應觸發此 skill。
+  iOS 專案的 Pre-landing PR Review：**針對一份已經存在的 diff**（feature branch 對 base）分析
+  Swift Concurrency 安全性、Memory Leak / Retain Cycle、Main Thread Violation、StoreKit 正確性、
+  SwiftUI State 管理、Accessibility、以及 App Store 審核風險。兩輪 Review（CRITICAL + INFORMATIONAL）
+  與 Fix-First 流程（能自動修的直接修、需要判斷的批次詢問）。
+  **只在 `/ios-dev` 明確交棒（Phase 3 閘門）、或使用者直接點名本 skill 時使用**；
+  「幫我看一下」「check 一下」這種模糊說法不要當觸發，一般 iOS 任務先走 `/ios-dev`。
+  使用者直接點名的說法：「ios-review」、「review 這個 PR / branch」、「pre-landing 檢查」。
+  前提是已經有 diff；還沒有 code 時不適用。不做 UX 批評（`ios-critique`）、不做細節打磨（`ios-polish`）。
 ---
 
 # iOS Pre-Landing PR Review
@@ -56,7 +56,7 @@ git diff origin/<base> --stat
 在 review code 品質之前，先確認：**有沒有做超過或少做？**
 
 1. 讀取 commit messages：`git log origin/<base>..HEAD --oneline`
-2. 讀取 TODOS.md / PR description（如果有的話）
+2. 讀取 PR description 與 ticket／已知問題清單（repo 裡有才讀，不要假設檔名）
 3. 比對 `git diff origin/<base> --stat` 的檔案清單與宣稱的意圖
 
 偵測：

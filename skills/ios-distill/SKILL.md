@@ -1,11 +1,9 @@
 ---
 name: ios-distill
-description: 精煉 SwiftUI 設計與程式碼，去除不必要的複雜性。簡化 View 結構、State 管理、Navigation 層級，讓介面回歸本質。簡化不是移除功能，而是移除用戶和目標之間的障礙。
-user-invokable: true
-args:
-  - name: target
-    description: 要精煉的功能或元件（選填）
-    required: false
+description: 移除不必要的複雜性——簡化 View 結構、State 管理、Navigation 層級，讓介面回歸本質。簡化不是移除功能，而是移除用戶和目標之間的障礙。與鄰居的分工：`ios-polish` 是加細節不是減、`ios-harden` 是補韌性、`ios-critique` 只報告不改。
+user-invocable: true
+arguments: [target]
+argument-hint: "[要精煉的功能或元件]"
 ---
 
 # iOS Distill — 精煉簡化
@@ -68,7 +66,7 @@ args:
 ### View 結構簡化
 
 - **減少嵌套深度**：SwiftUI View body 中 `VStack { HStack { VStack { ... }}}` 嵌套不超過 3 層
-- **拆分巨大 View**：單一 View 的 `body` 超過 50 行就該拆分
+- **拆分巨大 View**：單一 View 的 `body` 超過 50 行是 soft smell（值得看一眼，不是硬規則）。工作流的 hard gate 是 `skill-router.md` §5 的 **body >80、per file**；51–80 行在這裡值得檢討，在閘門是 pass
 - **移除 wrapper View**：不做任何事的中間容器 View，直接移除
 - **善用 ViewBuilder**：用 `@ViewBuilder` computed property 替代不必要的中間 View
 
@@ -100,7 +98,7 @@ VStack {
 
 ### State 管理簡化
 
-- **減少 @State 數量**：一個 View 超過 5 個 @State 就是警訊
+- **減少 @State 數量**：單一 **View** 超過 5 個 `@State` 是 soft smell。閘門的 `@State >5` 算的是**整個檔案**（`swiftui-metrics.py`），同檔多個 View 時兩者結論會不同——以閘門為準
 - **合併相關 State**：用 struct 或 enum 合併相關的狀態
 - **下推 State**：State 應該放在最低的需要層級，不要所有 State 都在父 View
 - **簡化 Binding 鏈**：過長的 Binding 傳遞鏈暗示架構問題

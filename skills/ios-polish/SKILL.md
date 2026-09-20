@@ -1,11 +1,9 @@
 ---
 name: ios-polish
-description: SwiftUI 出貨前的最終品質打磨。系統化檢查對齊、間距、一致性、互動狀態、動畫、Accessibility 細節——區分「能用」和「精緻」的最後一哩路。在功能完成後使用。
-user-invokable: true
-args:
-  - name: target
-    description: 要打磨的功能或區域（選填）
-    required: false
+description: 對**已完成、功能正確**的 SwiftUI 介面做出貨前的最終打磨，會直接改 code：對齊、間距、一致性、互動狀態、動畫、Accessibility 細節。功能還沒做完不要用。與鄰居的分工：`ios-critique` 只報告不改、`ios-distill` 移除複雜性、`ios-harden` 補邊界條件與韌性。
+user-invocable: true
+arguments: [target]
+argument-hint: "[要打磨的功能或區域]"
 ---
 
 # iOS Polish — 最終打磨

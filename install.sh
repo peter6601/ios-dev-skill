@@ -18,7 +18,7 @@ link() {
   if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
     echo "  已安裝  $dst"
   elif [ -e "$dst" ] || [ -L "$dst" ]; then
-    echo "  跳過    $dst（已存在，不是本 repo 的 symlink；要換請自己先移走）"
+    echo "  跳過    ${dst}（已存在，不是本 repo 的 symlink；要換請自己先移走）"
     SKIPPED=$((SKIPPED + 1))
   else
     ln -s "$src" "$dst"
@@ -34,9 +34,14 @@ unlink_if_ours() {
   fi
 }
 
-# skill 可能裝在 skills/ 或 commands/（兩個位置 Claude Code 都會讀）
+# skill 三種安裝形狀都算裝了：
+#   skills/<name>/SKILL.md      npx skills / 本 repo installer 的落點
+#   commands/<name>/SKILL.md    把 skill 目錄掛進 commands/ 的做法
+#   commands/<name>.md          Claude Code 的 legacy command（單檔）
 has_skill() {
-  [ -e "$CLAUDE_HOME/skills/$1/SKILL.md" ] || [ -e "$CLAUDE_HOME/commands/$1/SKILL.md" ]
+  [ -e "$CLAUDE_HOME/skills/$1/SKILL.md" ] \
+    || [ -e "$CLAUDE_HOME/commands/$1/SKILL.md" ] \
+    || [ -e "$CLAUDE_HOME/commands/$1.md" ]
 }
 
 has_plugin() {
@@ -61,16 +66,17 @@ DEPS='
 建議|plugin|mattpocock-skills|Step 3 的 /grill-with-docs；缺了改用 superpowers:brainstorming
 建議|skill|consensus-review|review 路線 A（Codex 交叉審查）；缺了走路線 B
 建議|skill|consensus-plan|Step 7 文件審查；缺了由人自己審
-選配|skill|app-store-preflight|store-preflight-auditor 的規則庫
-選配|skill|xcode-project-analyzer|build-analyzer 用
-選配|skill|xcode-compilation-analyzer|build-analyzer 用
-選配|skill|spm-build-analysis|build-analyzer 用
+選配|skill|app-store-preflight-skills|store-preflight-auditor 的規則庫
+選配|skill|xcode-project-analyzer|build-analyzer 的專案設定稽核項
+選配|skill|xcode-compilation-analyzer|build-analyzer 的編譯時間熱點
+選配|skill|spm-build-analysis|build-analyzer 的 SPM 依賴分析
+選配|skill|xcode-build-fixer|build-analyzer 找到問題後要實際修 build 才需要；只分析可以不裝
 '
 
 check_deps() {
   local missing_required=0 missing_other=0
   echo
-  echo "相依檢查（$CLAUDE_HOME）："
+  echo "相依檢查（${CLAUDE_HOME}）："
   while IFS='|' read -r tier kind name why; do
     [ -z "$tier" ] && continue
     local ok=1

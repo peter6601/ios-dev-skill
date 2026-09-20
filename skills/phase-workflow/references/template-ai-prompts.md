@@ -68,7 +68,7 @@ updated: {TODAY}
 3. {FEATURE_FOLDER_FULL_PATH}/architecture/networking.md（如有）
    → 全文 — 後端協定總覽
 
-4. {FEATURE_FOLDER_FULL_PATH}/{FEATURE_CONTEXT_FILE}.md
+4. {FEATURE_FOLDER_FULL_PATH}/context.md
    → 全文 — AI 行為準則 / 已決事項 / Skill 使用 / Branch 健康 / 完工回寫 / 遇到情況表
 
 5. {FEATURE_FOLDER_FULL_PATH}/tickets/README.md
@@ -80,11 +80,9 @@ updated: {TODAY}
 ## 🚫 Lite 版不讀（按需才讀）
 
 - ❌ `ai-prompts.md` 本身（使用者的 prompt 模板庫，AI 不需要讀）
-- ❌ `architecture/networking-rest.md`（REST ticket 時才讀對應章節）
-- ❌ `architecture/networking-messages.md`（WS/Model ticket 時才讀）
-- ❌ `pages/*.md`（UI/Delta ticket 時才讀對應那份）
-- ❌ `tickets/*.md` parent（拿到 ticket 才讀對應那份）
-- ❌ `sprint-roadmap.md § 7+`（Stage 細節按需讀）
+- ❌ `tickets/<id>.md`（拿到 ticket 才讀那一份）
+- ❌ 大型才有的 `architecture/<topic>.md`（ticket Refs 指到才讀對應章節）
+- ❌ 大型才有的 `sprint-roadmap.md § 7+`（Stage 細節按需讀）
 
 ---
 
@@ -132,7 +130,7 @@ AI 回報後，應該檢查它是否理解以下要點：
 請先讀以下 context（如果你已經在本 session 讀過可以跳過）：
 
 0. 核心原則 + 已決事項（**每次 ticket 都快速 skim**）：
-   {FEATURE_FOLDER_FULL_PATH}/{FEATURE_CONTEXT_FILE}.md
+   {FEATURE_FOLDER_FULL_PATH}/context.md
 
 1. Tickets 索引：
    {FEATURE_FOLDER_FULL_PATH}/tickets/README.md
@@ -172,17 +170,17 @@ AI 回報後，應該檢查它是否理解以下要點：
 請先讀以下 context：
 
 0. 核心原則 + 已決事項：
-   {FEATURE_FOLDER_FULL_PATH}/{FEATURE_CONTEXT_FILE}.md
+   {FEATURE_FOLDER_FULL_PATH}/context.md
 
 1. Tickets 索引：
-   tickets/README.md → UI ticket 依 page 編號找對應檔案
+   tickets/README.md → 找到這張 ticket 在哪個 Stage
 
 2. 對應 ticket 完整內容：
-   tickets/<對應檔案>.md → 搜尋 "{ticket_id}"
+   tickets/{ticket_id}.md（整份讀）
 
-3. Page {X} 完整 SPEC：
-   pages/0{X}-*.md
-   → 特別注意 § 4 UI 結構 + § 5/6 互動流程 + § 9/10 Acceptance Criteria
+3. 這張 ticket 的 Refs 指到的章節：
+   overview.md § {SECTION}（畫面清單、§0 的 state／presentation 規則）
+   → 大型另有 architecture/<topic>.md 的對應 § X.X
 
 4. Figma node ID（在 SPEC 中會標示，請回報給我確認能 open）
 
@@ -214,23 +212,23 @@ AI 回報後，應該檢查它是否理解以下要點：
 請先讀以下 context：
 
 0. 核心原則 + 已決事項：
-   {FEATURE_FOLDER_FULL_PATH}/{FEATURE_CONTEXT_FILE}.md
+   {FEATURE_FOLDER_FULL_PATH}/context.md
 
 1. Tickets 索引：
-   tickets/README.md → 找對應 ticket 所在的 parent 檔案
+   tickets/README.md → 找到這張 ticket 在哪個 Stage
 
 2. 對應 ticket 完整內容：
-   tickets/<對應檔案>.md → 搜尋 "{ticket_id}"
+   tickets/{ticket_id}.md（整份讀）
 
-3. 該 Delta 依據的 SPEC：
-   pages/0{X}-*.md § 3 切入點策略 + § 4 差異清單
+3. 該 Delta 依據的規格：
+   ticket 的 Refs 指到的章節（切入點策略與差異清單）
 
 4. **{EXISTING_SYSTEM_LABEL} 既有 code（完整讀進來）**：
    → ticket Files 區塊列的每個檔案路徑都要用 Read tool 讀一遍
    → 不要只 grep，要完整讀過該 view 的 body 結構
 
 5. Negative Constraints {EXISTING_SYSTEM_LABEL} 既有 code 保護原則：
-   {FEATURE_CONTEXT_FILE}.md § {EXISTING_SYSTEM_LABEL} 既有 code 保護
+   context.md § {EXISTING_SYSTEM_LABEL} 既有 code 保護
 
 讀完後，請向我報告：
 - 【這個 ticket 要改哪個既有檔案】
@@ -266,7 +264,7 @@ AI 回報後，應該檢查它是否理解以下要點：
 請先讀以下 context：
 
 0. 核心原則 + 已決事項：
-   {FEATURE_FOLDER_FULL_PATH}/{FEATURE_CONTEXT_FILE}.md
+   {FEATURE_FOLDER_FULL_PATH}/context.md
 
 1. 對應 ticket 內容：
    tickets/module-{INTEGRATION_MODULE_NAME}.md

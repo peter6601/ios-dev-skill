@@ -10,7 +10,7 @@ updated: {TODAY}
 
 > **給同事的 kickoff 文件**：快速理解這次要做什麼、會動到哪些模組、每個頁面的功能
 > **閱讀時間**：10-15 分鐘
-> **更深入的文件**：見 [`README.md`](./README.md) 找對應技術文件
+> **更深入的文件**：見本檔最後的「想深入了解某一塊？」對照表
 
 > [!IMPORTANT] 核心策略
 > {KEY_STRATEGY_ONE_LINER — 例如「所有新頁面一律走『新建 outer view + 複用既有子元件』策略，既有整頁 view 全部不動」}
@@ -126,15 +126,22 @@ updated: {TODAY}
 |---|---|---|---|
 | `{ModuleA}` | {STATE} | `{ProtocolA}` | {COMPOSITION_ROOT} |
 
-**State 與 presentation 規則**：
-- 每個 view 的 modal 用一個 `Identifiable` enum ＋ `.sheet(item:)`；禁止多個 `isPresented` Bool
-- ViewModel 只暴露狀態（`phase`、`route`），不用 `should*`／`did*` 旗標指揮 View；單一 `send(Action)` 入口
+**State 與 presentation 規則**（通用底線只有這兩條，其餘由選定的 pattern 決定）：
+- **互斥**呈現（sheet／alert／navigation／toast 同時只能有一個）用一個 `Identifiable` enum ＋ `.sheet(item:)`；純局部開關保留 Bool
+- ViewModel 只暴露狀態（`phase`、`route`），**不用 `should*`／`did*` 旗標指揮 View**
+- {SELECTED_PATTERN_STATE_RULES：由 `swift-architecture-skill` 依所選 pattern 填。MVI／TCA 才有「單一 `send(Action)` 入口」這條；MVVM 有多個公開方法是合法的，不要硬套}
 - {FEATURE_SPECIFIC_STATE_RULES}
 
-**Concurrency 持有規則**：
-- View 只用 `.task(id:)`，不寫 `Task {}`；ViewModel 單一 `run()` 收攏所有 `for await`；stored `Task?` 只允許在 Service 層
+**非同步工作的 ownership 契約**（每一項工作填六格；**Task 的數量與位置是線索，不是判準**）：
+
+| 工作 | 啟動者與持有者 | 生命週期 | 結束與清理 | 重入策略 | 舊結果如何失效 | isolation 與逾時 |
+|---|---|---|---|---|---|---|
+| `{WORK_1}` | {OWNER} | {LIFECYCLE} | {CLEANUP} | {REENTRANCY} | {STALE} | {ISOLATION} |
+
+- 優先 structured concurrency（`.task(id:)`、`async let`、task group）；需要 handle 才存 `Task`，存了就在表裡寫清楚誰 cancel、何時 cancel
+- **不為了符合規則把工作硬搬到 Service，也不要求全部塞進單一 `run()`**——判準是六格填不填得出來
 - Combine 只在邊界（NotificationCenter／KVO／第三方 SDK），進 ViewModel 前 `.values` 轉 AsyncSequence
-- {FEATURE_SPECIFIC_ASYNC_RULES：哪個 stream 由誰 own、cancel 點}
+- {SELECTED_PATTERN_ASYNC_RULES：所選 pattern 另外要求的 owner 規則，沒有就留空}
 
 **本 feature 的 PR checklist**（5–8 條，從 `swift-architecture-skill` 的 pattern checklist 裁；`architecture-auditor` 用）：
 1. {CHECK_1}
@@ -196,7 +203,7 @@ updated: {TODAY}
 
 ### 目標：{TARGET_TIMELINE_RANGE}（可上 {DEPLOY_TARGET}）
 
-> 預估總計 ~{TOTAL_DAYS} 工作天。詳見 [`sprint-roadmap.md`](./sprint-roadmap.md)。
+> 預估總計 ~{TOTAL_DAYS} 工作天。{IF_LARGE：詳見 [`sprint-roadmap.md`](./sprint-roadmap.md)——中型不產這份，刪掉這句}
 
 {FOR_EACH_STAGE}
 #### Stage {N} — {STAGE_NAME}（Day {START}-{END}，{DAYS} 天）
@@ -234,13 +241,16 @@ updated: {TODAY}
 
 ## 📂 想深入了解某一塊？
 
-| 想看什麼 | 讀哪份文件 |
-|---|---|
-| 完整 SPEC + 頁面細節 | `pages/0X-*.md` |
-| 後端 API 協定與對接 | `architecture/networking.md` |
-| 執行藍圖與分工策略 | `sprint-roadmap.md` |
-| 所有可拆 issue 的 ticket | [`tickets/README.md`](./tickets/README.md) |
-| 還有哪些未決問題 | `coordination/open-questions.md` |
+| 想看什麼 | 讀哪份文件 | 中型有嗎 |
+|---|---|---|
+| 開發時的原則與回寫規則 | [`context.md`](./context.md) | ✅ |
+| 所有可拆 issue 的 ticket | [`tickets/README.md`](./tickets/README.md) | ✅ |
+| 給 AI 的 handoff prompt | [`ai-prompts.md`](./ai-prompts.md) | ✅ |
+| 後端 API 協定與對接 | `architecture/<topic>.md` | ❌ 大型才有 |
+| 執行藍圖與分工策略 | `sprint-roadmap.md` | ❌ 大型才有 |
+| 還有哪些未決問題 | `coordination/open-questions.md` | ❌ 大型才有 |
+
+> 中型請把標 ❌ 的列整列刪掉——那幾份檔不會產出（見 phase-workflow SKILL.md 的 Output manifest）。
 | 想用 AI 協助開發 | `ai-prompts.md` |
 
 ---

@@ -12,7 +12,7 @@ updated: {TODAY}
 > **建立日期**：{TODAY}
 > **Team**：{TEAM_MEMBERS}
 > **核心原則**：**最大化既有系統 reuse**、**foundation 收斂後 ticket 發散**
-> **References**：`tickets/`（ticket 資料夾）/ `pages/`（各頁 SPEC）/ `architecture/networking.md`
+> **References**：`tickets/`（一 ticket 一檔）/ `overview.md`（§0 架構形狀與模組清單）/ `architecture/<topic>.md`
 
 ---
 
@@ -75,7 +75,7 @@ All-hands  Pick-your-own    Pick-your-own    ...
 ```
 
 > **預估** ~{TOTAL_DAYS} 工作天，依 {STAGE_COUNT} stage 分配
-> **PR 對照**：每個 Stage 對應的 GitHub PR / branch / commit 詳見 [`branch-tracker.md`](./branch-tracker.md)（rolling 期才建立）
+> **PR 對照**：每個 Stage 對應的 GitHub PR / branch / commit 詳見 [`coordination/branch-tracker.md`](./coordination/branch-tracker.md)
 
 ### Stage 1：Foundation（{DAYS_1} 天，Day {RANGE_1}）
 

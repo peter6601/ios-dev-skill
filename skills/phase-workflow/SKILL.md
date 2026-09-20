@@ -1,6 +1,6 @@
 ---
 name: phase-workflow
-description: 把 design doc（入口 A）或 PM 給的 SPEC（入口 B）展開成可分散 dispatch 的 reference 文件 + 可執行 ticket bundle，**只規劃不寫 code**。觸發場景：使用者說「跑 phase-workflow」、「做功能文件規劃」、「我要做新功能 X」、「做功能 workflow」、「新專案 kickoff」、「展開 ticket / 生 reference 文件」；入口 B：「吃 PM spec」、「把 PM spec 轉 RD spec」、「比照 android 列 spec」、「PM spec 切 ticket」。產出：入口 A 依規模分流的 4-7 份 markdown 文件 + tickets/ 資料夾 + ai-prompts.md；入口 B 先產 rd-spec.md（RD Spec living doc，人審後貼 GitHub issue comment）再展開 ticket。寫到 workspace project 資料夾底下。除對根文件的唯讀文件審查（入口 A Step 4.5／入口 B Step 3.5B）外，不自動接下游 skill。
+description: 把 design doc（入口 A）或 PM 給的 SPEC（入口 B）展開成可分散 dispatch 的 reference 文件 + 可執行 ticket bundle，**只規劃不寫 code**。**只在 `/ios-dev` 明確交棒、或使用者直接點名 phase-workflow 時使用**——「我要做新功能 X」這種一般需求要先走 `/ios-dev`，由它判責任邊界後才交棒過來。使用者直接點名的說法：「跑 phase-workflow」、「做功能文件規劃」、「展開 ticket / 生 reference 文件」、「新專案 kickoff」；入口 B：「吃 PM spec」、「把 PM spec 轉 RD spec」、「PM spec 切 ticket」。產出：入口 A 依規模分流的 4-7 份 markdown 文件 + tickets/ 資料夾 + ai-prompts.md；入口 B 先產 rd-spec.md（RD Spec living doc，人審後貼 GitHub issue comment）再展開 ticket。除對根文件的唯讀文件審查（入口 A Step 4.5／入口 B Step 3.5B）外，不自動接下游 skill。
 metadata:
   type: workflow
   template-source: 一個已出貨的大型 iOS 功能的實際文件，變數化 @ 2026-06-01
@@ -52,7 +52,10 @@ metadata:
 Step 1. Intake
   ├─ 讀 design doc（path 或內容）
   ├─ 識別 project 名稱 + feature 名稱
-  └─ 確認輸出位置 <workspace>/Projects/<Project>/<feature-folder>/（workspace 定義見「Obsidian 整合」）
+  └─ 決定 output_root（**第一個持久化決策，之後所有路徑都從它長出來**）：
+      預設 <ios-repo>/docs/features/<feature-folder>/
+      使用者明確給了 external workspace 才用 <workspace>/Projects/<Project>/<feature-folder>/
+      （workspace 與看板是選配，定義見「Obsidian 整合」；沒有 workspace 不影響任何一步）
 
 Step 1.5. Codebase Grounding ⭐（有既有 codebase 時【必做】，全新專案跳過）
   ├─ 跑 references/codebase-grounding.md 的整合面盤點
@@ -96,11 +99,8 @@ Step 4.5. 根文件審查 ⭐（唯讀，本 skill 唯一自動接的下游；�
   └─ 只自動審這一份；context / architecture / 個別 ticket 要審，由使用者指定哪一份再跑
 
 Step 5. 展開其餘檔（依規模）
-  中型輸出（4 份 + 看板）：
-    overview.md / context.md / tickets/（README + 每 ticket 一檔 + board.base）/ ai-prompts.md
-  大型輸出（7 份 + 看板）：
-    overview.md / sprint-roadmap.md / architecture/ / context.md /
-    tickets/（README + 每 ticket 一檔 + board.base）/ coordination/ / ai-prompts.md
+  ├─ 產哪些檔**照「規模分流邏輯 → Output manifest」那張表**，這裡不另列一份
+  └─ 產完逐檔檢查：所有非外部連結的目標都在 manifest 上，且檔案真的存在
 
   其中：
   ├─ tickets/ 切到「Stage 1 + Stage 2」即可（後續 Stage 等規格進一步收斂再補）
@@ -111,11 +111,10 @@ Step 5. 展開其餘檔（依規模）
 
 Step 6. 收尾
   ├─ 跑 lint／引用／frontmatter／孤兒文件檢查
-  ├─ 在規劃 worktree commit 所有產出
-  ├─ 實際整合該 commit 回 workspace repo 的 main（cherry-pick 或 merge；workspace 不是 git repo 就跳過這三行）
-  │   ├─ main 有未提交變更時，先以可回復方式保留，不得覆寫或丟棄
-  │   └─ 整合後驗證 main 包含產出、必要檔案存在、git status 符合預期
-  ├─ 將 main 上的整合 commit SHA 回報給使用者
+  ├─ 列出產出的檔案清單與 diff 給使用者看，**預設到此為止：不 commit、不 merge、不 push**
+  ├─ 使用者明確要求才進 git（照他指定的方式：worktree commit／直接 commit／開 PR）
+  │   ├─ 目標 branch 有未提交變更時，先以可回復方式保留，不得覆寫或丟棄
+  │   └─ 動完驗證產出在位、必要檔案存在、git status 符合預期，並回報 commit SHA
   ├─ 提醒目前在 Phase A（初版建構期，見「兩階段」）；commit／push 的授權照使用者或團隊的規則，本 skill 不碰 PR
   ├─ 提醒下游：每張 ticket 用 `/ios-dev tickets/<T>.md` 開新 session 接手（情境 7：writing-plans → SDD → 閘門 → consensus-review → 回寫看板）；本 skill 不自動接
   └─ STOP
@@ -126,7 +125,10 @@ Step 6. 收尾
 > **也只審這一份。** 4-7 份全審＝4-7 個連續 Codex session（一小時起跳），而且 findings 大量重複；其餘文件要審，使用者指定哪一份再跑。
 
 > [!IMPORTANT]
-> **worktree commit 不是完工。** 除非使用者明確要求保留在隔離 branch，規劃的完工條件是「文件已實際整合回 workspace `main`」。不得只提供 commit SHA／合併指令就宣告完成。若因權限或衝突無法整合，明確回報 blocker 並繼續保留可恢復狀態。
+> **完工條件是「檔案都產出來、lint 過、使用者看過 diff」，不是「已經進 git」。**
+> 本 skill **預設不碰 git**：不 commit、不 merge、不 push、不開 PR——每個 repo 的分支與審查規則不一樣，
+> 那是使用者或團隊的決定。要進 git 由使用者明確指示，並指定方式；動完要驗證並回報 SHA，
+> 不得只丟一句合併指令就宣告完成。
 
 ---
 
@@ -173,7 +175,7 @@ Step 3.5B. rd-spec 審查 ⭐（唯讀，貼 issue 前的最後一道）
 
 Step 4B. 發佈
   ├─ 經使用者核可後貼 GitHub issue comment（去 frontmatter；gh issue comment --body-file）
-  └─ 改版：新 comment 標「vN 取代 vN-1」（舊 comment 請使用者刪除或收合），vault 源檔同步 bump
+  └─ 改版：新 comment 標「vN 取代 vN-1」（舊 comment 請使用者刪除或收合），`<output_root>` 的源檔同步 bump
 
 Step 5B. 展開 ticket（同入口 A Step 5，規模分流照舊）
   ├─ 產 context.md / tickets/（一張 T 卡一檔）/ ai-prompts.md
@@ -227,7 +229,12 @@ Step 6B. 收尾（同入口 A Step 6）
 
 ## 🔗 Obsidian 整合（4 項，2026-06-01 加入）
 
-> **workspace**＝你放跨 repo 規劃文件的地方，建議是一個 git 管理的 Obsidian vault（`newLinkFormat: relative`）；不用 Obsidian 也行，只是沒有看板。文件**同時要在 GitHub render**（overview 是給同事的 kickoff），所以**link 語法保持 relative markdown `[text](./x.md)`，不用 wikilink**。
+> **這一整節是選配。** 預設 output_root 是 `<ios-repo>/docs/features/<feature>/`，不需要 Obsidian、不需要 vault、
+> 也不需要另一個 git repo；`board.base` 照產，只是沒有 Obsidian 就看不到看板，其餘完全照常。
+>
+> **workspace**＝你另外放跨 repo 規劃文件的地方（建議是 git 管理的 Obsidian vault，`newLinkFormat: relative`）。
+> 只有你在 Step 1 明確指定它，本 skill 才會把產出寫到 `<workspace>/Projects/…`，也才會提功能 MOC。
+> 文件**同時要在 GitHub render**（overview 是給同事的 kickoff），所以**link 語法保持 relative markdown `[text](./x.md)`，不用 wikilink**。
 
 ### 1. Frontmatter（每份檔頂都加）
 
@@ -253,7 +260,7 @@ Ticket 檔：見 `template-ticket-single.md` frontmatter（`ticket / stage / typ
 - **📋 全部 ticket**：table，依 `stage` 分組
 - **🚧 進行中/卡住**：filter status ∈ {in-progress, review, blocked}
 
-ticket `status` 改值 → 看板自動移欄。這就是 in-vault 的輕量 dev board，不需外部工具。
+ticket `status` 改值 → 看板自動移欄。這就是跟文件放在一起的輕量 dev board，不需外部工具。
 
 ### 3. GitHub 標準 callouts（兩邊都 render）
 
@@ -270,7 +277,7 @@ ticket `status` 改值 → 看板自動移欄。這就是 in-vault 的輕量 dev
 
 ### 4. Lint
 
-reference 檔標 `type: phase-doc`、ticket 檔標 `tags:[phase-ticket]`，讓 lint 挑得出來檢查（broken Refs / 孤兒 ticket / frontmatter 缺欄 / stale）；你有自己的 vault 健檢排程就接上去，沒有就手動跑。規則見 `references/lint-rules.md`。Phase A → B 切換前跑一次。
+reference 檔標 `type: phase-doc`、ticket 檔標 `tags:[phase-ticket]`，讓 lint 挑得出來檢查（broken Refs / 孤兒 ticket / frontmatter 缺欄 / stale）；你有自己的文件健檢排程就接上去，沒有就手動跑。規則見 `references/lint-rules.md`。Phase A → B 切換前跑一次。
 
 ### Graph view
 
@@ -290,6 +297,40 @@ relative link 已驗證會出現在 Obsidian graph（全部 resolve）。不需�
 
 **規模在 Step 4 確認**。如果 Step 3 出大綱時不確定，預設假設大型，使用者 ack 時可下修。
 **不要因為只切得出 2 張 ticket 就把中型退回短 plan**——它是不是中型，看的是責任邊界。
+
+### Output manifest（唯一真相；模板不得連到不在自己這一欄的檔）
+
+```
+中型（4 份 + 看板）
+  overview.md
+  context.md                      ← 就叫 context.md，不要加 feature 前綴
+  tickets/README.md               ← 逐 ticket 索引
+  tickets/<id>.md                 ← 一個 ticket 一檔
+  tickets/board.base
+  ai-prompts.md
+
+大型（＝中型全部，再加）
+  sprint-roadmap.md
+  architecture/<topic>.md         ← 主題由 Step 3 決定，沒有固定檔名
+  coordination/README.md
+  coordination/open-questions.md
+  coordination/open-questions-resolved-archive.md
+  coordination/backend-requirements.md
+  coordination/pm-decisions.md
+  coordination/branch-tracker.md      ← commit 後回寫
+  coordination/implementation-log.md  ← 選項決策與踩坑回寫
+```
+
+> [!WARNING]
+> **中型模板不得引用大型專屬檔。** `sprint-roadmap.md`、`architecture/`、`coordination/` 只有大型才產；
+> 中型的 `tickets/README.md` 連到 `../sprint-roadmap.md` 就是一開就斷的連結。
+> 中型需要回寫時，寫進 ticket 檔自己的 frontmatter 與內文。
+>
+> **不在這張表上的檔一律不得引用**——`pages/*.md`、`stage-1-foundation.md`、`module-c-*.md`
+> 都不是本 skill 的產物，ticket 的 Refs 要指的是 `overview.md`／`context.md`／`architecture/<topic>.md`
+> 的**章節**，不是不存在的檔。
+>
+> **link 一律 relative markdown**（`[text](./x.md)`），**不用 wikilink**——產出同時要在 GitHub render。
 
 ### 中型／大型一定要寫進根文件的架構決策
 
@@ -321,7 +362,7 @@ relative link 已驗證會出現在 Obsidian graph（全部 resolve）。不需�
 
 | Domain | 行為 | 架構 skill（填 overview §0）|
 |---|---|---|
-| iOS（default）| 自動套既有系統紅線檔保護規則（見下）、SwiftUI MVVM、Figma node 規範；Step 1.5 派 `architecture-auditor`、Step 3 用架構 skill 填 §0 | `swift-architecture-skill` |
+| iOS（default）| 自動套既有系統紅線檔保護規則（見下）、Figma node 規範；架構 pattern **依 §0 選型**（不預設 MVVM）；Step 1.5 派 `architecture-auditor`、Step 3 用架構 skill 填 §0 | `swift-architecture-skill` |
 | macOS | 同 iOS，Figma 規範略過 | `swift-architecture-skill` |
 | web / 純後端 / 其他 | 跳過 iOS-specific section（紅線檔、SwiftUI、Figma、auditor）；§0 四段照填但由使用者或通用推理回答 | 未定：進第一個該 domain 專案時再選，標準＝pattern 決策框架＋反模式修法＋checklist，不要框架參考書 |
 
@@ -346,8 +387,8 @@ Skill 被觸發時，**先檢查 feature folder 是否已存在**：
 | 只有 overview.md | 過 Step 3，未到 Step 4 | 列出「已寫 overview」+ 問「要進 Step 4 確認規模嗎？」 |
 | overview + sprint-roadmap | 過 Step 4，未展開 | 問「要進 Step 4.5 根文件審查 → Step 5 展開嗎？」 |
 | 多份檔 + tickets/ 部分 | 過 Step 5 部分 | 列出「已寫的 / 未寫的」，問從哪續 |
-| 7 份檔齊 + board.base，但尚未整合 main | Step 6 未完 | 先 commit／整合／驗證 main，不得宣告完工 |
-| 7 份檔齊 + board.base，且 main 已包含 | 完工 | 回報 main 整合 SHA，再提醒下游手動跑 + 開 board.base 看看板 |
+| 檔齊 + board.base，但 lint 沒跑 | Step 6 未完 | 先跑 lint 與連結檢查，再列 diff 給使用者 |
+| 檔齊 + board.base + lint 過 | 完工 | 列產出清單，提醒下游手動跑；有 workspace 才提 board.base 看板 |
 
 Resume 不另建狀態檔，狀態完全從檔案存在性推。
 
@@ -362,7 +403,7 @@ Step 2 intake 時收以下變數，Step 5 寫 `ai-prompts.md` 時自動代入：
 | `{PROJECT_NAME}` | `TodoApp` | 從 design doc 或 cwd 推 |
 | `{FEATURE_NAME}` | `共享清單` | intake 必問 |
 | `{FEATURE_FOLDER}` | `2.0-SharedLists` | intake 必問 |
-| `{FEATURE_FOLDER_FULL_PATH}` | `<workspace>/Projects/TodoApp/2.0-SharedLists` | 自動組 |
+| `{FEATURE_FOLDER_FULL_PATH}` | `<output_root>`，預設 `<ios-repo>/docs/features/2.0-SharedLists` | 自動組（Step 1 決定）|
 | `{STAGE_COUNT}` | `6` | Step 4 確認 |
 | `{TICKET_PREFIX_SET}` | `S, U, D, I` | intake 必問 |
 | `{DOMAIN}` | `iOS` | intake 必問（預設 iOS）|
@@ -398,7 +439,7 @@ Step 2 intake 時收以下變數，Step 5 寫 `ai-prompts.md` 時自動代入：
 | `references/template-overview.md` | overview.md |
 | `references/template-sprint-roadmap.md` | sprint-roadmap.md |
 | `references/template-architecture.md` | architecture/<protocol>.md |
-| `references/template-context.md` | <feature>-context.md |
+| `references/template-context.md` | context.md |
 | `references/template-tickets-readme.md` | tickets/README.md |
 | `references/template-ticket-single.md` ⭐ | tickets/<id>.md（一 ticket 一檔，frontmatter）|
 | `references/template-ticket-parent.md` | （備用）narrative grouping in README / 不用 board 時 |

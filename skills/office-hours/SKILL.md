@@ -1,17 +1,13 @@
 ---
 name: office-hours
 description: >
-  開工前的產品思考框架。在寫任何 code 之前，先逼問自己：要解決什麼問題、給誰用、
-  現狀是什麼、最小能交付的版本是什麼。兩種模式：「公司專案」（公司內部項目，
-  需要說服主管、有明確 stakeholder）和「個人專案」（side project、學習、探索）。
-  產出是 Design Doc（Markdown），可直接餵入 Superpowers 產生 SPEC.md 和 Task 清單。
-  觸發場景：使用者說「我想做一個...」、「brainstorm」、「office hours」、「這個值得做嗎」、
-  「幫我想一下」、「新功能討論」、「開工前先想清楚」、「product thinking」，
-  或在描述一個新的 app idea / feature idea 時主動建議使用。
-  即使使用者只是隨口提了一個想法（例如「如果做一個 X 好像不錯」），
-  只要尚未開始實作，都應建議先跑一次 office-hours。
-  這個 skill 只產出 design doc，絕不寫 code。
-  與 Superpowers 的關係：office-hours 在前（釐清要做什麼），Superpowers 在後（拆成可執行 tasks）。
+  開工前的產品思考框架：在寫任何 code 之前先釐清要解決什麼問題、給誰用、現狀是什麼、
+  最小能交付的版本是什麼。兩種模式：「公司專案」（需要說服主管、有明確 stakeholder）
+  和「個人專案」（side project、學習、探索）。產出是 Design Doc（Markdown），只產文件、絕不寫 code。
+  **只在 `/ios-dev` 明確交棒（Phase 0）、或使用者直接點名本 skill 時使用**；聽到一個 app idea
+  不要自己跳進來，一般 iOS 需求先走 `/ios-dev`，由它 Step 0 認情境後決定跑不跑 Phase 0。
+  使用者直接點名的說法：「office hours」、「開工前先想清楚」、「這個值得做嗎」、「product thinking」。
+  不做什麼：不寫 code、不切 ticket（那是 phase-workflow）、不做技術架構選型（那是 swift-architecture-skill）。
 ---
 
 # 開工前產品思考 Office Hours
@@ -36,8 +32,10 @@ description: >
 ```bash
 # 讀取專案基本資訊
 cat CLAUDE.md 2>/dev/null | head -50
-cat TODOS.md 2>/dev/null | head -30
 git log --oneline -10 2>/dev/null
+
+# 這個 repo 的待辦／已知問題放哪裡（沒有就跳過，不要假設檔名）
+ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 ```
 
 ### 1.2 確認模式

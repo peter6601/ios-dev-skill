@@ -73,7 +73,7 @@ updated: {TODAY}
 
 ### Backend API 欄位（如涉及）
 
-- 以 `architecture/networking.md` / `networking-rest.md` / `networking-messages.md` 為準，沒寫到的不加
+- 以 `architecture/<topic>.md`（大型才有；主題由 Step 3 決定）或 overview.md 的技術模組清單為準，沒寫到的不加
 - {BACKEND_OPEN_ITEMS_SUMMARY}
 
 ### i18n
@@ -87,8 +87,10 @@ updated: {TODAY}
 
 ### 架構
 
-- **MVVM 架構** + **SOLID 原則**：所有新建的 View / ViewModel / Service 都遵守
-- ViewModel 負責業務邏輯 + 狀態管理；View 純展示 + binding；Service / Repository 負責資料存取
+- **以 `overview.md` 的 §0 架構形狀為準**：pattern、模組邊界、state 與 presentation、async ownership 契約四段，
+  由 `swift-architecture-skill` 依決策矩陣選出，這裡不預設任何 pattern（矩陣可能沒有選 MVVM）
+- §0 的「本 feature PR checklist」就是 `architecture-auditor` 稽核每張 ticket 的尺
+- 與各 skill 的預設風格衝突時，**以 §0／`docs/adr/` 為準**，並在報告裡明講衝突的是哪一條
 
 ### 開發流程：先計畫 → 先測試 → 再寫 code
 
@@ -132,7 +134,7 @@ updated: {TODAY}
 | `/ios-investigate` | ✅ 遇 bug 時 | 除錯用 |
 | `/ios-critique` / `/simplify` / `/ios-harden` | ✅ Integration 階段 | 品質閘門 |
 | `/accessibility` / `/ios-polish` | {ACCESSIBILITY_DECISION} | 視 descope 決定 |
-| `/localize` / `/app-store-preflight` | ✅ 出貨前 | Phase 4 |
+| `/localize` / `/app-store-preflight-skills` | ✅ 出貨前 | Phase 4 |
 
 ---
 
@@ -140,9 +142,9 @@ updated: {TODAY}
 
 做 ticket 時讀檔案的規則：
 
-1. **tickets/<parent>.md** → 搜尋 `{ticket_id}` 只讀那個 `### T-xxx` 區塊
-2. **pages/0X-*.md** → 只讀 ticket Refs 提到的 section，不要整份 read
-3. **networking-*.md** → 只讀 ticket Refs 指到的 § X.X
+1. **tickets/<id>.md** → 一個 ticket 一檔，整份讀（本來就短）
+2. **overview.md / context.md** → 只讀 ticket Refs 指到的章節，不要整份 read
+3. **architecture/<topic>.md**（大型才有）→ 只讀 ticket Refs 指到的 § X.X
 4. **{EXISTING_SYSTEM_LABEL} 既有檔案**（Delta ticket）→ 例外：必須整份讀完
 
 > 通用原則：**「搜尋定位 → 讀該段」**，不是 **「讀整份 → 搜尋定位」**。
@@ -183,17 +185,20 @@ updated: {TODAY}
 ### Step 1：Ticket 跟實際不符時（實作過程中）
 
 發現差異 → **stop + 跟使用者討論** → 使用者決定後：
-- 更新 `tickets/<對應檔>.md` 的 Tasks / Files / 說明
-- 若影響 sprint-roadmap → 同步更新
-- 若影響 page SPEC → 同步更新
+- 更新 `tickets/<id>.md` 的 Tasks / Files / 說明
+- 若影響 overview.md 的技術模組清單或 §0 → 同步更新
+- 大型：若影響 `sprint-roadmap.md` / `architecture/<topic>.md` → 同步更新
 
-### Step 2：Commit 後寫 branch-tracker（必做）
+### Step 2：Commit 後回寫（必做）
 
-在 [`branch-tracker.md`](./branch-tracker.md) 對應 PR 表格加一列：`| {ticket_id} | {commit_hash} | {一句話說明} |`
+**一律**：`tickets/<id>.md` 的 frontmatter `status` 改 `done`、填 `pr`。
+**大型另外**：在 [`coordination/branch-tracker.md`](./coordination/branch-tracker.md) 加一列
+`| {ticket_id} | {commit_hash} | {一句話說明} |`；中型沒有 `coordination/`，寫進 ticket 檔的「實作筆記」段。
 
 ### Step 3：有特殊情況才寫 implementation-log（選做）
 
-在 [`implementation-log.md`](./implementation-log.md) 最上方加一筆 entry（用檔內 TEMPLATE）：
+大型：在 [`coordination/implementation-log.md`](./coordination/implementation-log.md) 最上方加一筆 entry；
+中型：寫進 ticket 檔的「實作筆記」段。內容都一樣：
 - 有**選項決策** → 填決策表（問題 / 選項 / 選擇 / 理由）
 - 有**Ticket 差異** → 填差異紀錄
 - 有**踩到的坑** / 既有系統意外發現 → 填備註
@@ -212,8 +217,8 @@ updated: {TODAY}
 | 想加「為了完整性」的功能 | 很可能 scope 外 → stop + 問 |
 | Branch 太多 ticket 或標題不符 | 建議使用者開新 / rename |
 | Ticket 跟實際程式碼不符 | stop + 討論 → 更新 ticket + SPEC |
-| 實作有多個選項 | 列出選項討論 → 完工記在 implementation-log |
-| Commit 完成 | 寫 branch-tracker（必做）；有特殊情況再寫 implementation-log |
+| 實作有多個選項 | 列出選項討論 → 完工記在 implementation-log（中型：ticket 的實作筆記段）|
+| Commit 完成 | ticket frontmatter 改 `done`＋填 `pr`（必做）；大型另寫 branch-tracker，有特殊情況再寫 implementation-log |
 | 不確定用哪個 ticket template | 查 ai-prompts.md § 9.2 前綴對照表 |
 
 ---
@@ -222,11 +227,12 @@ updated: {TODAY}
 
 | 情境 | 讀這份 |
 |---|---|
-| Service / REST API ticket（type `S`）| `architecture/networking-rest.md` 對應章節 |
-| Service / WebSocket / Model ticket（type `S`）| `architecture/networking-messages.md` 對應章節 |
-| UI / Page ticket（type `U`）| `pages/0X-*.md` + `tickets/page-0X-*.md` 對應 section |
-| Delta（改既有）ticket（type `D`）| 對應 `pages/*.md` + **完整讀既有原始檔** |
-| Integration ticket（type `I`）| `tickets/module-g-integration.md` + 上下游 `pages/*.md` |
+| Service ticket（type `S`）| overview.md 的技術模組清單 + §0 模組邊界；大型另讀 `architecture/<topic>.md` 對應章節 |
+| UI ticket（type `U`）| overview.md 的畫面清單 + §0 的 state／presentation 規則 |
+| Delta（改既有）ticket（type `D`）| ticket 的 Refs 指到的章節 + **完整讀既有原始檔** |
+| Integration ticket（type `I`）| 上下游 ticket 檔 + overview.md §0 的模組邊界表 |
+
+> 這張表只能列 Output manifest 上真的會產出的檔（見 phase-workflow SKILL.md）。
 
 ---
 

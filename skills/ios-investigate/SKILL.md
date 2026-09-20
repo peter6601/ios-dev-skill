@@ -100,7 +100,7 @@ git log --oneline --since="1 week ago" -- <affected-directory>
 | **Configuration Drift** | 本機正常 CI 失敗、Simulator 正常實機 crash | Build Configuration 差異、Provisioning Profile、entitlements、環境變數 |
 
 額外檢查：
-- `TODOS.md` 或專案內的已知問題清單
+- 使用者指定的、或 repo 裡真的存在的已知問題清單（TODO／ROADMAP／issue tracker；沒有就跳過）
 - `git log` 同區域的歷史修復紀錄 — **同一批檔案反覆出 bug 是架構問題的訊號**，不是巧合
 
 ---
@@ -221,7 +221,7 @@ DEBUG REPORT
 修復 Fix:          [改了什麼，附 file:line 參考]
 證據 Evidence:     [測試輸出、重現結果證明修復有效]
 回歸測試 Regression Test: [新測試的 file:line]
-相關 Related:      [TODOS.md 項目、同區域歷史 bug、架構筆記]
+相關 Related:      [已知問題清單的對應項、同區域歷史 bug、架構筆記]
 狀態 Status:       DONE | DONE_WITH_CONCERNS | BLOCKED
 ════════════════════════════════════════
 ```

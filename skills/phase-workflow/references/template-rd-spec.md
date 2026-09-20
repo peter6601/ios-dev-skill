@@ -7,7 +7,7 @@
   與**盤點式**（已動工——多填落地現況、已完成壓縮成證據表、只有剩餘工作開完整卡）。
 - 貼 GitHub issue comment 時去掉 frontmatter（`gh issue comment --body-file`）。
 - callout 只用 GitHub 認得的 5 種（WARNING / IMPORTANT / NOTE / TIP / CAUTION）。
-- 改版：新 comment 標「vN 取代 vN-1，上一則請刪除或收合」，vault 源檔同步 bump。
+- 改版：新 comment 標「vN 取代 vN-1，上一則請刪除或收合」，`<output_root>` 的源檔同步 bump。
 -->
 ---
 type: phase-doc
@@ -66,9 +66,9 @@ label 體系：`type:spike` / `type:feature` / `type:chore` / `type:risk` + `are
 
 **模組邊界**：{每個新增／修改模組一行：誰 own 什麼 state、對外 protocol、注入點}
 
-**State 與 presentation 規則**：每個 view 的 modal 用一個 `Identifiable` enum＋`.sheet(item:)`；ViewModel 只暴露狀態、單一 `send(Action)` 入口；{FEATURE_SPECIFIC_STATE_RULES}
+**State 與 presentation 規則**：**互斥**呈現用一個 `Identifiable` enum＋`.sheet(item:)`（純局部開關保留 Bool）；ViewModel 只暴露狀態、不用 `should*`／`did*` 指揮 View；{SELECTED_PATTERN_STATE_RULES：由所選 pattern 決定，MVI／TCA 才有「單一 `send(Action)`」}；{FEATURE_SPECIFIC_STATE_RULES}
 
-**Concurrency 持有規則**：View 只用 `.task(id:)`；ViewModel 單一 `run()`；stored `Task?` 只在 Service 層；Combine 只在邊界；{FEATURE_SPECIFIC_ASYNC_RULES}
+**非同步工作的 ownership 契約**：每一項工作填六格（啟動者與持有者／生命週期／結束與清理／重入策略／舊結果如何失效／isolation 與逾時）。優先 structured concurrency；需要 handle 才存 `Task`，存了就寫清楚誰 cancel、何時 cancel。**不為了符合規則把工作硬搬到 Service，也不要求全部塞進單一 `run()`**。Combine 只在邊界；{FEATURE_SPECIFIC_ASYNC_RULES}
 
 **本 feature 的 PR checklist**（5–8 條）：
 1. {CHECK_1}

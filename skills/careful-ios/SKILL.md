@@ -37,7 +37,7 @@ hooks:
 | 刪除 Xcode 專案檔 | `rm -rf MyApp.xcodeproj` | 專案無法建構 |
 | 刪除 entitlements | `rm MyApp.entitlements` | App capabilities 全部失效 |
 | `git reset --hard` | `git reset --hard HEAD~3` | 永久丟失未 commit 的變更 |
-| `git checkout .` / `git restore .` | `git checkout .` | 丟失所有未 commit 的變更 |
+| `git checkout` / `git restore` 指向整個工作區 | `git checkout .`、`git restore :/` | 丟失所有未 commit 的變更 |
 | `git branch -D` | `git branch -D feature/unmerged` | 未合併的 commit 可能遺失 |
 
 ### ⚠️ DESTRUCTIVE — 需要注意
@@ -50,7 +50,7 @@ hooks:
 | 刪除 Keychain 項目 | `security delete-generic-password` | 儲存的憑證和 token 永久刪除 |
 | 刪除 Provisioning Profiles | `rm ~/Library/...Provisioning Profiles/` | 需從 Apple Developer Portal 重新下載 |
 | `pod deintegrate` | `pod deintegrate` | CocoaPods 從專案移除，xcworkspace 失效 |
-| `DROP TABLE` / `TRUNCATE` | `DROP TABLE users;` | SQLite / Core Data 資料永久遺失 |
+| `DROP TABLE` / `TRUNCATE`（交給資料庫執行時）| `sqlite3 app.db "DROP TABLE users"` | SQLite / Core Data 資料永久遺失；`echo`／`grep` 只是提到關鍵字不算 |
 
 ### ⚡ CAUTION — 較低風險但值得注意
 
@@ -64,25 +64,38 @@ hooks:
 
 ## 安全例外 — 自動放行
 
-以下目標的 `rm -rf` 不會觸發警告：
+`rm -rf` 的安全例外看**路徑形狀**，不是只看最後一段的名字——專案裡真的有
+`Modules/Feature/build` 這種 source 目錄，只比對名字會把它靜靜刪掉。
 
-| 目標 | 原因 |
-|------|------|
-| `DerivedData` | Xcode build cache，隨時可重建 |
-| `Pods` | CocoaPods 依賴，`pod install` 可恢復 |
-| `.build` | SPM build 目錄，build 時自動恢復 |
-| `xcuserdata` | 個人 Xcode 設定（breakpoint、UI state） |
-| `xcshareddata` | 共享 scheme 設定（通常版控中可恢復） |
-| `SourcePackages` | SPM 下載的 package cache |
-| `ModuleCache` | Swift module cache |
-| `node_modules` | npm 依賴 |
-| `dist` / `build` / `coverage` | 通用 build 產物 |
+**A. 這些名字出現在路徑的任何一段，整條就當 cache**（它們不會是 source 目錄的名字）：
+
+| 目標 | 原因 | 放行的例子 |
+|------|------|------|
+| `DerivedData` | Xcode build cache，隨時可重建 | `~/Library/Developer/Xcode/DerivedData/MyApp-abc123` |
+| `Pods` | CocoaPods 依賴，`pod install` 可恢復 | `./Pods` |
+| `.build` | SPM build 目錄，build 時自動恢復 | `.build/checkouts` |
+| `xcuserdata` | 個人 Xcode 設定（breakpoint、UI state） | `MyApp.xcworkspace/xcuserdata/...` |
+| `xcshareddata` | 共享 scheme 設定（通常版控中可恢復） | |
+| `SourcePackages` | SPM 下載的 package cache | `build/SourcePackages` |
+| `ModuleCache` | Swift module cache | |
+| `node_modules` | npm 依賴 | |
+
+**B. 這些名字太泛用，只有當它是相對路徑的第一段**（＝專案自己的頂層產物）才放行：
+
+| 目標 | 放行 | 仍會問 |
+|------|------|------|
+| `build` / `dist` / `coverage` | `build`、`./dist`、`coverage` | `Modules/Feature/build`、`/tmp/app/Sources/build`、`src/coverage` |
+
+含 `..` 的路徑、以及 `/` 或 `~` 開頭又不含 A 類名字的路徑，一律問。
+整個 `~/Library/Developer/Xcode/DerivedData` 資料夾本身仍是 CAUTION（清掉所有專案的 cache）。
 
 ---
 
 ## 運作方式
 
-Hook 會讀取每一個 Bash 指令的內容，比對以上 pattern。如果命中：
+Hook 會讀取每一個 Bash 指令的內容，比對以上 pattern。指令會先拆成 `;`、`&&`、`||`、`|`
+分隔的段落；`sudo -u root …`、`env -i …`、`nice -n 10 …` 這類前綴會剝掉再比對，
+`bash -c '…'`／`sh -c '…'` 會往裡面再看一層（最多 4 層）。如果命中：
 
 1. 顯示警告訊息，說明風險
 2. 你可以選擇「繼續執行」或「取消」
@@ -97,7 +110,7 @@ Hook 會讀取每一個 Bash 指令的內容，比對以上 pattern。如果命�
 | 場景 | 建議 |
 |------|------|
 | 在 `release/**` branch 上作業 | 啟用 `/careful-ios` |
-| Debug 生產環境問題 | 啟用 `/careful-ios` + `/ios-investigate`（investigate 會自動 freeze scope） |
+| Debug 生產環境問題 | 啟用 `/careful-ios` + `/ios-investigate`（找到 root cause 前不改 code） |
 | CI/CD workflow 修改 | 啟用 `/careful-ios`，特別注意 force-push pattern |
 | 執行 GitHub Actions 相關操作 | 啟用 `/careful-ios` |
 | 帳號歸戶 / StoreKit 相關修改 | 啟用 `/careful-ios`，防止意外清除 Keychain 測試資料 |

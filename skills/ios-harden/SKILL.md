@@ -1,11 +1,9 @@
 ---
 name: ios-harden
-description: 強化 SwiftUI 介面的韌性，處理邊界條件、錯誤狀態、國際化、Accessibility、效能韌性。讓介面從「Demo 能跑」進化到「Production 可靠」。與 ios-review 互補：review 聚焦程式碼品質，harden 聚焦用戶體驗的韌性。
-user-invokable: true
-args:
-  - name: target
-    description: 要強化的功能或區域（選填）
-    required: false
+description: 補上 **production 才會遇到的邊界條件**：空／滿／超長／錯誤／載入狀態、國際化、Dynamic Type、VoiceOver、Reduce Motion、效能韌性，讓介面從「Demo 能跑」進化到「Production 可靠」。與鄰居的分工：`ios-review` 看程式碼品質、`ios-polish` 修視覺細節、`ios-distill` 減複雜性、`ios-critique` 只報告。
+user-invocable: true
+arguments: [target]
+argument-hint: "[要強化的功能或區域]"
 ---
 
 # iOS Harden — 強化韌性

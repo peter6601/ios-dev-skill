@@ -20,6 +20,30 @@ open-questions.md                       ← MASTER 主檔（OPEN/PARTIAL only）
     ├── open-questions-resolved-archive.md  ← Archive（🟢 RESOLVED + 🟡 DEFERRED，按日期倒序）
     ├── backend-requirements.md             ← 過濾「Owner = Backend」+ 加 context 給 backend team
     └── pm-decisions.md                     ← 過濾「Owner = PM」+ 加決策選項給 PM
+
+branch-tracker.md                       ← 完工回寫：每個 ticket 的 commit 一列
+implementation-log.md                   ← 完工回寫：選項決策與踩坑
+```
+
+### `branch-tracker.md` — commit 索引
+
+開檔時只要一張空表，ticket 完工時往下加列：
+
+```markdown
+| Ticket | Commit | 一句話 |
+|---|---|---|
+```
+
+### `implementation-log.md` — 決策與踩坑
+
+開檔時只要標題與一個 entry 範本，最新的放最上面：
+
+```markdown
+## {DATE} · {TICKET_ID}
+- **問題**：
+- **選項**：
+- **選擇與理由**：
+- **與 ticket 的差異**：
 ```
 
 ### `open-questions.md` — 內部的 Q 索引（主檔 OPEN-only）
@@ -46,9 +70,9 @@ open-questions.md                       ← MASTER 主檔（OPEN/PARTIAL only）
    - 先在 `open-questions.md` 標 🟢 Resolved + 結論
    - 當 OPEN → RESOLVED 時，把該題完整段落移到 `open-questions-resolved-archive.md`（按日期倒序）
 3. 再同步更新 `backend-requirements.md` / `pm-decisions.md` 的打勾狀態
-4. 若是 P0/P1 級的新決策，順便更新 `../sprint-roadmap.md` 或對應 `pages/*.md`
+4. 若是 P0/P1 級的新決策，順便更新 `../sprint-roadmap.md` 或 `../overview.md` 的對應段
 
-**順序**：`open-questions.md`（主檔）→ `open-questions-resolved-archive.md`（移檔）→ `backend-requirements.md` / `pm-decisions.md` → `sprint-roadmap.md` / `pages/`
+**順序**：`open-questions.md`（主檔）→ `open-questions-resolved-archive.md`（移檔）→ `backend-requirements.md` / `pm-decisions.md` → `../sprint-roadmap.md` / `../overview.md`
 
 ---
 

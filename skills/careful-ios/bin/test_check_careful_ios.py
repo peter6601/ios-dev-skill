@@ -79,16 +79,59 @@ class Warns(unittest.TestCase):
     def test_unbalanced_quotes_fall_back_to_regex(self):
         self.check("git reset --hard 'oops", "CRITICAL")
 
+    def test_shell_wrapper_is_looked_inside(self):
+        """`bash -c '...'` 以前整段靜默放行。"""
+        self.check("bash -c 'git reset --hard'", "CRITICAL")
+        self.check('sh -c "rm -rf Sources"', "DESTRUCTIVE")
+        self.check("zsh -c 'git push -f origin main'", "CRITICAL")
+        self.check("bash -lc 'git reset --hard'", "CRITICAL")
+
+    def test_wrapper_options_are_stripped(self):
+        """`sudo -u root` 的 `-u root` 以前被當成指令本體。"""
+        self.check("sudo -u root git reset --hard", "CRITICAL")
+        self.check("env -i git reset --hard", "CRITICAL")
+        self.check("nice -n 10 git reset --hard", "CRITICAL")
+
+    def test_nested_wrappers_terminate(self):
+        self.check("bash -c \"sh -c 'git reset --hard'\"", "CRITICAL")
+        deep = "git reset --hard"
+        for _ in range(8):
+            deep = "bash -c " + json.dumps(deep)
+        run(deep)  # 遞迴要有上限：深到看不見也只是放行，不能掛掉或吃光 CPU
+
+    def test_git_whole_tree_pathspec(self):
+        for c in ["git restore :/", "git checkout :/", "git checkout -- .", "git restore ./"]:
+            self.check(c, "CRITICAL")
+
+    def test_safe_rm_name_buried_in_a_path_is_not_safe(self):
+        """白名單只看 basename 時，真的叫 build/dist 的 source 目錄會被靜靜刪掉。"""
+        for c in [
+            "rm -rf /tmp/app/Sources/build",
+            "rm -rf ~/Projects/MyApp/Sources/dist",
+            "rm -rf src/coverage",
+            "rm -rf Modules/Feature/build",
+        ]:
+            self.check(c, "DESTRUCTIVE")
+
+    def test_sql_through_a_real_db_client(self):
+        self.check('sqlite3 db.sqlite "DROP TABLE users"', "DESTRUCTIVE")
+        self.check("printf 'DROP TABLE users' | sqlite3 db.sqlite", "DESTRUCTIVE")
+
 
 class Allows(unittest.TestCase):
     def test_safe_rm_targets(self):
+        """相對路徑第一段就是 cache 目錄，或位於已知 cache root 底下。"""
         for c in [
             "rm -rf DerivedData",
             "rm -rf ./Pods",
             "rm -rf .build",
-            "rm -rf MyApp.xcodeproj/xcuserdata",
             "rm -rf build/SourcePackages",
             "rm -rf node_modules dist coverage",
+            "rm -rf .build/checkouts",
+            "rm -rf ~/Library/Developer/Xcode/DerivedData/MyApp-abc123",
+            "rm -rf MyApp.xcodeproj/xcuserdata",
+            "rm -rf MyApp.xcworkspace/xcuserdata/alice.xcuserdatad",
+            "rm -rf .build/artifacts/SourcePackages",
         ]:
             self.assertIsNone(run(c), c)
 
@@ -104,6 +147,19 @@ class Allows(unittest.TestCase):
             "defaults read com.example.myapp",
             "xcodebuild test -scheme App",
             'echo "git reset --hard is dangerous"',
+            "git restore --staged file.swift",
+            "bash -c 'git status'",
+            "bash scripts/build.sh",
+        ]:
+            self.assertIsNone(run(c), c)
+
+    def test_sql_keywords_in_plain_output_are_not_destructive(self):
+        """grep／echo 提到 SQL 關鍵字不是破壞性動作。"""
+        for c in [
+            "echo 'DROP TABLE users'",
+            "rg TRUNCATE",
+            'grep -rn "DROP TABLE" .',
+            'printf "TRUNCATE TABLE x"',
         ]:
             self.assertIsNone(run(c), c)
 

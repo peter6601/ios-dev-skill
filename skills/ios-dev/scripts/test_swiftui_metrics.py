@@ -127,6 +127,118 @@ class MetricsRegression(unittest.TestCase):
         self.assertIn("isPresented>1", v)
         self.assertIn("onChange(should*/did*)", v)
 
+    # ---- F-10：conformance 判定不能被 generic／where／extension 擋掉 ----
+
+    def test_generic_view_is_measured(self):
+        """`struct G<C: View>: View` 整檔曾經被當成沒有 View，files=0。"""
+        write(self.dir, "GEN.swift",
+              "struct G<C: View>: View {\n"
+              + "".join(f"  @State private var s{i} = false\n" for i in range(6))
+              + '  let content: C\n  var body: some View { content }\n}\n')
+        code, out = run(self.dir)
+        self.assertEqual(out["files"], 1)
+        self.assertEqual(code, 1)
+        self.assertIn("@State>5", out["violators"][0]["violations"])
+
+    def test_where_clause_view_is_measured(self):
+        write(self.dir, "WHR.swift",
+              "struct W<T>: View where T: Equatable {\n"
+              '  let v: T\n  var body: some View {\n    VStack {\n'
+              + long_lines(95) + "\n    }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(out["files"], 1)
+        self.assertEqual(code, 1)
+        self.assertGreater(out["all"][0]["body"], 80)
+
+    def test_extension_conformance_is_measured(self):
+        write(self.dir, "EXT.swift",
+              "struct E {\n  let title: String\n}\n\n"
+              "extension E: View {\n  var body: some View {\n    VStack {\n"
+              + long_lines(95) + "\n    }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(out["files"], 1)
+        self.assertEqual(code, 1)
+        self.assertGreater(out["all"][0]["body"], 80)
+
+    def test_attributed_view_is_measured(self):
+        write(self.dir, "ATT.swift",
+              "@MainActor\nstruct A: View {\n  var body: some View {\n    VStack {\n"
+              + long_lines(95) + "\n    }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(out["files"], 1)
+        self.assertEqual(code, 1)
+
+    # ---- F-11：onChange gate 不能被換行與合法 expression 擋掉 ----
+
+    def test_multiline_onChange_is_flagged(self):
+        """SwiftFormat／Xcode 會把 modifier 折行，折了就抓不到。"""
+        write(self.dir, "OC1.swift",
+              'struct OC1: View {\n  var body: some View {\n    Text("x")\n'
+              "      .onChange(\n        of: model.shouldSave\n      ) { _ in }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(code, 1)
+        self.assertEqual(out["all"][0]["should_onchange"], ["shouldSave"])
+
+    def test_binding_prefix_is_flagged(self):
+        write(self.dir, "OC2.swift",
+              'struct OC2: View {\n  var body: some View {\n    Text("x")\n'
+              "      .onChange(of: $model.shouldSave) { _ in }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(code, 1)
+        self.assertEqual(out["all"][0]["should_onchange"], ["shouldSave"])
+
+    def test_optional_chain_is_flagged(self):
+        write(self.dir, "OC3.swift",
+              'struct OC3: View {\n  var body: some View {\n    Text("x")\n'
+              "      .onChange(of: model?.didLoad) { _ in }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(code, 1)
+        self.assertEqual(out["all"][0]["should_onchange"], ["didLoad"])
+
+    def test_onChange_written_in_a_string_is_not_flagged(self):
+        write(self.dir, "OC4.swift",
+              'struct OC4: View {\n  var body: some View {\n'
+              '    Text(".onChange(of: vm.shouldX)")\n  }\n}\n')
+        code, out = run(self.dir)
+        self.assertEqual(code, 0)
+        self.assertEqual(out["all"][0]["should_onchange"], [])
+
+    # ---- F-17：body 與 isPresented 只算該算的 ----
+
+    def test_non_view_body_is_not_blamed(self):
+        """同檔的 `struct Renderer { var body: some View }` 不是 View，不該被當成巨大 View。"""
+        write(self.dir, "NV.swift",
+              'struct A: View {\n  var body: some View { Text("ok") }\n}\n\n'
+              "struct Renderer {\n  var body: some View {\n    VStack {\n"
+              + long_lines(20) + "\n    }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(out["files"], 1)
+        row = out["all"][0]
+        self.assertEqual([b["view"] for b in row["bodies"]], ["A"])
+        code, out = run(self.dir, "--body", "3")
+        self.assertEqual(code, 0, "Renderer 不是 View，不該觸發 body 閘門")
+
+    def test_isPresented_label_outside_presentation_modifier_is_not_counted(self):
+        write(self.dir, "IP1.swift",
+              "struct IP1: View {\n"
+              "  func record(isPresented: Bool) {}\n"
+              '  var body: some View {\n    Text("x")\n'
+              "      .onAppear { record(isPresented: true); record(isPresented: false) }\n  }\n}\n")
+        code, out = run(self.dir)
+        self.assertEqual(out["all"][0]["isPresented"], 0)
+        self.assertEqual(code, 0)
+
+    def test_isPresented_on_presentation_modifiers_still_counts(self):
+        write(self.dir, "IP2.swift",
+              "struct IP2: View {\n  @State private var a = false\n  @State private var b = false\n"
+              '  var body: some View {\n    Text("x")\n'
+              '      .sheet(isPresented: $a) { Text("a") }\n'
+              '      .fullScreenCover(\n        isPresented: $b\n      ) { Text("b") }\n  }\n}\n')
+        code, out = run(self.dir)
+        self.assertEqual(out["all"][0]["isPresented"], 2)
+        self.assertEqual(code, 1)
+        self.assertIn("isPresented>1", out["violators"][0]["violations"])
+
     def test_clean_file_exits_zero(self):
         write(self.dir, "G.swift",
               'struct G: View {\n  var body: some View {\n    Text("ok")\n  }\n}\n')

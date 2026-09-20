@@ -1,11 +1,9 @@
 ---
 name: ios-critique
-description: 從 UX 與 SwiftUI 最佳實踐角度進行全面設計審查。評估視覺層級、資訊架構、情感共鳴、HIG 合規性、SwiftUI anti-patterns，產出結構化批評報告與修復建議。適用於 UI 完成後的品質檢視。
-user-invokable: true
-args:
-  - name: area
-    description: 要批評的功能或畫面（選填）
-    required: false
+description: 對一個**已完成的 SwiftUI 介面**做設計審查，產出結構化批評報告：視覺層級、資訊架構、情感共鳴、HIG 合規性、SwiftUI anti-patterns。**只報告，不改任何檔案**——要動手改細節是 `ios-polish`，要移除複雜性是 `ios-distill`，要補邊界條件與 a11y 是 `ios-harden`，要看程式碼品質是 `ios-review`。
+user-invocable: true
+arguments: [area]
+argument-hint: "[要批評的功能或畫面]"
 ---
 
 # iOS Design Critique

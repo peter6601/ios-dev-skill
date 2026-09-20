@@ -18,14 +18,18 @@ tags:
 # {TICKET_ID} {TICKET_TITLE}
 
 > **Type**: {Service|UI|Delta|Integration}（→ handoff template ai-prompts.md § 3.{1|2|3|4}）
-> **Parent**: [[{STAGE_OR_MODULE_INDEX}]]（narrative / grouping）
+> **Stage**: {STAGE_NAME}（分組見 [`README.md`](./README.md)）
 
 ---
 
 ## Refs
 
-- {REF_LINK_1 — pages/0X.md § Y / architecture/X.md § Z / Q-number}
-- {REF_LINK_2}
+- [`../overview.md`](../overview.md) § {SECTION}
+- [`../context.md`](../context.md) § {SECTION}
+- {IF_LARGE：[`../architecture/<topic>.md`](../architecture/) § {SECTION} 或 coordination 的 Q-number}
+
+> Refs 只能指向 Output manifest 上真的存在的檔的**章節**（見 phase-workflow SKILL.md）。
+> 連結一律 relative markdown，不用 wikilink。
 
 ## Files
 
@@ -64,11 +68,21 @@ tags:
 Acceptance Criteria: <skip — 純內部重構，無 user-visible 行為>
 -->
 
+## 實作筆記（完工時回寫；沒有就留空，不要刪這一段）
+
+| 日期 | commit | 一句話 |
+|---|---|---|
+| | | |
+
+- 選項決策／踩坑：
+
 ---
 
 > [!NOTE] 完工回寫
-> commit 後到 `branch-tracker.md` 加一列；本檔 frontmatter `status` 改 `done`、填 `pr`。
-> 有選項決策 / 踩坑 → 寫 `implementation-log.md`。
+> **一定要做**：本檔 frontmatter `status` 改 `done`、填 `pr`（這是看板的資料來源）。
+> **大型才有**：commit 後到 [`../coordination/branch-tracker.md`](../coordination/branch-tracker.md) 加一列；
+> 有選項決策／踩坑寫 [`../coordination/implementation-log.md`](../coordination/implementation-log.md)。
+> **中型沒有 `coordination/`**，那兩條回寫改成寫進本檔最下方的「實作筆記」段。
 
 <!--
 frontmatter status 值對照（驅動 board.base 分欄）:
