@@ -4,6 +4,7 @@ feature: {FEATURE_NAME}
 doc: overview
 status: active
 updated: {TODAY}
+# scale: medium|large   ← Step 4 確認規模後才加這一行（拿掉註解），Resume 靠它判斷進度
 ---
 
 # {FEATURE_NAME} — 功能總覽
@@ -12,8 +13,8 @@ updated: {TODAY}
 > **閱讀時間**：10-15 分鐘
 > **更深入的文件**：見本檔最後的「想深入了解某一塊？」對照表
 
-> [!IMPORTANT] 核心策略
-> {KEY_STRATEGY_ONE_LINER — 例如「所有新頁面一律走『新建 outer view + 複用既有子元件』策略，既有整頁 view 全部不動」}
+> [!IMPORTANT]
+> **核心策略**：{KEY_STRATEGY_ONE_LINER — 例如「所有新頁面一律走『新建 outer view + 複用既有子元件』策略，既有整頁 view 全部不動」}
 
 ---
 
@@ -54,11 +55,19 @@ updated: {TODAY}
 ## 📏 功能範圍（做 / 不做）
 
 ### ✅ 這次要做
+
+> 每條給穩定編號 `FR1、FR2…`（沒有畫面的需求也編），寫成使用者看得到的行為。**一條只寫一件可以單獨 demo 的事**——一句話並列兩件就拆成兩條。判準：要不要獨立的入口或機制。同一個操作的結果（重開還在、另一頁同步）與同一個控制項的反向操作（再點一次取消）不拆，寫成那條的驗收條件。
+> ticket 依這份清單切、用 `covers` 指回來；每條 FR# 都要有 ticket 接，或標 deferred／移到「不做」。
+> 編號定了就不重排——刪掉的留洞，新增的往後編。
+
 {LIST_WHAT_TO_DO}
-- 範例：共享設定頁（成員、人數上限、權限）
-- 範例：邀請連結分享 sheet
-- 範例：共享中頁
-- ...
+
+| # | 使用者能…… | 優先序 |
+|---|---|---|
+| FR1 | 範例：清單擁有者能設定共享的成員、人數上限與權限後開始共享 | P1 |
+| FR2 | 範例：清單擁有者能叫出邀請連結分享 sheet 讓成員加入 | P1 |
+| FR3 | 範例：成員能在共享中頁即時看到清單的更新 | P1 |
+| ... | | |
 
 ### ❌ 這次不做（已與 PM 對齊）
 {LIST_DESCOPE}
@@ -167,7 +176,8 @@ updated: {TODAY}
 |---|---|---|
 | `{ExistingA}` | {WHAT_CHANGES — additive optional parameter? subclass? overload?} | {SCOPE} |
 
-> [!WARNING] 紅線檔（以下既有檔案完全不動）
+> [!WARNING]
+> **紅線檔（以下既有檔案完全不動）**
 > {IOS_ONLY_IF_iOS}
 > - `{RedlineFile1}`
 > - `{RedlineFile2}`
@@ -199,9 +209,26 @@ updated: {TODAY}
 
 ---
 
+## 🔎 現況盤點（Step 1.5 verified facts；as-of `{COMMIT_OR_DATE}`）
+
+<!-- Step 1.5 真的跳過（沒有任何會被碰到的既有 code）就整段刪掉。
+這張表是技術模組清單與每張 ticket 的 Files／Refs 的依據；下游 session 與 Resume 靠它知道「規劃當時 code 長什麼樣」。
+只列這個 feature 會碰到或引用的符號，不是整個 codebase 的清單。design doc 說的跟 code 不一樣的，一定要列。 -->
+
+| 符號／檔 | design doc 說 | 當前 code 真相（`file:line`）| 文件怎麼寫 |
+|---|---|---|---|
+| `{SYMBOL}` | {DOC_CLAIM 或「未提」} | {✅ 存在／❌ 不存在／⚠️ 不一樣：…} | {直接用真實簽名／標（新建）／切一張 Prefactor／列為開放問題 Q#} |
+
+- **驗證指令**：{實跑 build／test 的結果一句話；沒辦法跑就寫「未實跑」}
+- **現況形狀**：{iOS：`architecture-auditor` 對整合面模組的結論一句話；沒跑寫「未跑」}
+
+---
+
 ## 📅 時程與里程碑
 
 ### 目標：{TARGET_TIMELINE_RANGE}（可上 {DEPLOY_TARGET}）
+
+<!-- intake 沒收到時程目標就整段寫「未定」，Stage 只列名稱與產出、不寫 Day 起訖。不要編數字。 -->
 
 > 預估總計 ~{TOTAL_DAYS} 工作天。{IF_LARGE：詳見 [`sprint-roadmap.md`](./sprint-roadmap.md)——中型不產這份，刪掉這句}
 
@@ -239,19 +266,27 @@ updated: {TODAY}
 
 ---
 
+## ❓ 開放問題
+
+<!-- 跨 ticket 的未決問題放這裡。大型改放 coordination/open-questions.md，這一段只留一行連結。
+會擋 Stage 1–2 ticket 的，Step 3 STOP 時就問使用者；有答案後在這裡標 ✅＋一句答案；Step 5 產 context.md 時再抄進「已決事項」（Step 5 之前 context.md 還不存在）。 -->
+
+| # | 問題 | 擋哪張 ticket／哪條 FR# | 狀態 |
+|---|---|---|---|
+| Q1 | {QUESTION} | {TICKET_OR_FR} | 待使用者／待 PM／待後端／✅ 已決（見 context.md）|
+
+---
+
 ## 📂 想深入了解某一塊？
 
-| 想看什麼 | 讀哪份文件 | 中型有嗎 |
-|---|---|---|
-| 開發時的原則與回寫規則 | [`context.md`](./context.md) | ✅ |
-| 所有可拆 issue 的 ticket | [`tickets/README.md`](./tickets/README.md) | ✅ |
-| 給 AI 的 handoff prompt | [`ai-prompts.md`](./ai-prompts.md) | ✅ |
-| 後端 API 協定與對接 | `architecture/<topic>.md` | ❌ 大型才有 |
-| 執行藍圖與分工策略 | `sprint-roadmap.md` | ❌ 大型才有 |
-| 還有哪些未決問題 | `coordination/open-questions.md` | ❌ 大型才有 |
-
-> 中型請把標 ❌ 的列整列刪掉——那幾份檔不會產出（見 phase-workflow SKILL.md 的 Output manifest）。
-| 想用 AI 協助開發 | `ai-prompts.md` |
+| 想看什麼 | 讀哪份文件 |
+|---|---|
+| 開發時的原則與回寫規則 | [`context.md`](./context.md) |
+| 所有可拆 issue 的 ticket | [`tickets/README.md`](./tickets/README.md) |
+| 給 AI 的 handoff prompt | [`ai-prompts.md`](./ai-prompts.md) |
+| 還有哪些未決問題 | 本檔「開放問題」段{IF_LARGE：；大型改看 `coordination/open-questions.md`} |
+{IF_LARGE：| 後端 API 協定與對接 | `architecture/<topic>.md` |}
+{IF_LARGE：| 執行藍圖與分工策略 | `sprint-roadmap.md` |}
 
 ---
 
@@ -261,8 +296,10 @@ updated: {TODAY}
 {EXPLANATION}
 
 ### 2. 向下相容
-- 所有新增 ViewModel / Service 都是**新類別**，不改既有類別簽名
-- 既有功能在這個 feature 下完全不受影響
+
+<!-- 只有 design doc 的 reuse 策略是「新建替代、不動既有」時才留下面兩條；策略不同（例如既有骨架本來就要改）就照 design doc 改寫，不要照抄。 -->
+{IF_REDLINE：- 所有新增 ViewModel / Service 都是**新類別**，不改既有類別簽名}
+{IF_REDLINE：- 既有功能在這個 feature 下完全不受影響}
 
 ---
 

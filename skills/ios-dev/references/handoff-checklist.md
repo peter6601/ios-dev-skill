@@ -128,5 +128,6 @@
 4. **`/subagent-driven-development`** 執行，架構層以根文件 §0 架構形狀與 feature PR checklist 為準。
    ticket 的架構契約在規劃階段就定好了——**確認涵蓋得了就開工，不要重跑規劃**（見開發前第 0 步）。
    照 ticket 的「中途檢查點」在那一段行為走通時就先驗一次契約，不要全部寫完才檢查。
-5. **共通收尾 1–5**。
+5. **共通收尾 1–5**。跑 verification 時**先照 ticket 的 Verification 段**（測試指令、build、實機走一遍）；
+   舊 ticket 沒有這一段就照 Acceptance Criteria 自己列驗證步驟。回寫時 ticket 的 `covers` 列到的 FR# 不用另外處理，看板靠 `status`。
 6. **問「接下一張？」**；全部 ticket 完成時提醒 Phase 5 `/work-log-writer` 與 Phase 6 `/second-brain`。

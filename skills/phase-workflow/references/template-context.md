@@ -25,6 +25,12 @@ updated: {TODAY}
 
 ---
 
+{IF_ENTRY_B：## 🔎 現況盤點（Step 1.5 verified facts；as-of `{COMMIT_OR_DATE}`）
+入口 A 的這張表在 overview.md，這一段整段刪掉。入口 B 的根文件 rd-spec.md 是給 PM／QA 讀的，所以表放這裡；
+欄位同 `template-overview.md`「現況盤點」：符號／檔｜PM spec 或他平台說｜當前 code 真相（`file:line`）｜文件怎麼寫，外加驗證指令與現況形狀兩行。}
+
+---
+
 ## 📋 {FEATURE_NAME} 已決事項
 
 以下是 PM / 使用者 / backend 已經決定的事，做 ticket 時這些是固定的。
@@ -49,7 +55,11 @@ updated: {TODAY}
 
 ### {EXISTING_SYSTEM_LABEL} 既有 code 保護 ⭐
 
-> [!WARNING] 紅線檔 — 絕不修改
+<!-- {IF_REDLINE}：design doc 有列紅線檔才留這個 callout 與下面兩個 bullet；沒有紅線檔（例如全新專案、既有骨架本來就要改）
+整段換成一句「本 feature 沒有紅線檔；改既有檔照 ticket 的 Files 與架構約束」。不要照抄下面的策略。 -->
+
+> [!WARNING]
+> **紅線檔——預設不動；非動不可時最小化、additive、向下相容**（優先序：additive overload → optional default-arg → 在新檔 scope 加 extension；動之前先列理由與範圍給使用者確認）
 > **本 feature 的新頁面全部採用「新建 view + 複用子元件」策略**。整頁 view / 整頁 ViewModel 一律不動。
 >
 > {LIST_REDLINE_FILES}
@@ -73,11 +83,15 @@ updated: {TODAY}
 
 ### Backend API 欄位（如涉及）
 
-- 以 `architecture/<topic>.md`（大型才有；主題由 Step 3 決定）或 overview.md 的技術模組清單為準，沒寫到的不加
+- 以 overview.md 的技術模組清單{IF_LARGE：與 `architecture/<topic>.md`（主題由 Step 3 決定）}為準，沒寫到的不加
 - {BACKEND_OPEN_ITEMS_SUMMARY}
 
 ### i18n
 
+<!-- 照這個專案實際的做法填。下面只是一個既有專案的做法，不要照抄；還沒決定就寫「未定（見 overview.md 開放問題）」。 -->
+
+{I18N_RULES}
+範例：
 - 文案 PM 統一提供
 - 實作時用 `LocalizedString("key", comment: "中文 placeholder")` 佔位，不自己寫英文
 
@@ -92,28 +106,40 @@ updated: {TODAY}
 - §0 的「本 feature PR checklist」就是 `architecture-auditor` 稽核每張 ticket 的尺
 - 與各 skill 的預設風格衝突時，**以 §0／`docs/adr/` 為準**，並在報告裡明講衝突的是哪一條
 
-### 開發流程：先計畫 → 先測試 → 再寫 code
+### 開發流程：每張 ticket 用 `/ios-dev tickets/<id>.md` 接手（情境 7）
 
-每個 ticket 的實作順序：
+完整流程在 `/ios-dev` 的 handoff-checklist § 7，這裡只列順序：
 
 ```
-1. /writing-plans → 列出實作計畫 → 【停下來等使用者確認】
-2. /test → 列出 unit test cases → 【停下來等使用者確認】
-3. 寫 test（Red）→ 寫 code（Green）→ Refactor
-4. /review → /verification-before-completion → commit
+1. 讀 ticket → 根文件對應段 → repo 的 CONTEXT.md／docs/adr/
+2. /writing-plans（只為這一張）→ 列出實作計畫與 unit test cases → 【停下來等使用者確認】
+3. /subagent-driven-development：寫 test（Red）→ 寫 code（Green）→ Refactor
+4. 定輕重 → 跑閘門 → review 路線 → /verification-before-completion（先照 ticket 的 Verification 段跑）
+5. 【停下來等使用者讀完 diff】→ 使用者明講才 commit／push → 回寫 ticket
 ```
 
-**⚠️ 關鍵**：步驟 1 和 2 都要**先讓使用者看過才動工**，不要一口氣跑完。
+**⚠️ 關鍵**：步驟 2 要**先讓使用者看過才動工**；步驟 5 **預設不自行 commit、不自行 push**，使用者對當前任務明講才放寬，而且只覆蓋他明講的那個動作。
+
+### 驗證指令（ticket 的 Verification 段用這裡的指令，不要自己發明）
+
+| 用途 | 指令 |
+|---|---|
+| 測試 | `{TEST_COMMAND}`（單張 ticket 加 `-only-testing:{TEST_TARGET}/{TEST_CLASS}`）|
+| Build | `{BUILD_COMMAND}` |
+
+> 來源：{Step 1.5 grounding 對當前 repo 盤出來的真實值｜使用者提供、未對 repo 驗證（全新專案跳過 Step 1.5 時）}——照實寫是哪一種。
 
 ### TDD 範圍
 
 - ✅ **Unit Test**：ViewModel / Service / Repository / Builder / State Machine — 每個 ticket 都出
 - ❌ **UI Test**：不寫（XCUITest / ViewInspector 等 UI 層測試不做）
-- **純 UI ticket**（只有 View 沒有 VM 邏輯的）：不需要出 test，直接從步驟 1 跳到步驟 3 的寫 code
+- **沒有 VM／Service 邏輯的純 View 改動**：不需要出 unit test，以 Preview 或截圖前後對照代替
 
 ### UI ticket 特別注意：Figma 先行
 
-實作畫面相關的 ticket 時（type letter `U` 或 `D`）：
+<!-- {IF_FIGMA}：這個 feature 有 Figma 設計稿才留這一段；沒有就整段刪掉，改成一句「沒有設計稿：UI 以 overview.md 的頁面清單與 ux 慣例為準，拿不準就問」。 -->
+
+實作畫面相關的 ticket 時（`layers` 含 UI，或含 Delta 且改的是 View）：
 
 - **動手寫 UI 之前**，先提醒使用者：「請提供 Figma 截圖或用 Figma MCP 取得設計稿」
 - **不要自己想像 UI 長什麼樣** — 顏色、間距、圓角、字體大小全部以 Figma 為準
@@ -125,16 +151,15 @@ updated: {TODAY}
 
 | Skill | 用否 | 說明 |
 |---|---|---|
-| `/ios-dev` | ❌ 不跑 | Phase 0-1 已在 SPEC + sprint-roadmap 完成 |
-| `/writing-plans` | ✅ 每個 ticket | 實作計畫 |
-| `/component` | ✅ 新建 UI 元件時 | type letter `U` ticket |
-| `/test` | ✅ Service 層必跑 | UI 可略 |
-| `/review` | ✅ 每個 ticket | Code review |
-| `/verification-before-completion` | ✅ 每個 ticket | Commit 前驗證 |
+| `/ios-dev tickets/<id>.md` | ✅ 每個 ticket 的入口 | 情境 7；Phase 0–1 已在根文件完成，所以**不重跑規劃**，只接手這一張 |
+| `/writing-plans` | ✅ 每個 ticket | 只為這一張的實作計畫（不跑 `/consensus-plan`，根文件審過了）|
+| `/subagent-driven-development` | ✅ 每個 ticket | TDD 執行；`layers` 含 UI 時搭 `swiftui-specialist`＋`swiftui-ui-patterns`，有 async 搭 `swift-concurrency` |
+| `ios-review`／閘門 agents | ✅ 每個 ticket | 輕重與 review 路線由 `/ios-dev` 的五條件判，不在這裡決定 |
+| `/verification-before-completion` | ✅ 每個 ticket | Commit 前驗證，先照 ticket 的 Verification 段跑 |
 | `/ios-investigate` | ✅ 遇 bug 時 | 除錯用 |
-| `/ios-critique` / `/simplify` / `/ios-harden` | ✅ Integration 階段 | 品質閘門 |
-| `/accessibility` / `/ios-polish` | {ACCESSIBILITY_DECISION} | 視 descope 決定 |
-| `/localize` / `/app-store-preflight-skills` | ✅ 出貨前 | Phase 4 |
+| `/ios-critique` / `/simplify` / `/ios-harden` | ✅ 最後的 QA Stage | 品質閘門 |
+| `/ios-polish` | {ACCESSIBILITY_DECISION} | 視 descope 決定 |
+| `/localize-strings` / `/app-store-preflight-skills` | ✅ 出貨前 | Phase 4 |
 
 ---
 
@@ -144,7 +169,7 @@ updated: {TODAY}
 
 1. **tickets/<id>.md** → 一個 ticket 一檔，整份讀（本來就短）
 2. **overview.md / context.md** → 只讀 ticket Refs 指到的章節，不要整份 read
-3. **architecture/<topic>.md**（大型才有）→ 只讀 ticket Refs 指到的 § X.X
+{IF_LARGE：3. **architecture/<topic>.md** → 只讀 ticket Refs 指到的 § X.X（中型刪掉這一項，下一項往前補）}
 4. **{EXISTING_SYSTEM_LABEL} 既有檔案**（Delta ticket）→ 例外：必須整份讀完
 
 > 通用原則：**「搜尋定位 → 讀該段」**，不是 **「讀整份 → 搜尋定位」**。
@@ -187,18 +212,17 @@ updated: {TODAY}
 發現差異 → **stop + 跟使用者討論** → 使用者決定後：
 - 更新 `tickets/<id>.md` 的 Tasks / Files / 說明
 - 若影響 overview.md 的技術模組清單或 §0 → 同步更新
-- 大型：若影響 `sprint-roadmap.md` / `architecture/<topic>.md` → 同步更新
+{IF_LARGE：- 若影響 `sprint-roadmap.md` / `architecture/<topic>.md` → 同步更新}
 
 ### Step 2：Commit 後回寫（必做）
 
-**一律**：`tickets/<id>.md` 的 frontmatter `status` 改 `done`、填 `pr`。
-**大型另外**：在 [`coordination/branch-tracker.md`](./coordination/branch-tracker.md) 加一列
-`| {ticket_id} | {commit_hash} | {一句話說明} |`；中型沒有 `coordination/`，寫進 ticket 檔的「實作筆記」段。
+**一律**：`tickets/<id>.md` 的 frontmatter `status` 改 `done`、填 `pr`；在 ticket 檔的「實作筆記」段加一列
+`| {日期} | {commit_hash} | {一句話說明} |`。
+{IF_LARGE：**大型另外**：在 [`coordination/branch-tracker.md`](./coordination/branch-tracker.md) 加同樣的一列。}
 
 ### Step 3：有特殊情況才寫 implementation-log（選做）
 
-大型：在 [`coordination/implementation-log.md`](./coordination/implementation-log.md) 最上方加一筆 entry；
-中型：寫進 ticket 檔的「實作筆記」段。內容都一樣：
+寫進 ticket 檔的「實作筆記」段{IF_LARGE：；大型另外在 [`coordination/implementation-log.md`](./coordination/implementation-log.md) 最上方加一筆 entry}。內容：
 - 有**選項決策** → 填決策表（問題 / 選項 / 選擇 / 理由）
 - 有**Ticket 差異** → 填差異紀錄
 - 有**踩到的坑** / 既有系統意外發現 → 填備註
@@ -211,7 +235,7 @@ updated: {TODAY}
 | 情況 | 怎麼做 |
 |---|---|
 | Ticket 範圍不清 | stop + 問使用者 |
-| API 欄位不在 networking-*.md | stop + 問使用者，不自己補 |
+| API 欄位不在根文件{IF_LARGE：／`architecture/<topic>.md`}裡 | stop + 問使用者，不自己補 |
 | {EXISTING_SYSTEM_LABEL} view 結構不清 | 先完整讀檔，讀完再評估 |
 | 規格跟已決事項衝突 | stop + 問使用者 |
 | 想加「為了完整性」的功能 | 很可能 scope 外 → stop + 問 |
@@ -219,7 +243,7 @@ updated: {TODAY}
 | Ticket 跟實際程式碼不符 | stop + 討論 → 更新 ticket + SPEC |
 | 實作有多個選項 | 列出選項討論 → 完工記在 implementation-log（中型：ticket 的實作筆記段）|
 | Commit 完成 | ticket frontmatter 改 `done`＋填 `pr`（必做）；大型另寫 branch-tracker，有特殊情況再寫 implementation-log |
-| 不確定用哪個 ticket template | 查 ai-prompts.md § 9.2 前綴對照表 |
+| 不確定 handoff prompt 怎麼組 | 看 ticket 的 `type`／`layers`，查 ai-prompts.md § 9.2 |
 
 ---
 
@@ -227,10 +251,11 @@ updated: {TODAY}
 
 | 情境 | 讀這份 |
 |---|---|
-| Service ticket（type `S`）| overview.md 的技術模組清單 + §0 模組邊界；大型另讀 `architecture/<topic>.md` 對應章節 |
-| UI ticket（type `U`）| overview.md 的畫面清單 + §0 的 state／presentation 規則 |
-| Delta（改既有）ticket（type `D`）| ticket 的 Refs 指到的章節 + **完整讀既有原始檔** |
-| Integration ticket（type `I`）| 上下游 ticket 檔 + overview.md §0 的模組邊界表 |
+| ticket 的 `layers` 含 Service | overview.md 的技術模組清單 + §0 模組邊界；大型另讀 `architecture/<topic>.md` 對應章節 |
+| `layers` 含 UI | overview.md 的畫面清單 + §0 的 state／presentation 規則 |
+| `layers` 含 Delta（改既有）| ticket 的 Refs 指到的章節 + **完整讀既有原始檔** |
+| `layers` 含 Integration | `deps` 列的上游 ticket 檔 + overview.md §0 的模組邊界表與轉移表 |
+| 任何 Behavior | overview.md「這次要做」裡它 `covers` 的那幾條 FR# |
 
 > 這張表只能列 Output manifest 上真的會產出的檔（見 phase-workflow SKILL.md）。
 

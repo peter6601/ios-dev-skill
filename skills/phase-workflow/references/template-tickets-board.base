@@ -13,6 +13,12 @@ properties:
     displayName: Stage
   type:
     displayName: 類型
+  layers:
+    displayName: 穿過的層
+  covers:
+    displayName: 涵蓋需求
+  deps:
+    displayName: 依賴
   status:
     displayName: 狀態
   estimate:
@@ -46,6 +52,8 @@ views:
       - ticket
       - title
       - type
+      - covers
+      - deps
       - status
       - estimate
       - owner

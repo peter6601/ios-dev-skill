@@ -50,6 +50,19 @@ label 體系：`type:spike` / `type:feature` / `type:chore` / `type:risk` + `are
 
 ---
 
+## 需求對照（PM spec 條目 → T 卡）
+
+<!-- PM spec 的每個條目一列，給穩定編號 FR#。這張表抓的是「PM spec 有寫、轉成 rd-spec 時掉了」的條目。
+任何一列的「T 卡／處置」空著，就不得送 Step 3.5B 審查、也不得貼 issue。 -->
+
+| # | PM spec 條目（章節） | T 卡／處置 |
+|---|---|---|
+| FR1 | {條目一句話}（PM spec § {X}） | T{n} |
+| FR2 | {條目一句話}（PM spec § {X}） | Out of Scope——{原因一行} |
+| FR3 | {條目一句話}（PM spec § {X}） | 待 PO（見文末）|
+
+---
+
 ## 現況總覽（as-of `{COMMIT}`）
 
 | T | 項目 | 狀態 |

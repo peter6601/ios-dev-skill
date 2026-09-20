@@ -2,7 +2,7 @@
 
 > **目的**：寫文件前，先把「feature 會碰/引用的既有符號」對當前 codebase 驗證為真。
 > **不是**讀整個 codebase（浪費 token），**是**讀「整合面」（~6-10 檔）。
-> **觸發**：有既有 codebase（既有 app 加新功能 / 改既有系統）→ 必做；全新 greenfield 專案（無 code）→ 跳過。
+> **觸發**：這次會改到或引用**任何**既有檔 → 必做，範圍可以只有那幾個檔（新專案只有一個 App 進入點要改，也要盤那一個）；repo 裡沒有任何會被碰到的既有 code → 跳過。
 
 ---
 
@@ -16,7 +16,7 @@ design doc 通常是「某個時間點的 codebase audit + 前瞻計畫」。直
 
 ---
 
-## 整合面 = 要盤點的 7 類符號
+## 整合面 = 要盤點的 8 類
 
 從 design doc + intake 答案，列出這個 feature 會碰到的既有符號：
 
@@ -29,6 +29,7 @@ design doc 通常是「某個時間點的 codebase audit + 前瞻計畫」。直
 | 5. **既有 test / mock** | 新 service 能不能共用既有 mock | find `*Mock*` / `*Tests*`；確認 mock 對 protocol 還是 concrete |
 | 6. **build config** | Info.plist / *.entitlements / Constants 既有值 | find + grep；**確認檔是否存在**（常被 doc 假設存在）|
 | 7. **被引用的 model / enum / 常數** | doc 提到的型別是否真的 Codable / 屬性名 | grep 定義行 |
+| 8. **驗證指令** | scheme、test target、測試用 destination | `xcodebuild -list`（或讀 `project.yml`／`Package.swift`）；**環境允許就實際跑一次 build（有時間再跑 test）**——只看設定檔抓不到「指令看起來對、實際 BUILD FAILED」。要動 repo 才跑得起來就在副本上試，不改原 repo；跑不起來是一條 verified fact，修復切成 Prefactor；沒辦法跑就標「未實跑」。寫進 verified facts，之後落到 context.md「驗證指令」與每張 ticket 的 Verification 段 |
 
 ---
 
@@ -38,7 +39,7 @@ design doc 通常是「某個時間點的 codebase audit + 前瞻計畫」。直
 1. 列整合面清單（從 design doc 的「改動範圍」「模組對映」「reuse 策略」段抽符號）
 2. 一輪 grep/find 定位全部符號（一個 Bash 多指令搞定）
 3. 主檔完整 Read：類別 1（protocol）+ 類別 2（被 mirror 主檔）+ 類別 3 關鍵注入點
-4. 建「verified facts」表（見下）
+4. 建「verified facts」表（見下）——**寫進 overview.md 的「現況盤點」段**（入口 B 的 rd-spec 是給 PM／QA 讀的，改放 context.md 開頭同名的一段）；不要只留在對話記憶裡，下游 session 與 Resume 拿不到
 5. 寫文件時只用 verified 欄位；unverified / 不存在 → 標 (新建) 或 stop+問
 ```
 
@@ -73,6 +74,9 @@ grep -rn "serviceType\|static let" <repo>/.../Constants.swift
 
 # model 是否 Codable
 grep -rn "struct <Name>\|enum <Name>" <repo> --include="*.swift"
+
+# 驗證指令：真實的 scheme 與 test target
+xcodebuild -list -json 2>/dev/null | head -40
 ```
 
 ---
@@ -82,4 +86,4 @@ grep -rn "struct <Name>\|enum <Name>" <repo> --include="*.swift"
 - **讀**：類別 1+2+3 的主檔（通常 3-5 檔）完整讀；其餘 grep 定位即可
 - **不讀**：無關 feature、UI theme、第三方、utility
 - 預算感：grounding pass ≈ 5-15 分鐘 / ~10-30k token。比起「文件寫錯害下游 agent 做錯」便宜太多
-- 全新專案無 code → 整個跳過，直接 Step 2
+- 沒有任何會被碰到的既有 code → 整個跳過，直接 Step 2；這時驗證指令向使用者要，ticket 的 Files 不得出現「編輯」既有檔

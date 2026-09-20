@@ -48,19 +48,22 @@ Skill 流程 Step 2 用。
      R1. {RISK_1}
      R2. {RISK_2}
      R3. {RISK_3}
+     （R# 是風險編號；需求編號用 FR#，兩者不要混）
    （或 ❓ 缺，請補：3 個最擔心的事 — 例如「{EXISTING_SYSTEM_LABEL} regression」、「Backend P0 延遲」、「個人能量分配」）
 
-✅ Ticket 前綴選用範圍:
-     使用 S / U / D / I 哪幾種？預設全用
-     - S = Service / API / Model / Protocol
-     - U = UI / View / Component
-     - D = Delta / 改既有
-     - I = Integration / 導航串接
-   （或 ❓ 缺，請補：這個 feature 主要會碰哪幾類 ticket）
+✅ 行為清單與優先序（ticket 依這份切，不依技術層切）:
+     FR1. {使用者能……}（P1：最短可 demo 的主流程）
+     FR2. {使用者能……}（P2）
+     FR3. {沒有畫面的需求也列，例「離線時排隊，恢復連線後補送」}
+   （或 ❓ 缺，請補：使用者看得到的行為逐條列出＋哪幾條是 P1。
+     這份會變成 overview.md「這次要做」的 FR# 編號，之後每條都要有 ticket 接，或標 deferred／不做）
+
+✅ 時程目標: {VALUE}
+   （可空：目標日期／可上哪個環境／每個 Stage 大約幾天。沒有就寫「未定」，overview 的時程段照實寫「未定」，不要編數字）
 
 ==== Domain（影響 template 選用）====
 
-✅ Domain: iOS（預設）/ macOS / web / 其他
+✅ Domain: iOS（預設）/ macOS / web / 其他 ——先從 repo 推斷，推不出才問
    （iOS 自動套既有系統紅線檔保護規則 + Figma node 規範；架構 pattern 依 §0 選型，不預設 MVVM；其他 domain 跳過 iOS-specific section）
 
 ✅ 跨團隊 deps:
@@ -94,7 +97,7 @@ skill 列完 checklist 後，跟使用者說：
 ```
 我從你的 design doc 抽到 ✅ 的項目，❓ 的請補。
 
-可以的話一次列完所有 ❓ 答案，我會用來生 overview.md + sprint-roadmap.md。
+可以的話一次列完所有 ❓ 答案，我會用來生 overview.md（確認是大型後再補 sprint-roadmap.md）。
 
 如果某項你「目前沒答案，想跟我討論再決定」，標 [TBD] + 你的想法，我會列選項給你選。
 ```
@@ -103,7 +106,7 @@ skill 列完 checklist 後，跟使用者說：
 
 ## 規模分流判定
 
-根據 checklist 第 5 項（規模估計），決定後續輸出：
+根據 checklist 的「規模估計」項，決定後續輸出：
 
 門檻的唯一真相在 `SKILL.md` 的「規模分流邏輯」：**1–8 中型／>8 大型**。
 進不進本 skill 由責任邊界決定（`SKILL.md`「何時用」），**不由 ticket 數決定**——
@@ -135,6 +138,6 @@ elif estimated_tickets > 8:
 
 使用者補完答案後：
 
-1. **更新 working state**（在記憶中而非寫檔）
-2. **跳到 Step 3**：寫 overview.md + sprint-roadmap.md（大綱階段）
-3. **不要立刻寫所有 7 份檔** — 等 Step 4 規模確認 + 使用者 ack
+1. **更新 working state**（在記憶中而非寫檔；唯一的例外是 Step 1.5 的 verified facts 表，Step 3 要寫進 overview.md「現況盤點」段）
+2. **跳到 Step 3**：只寫 overview.md（大綱階段；sprint-roadmap.md 等 Step 4 確認是大型才產）
+3. **不要立刻寫其餘的檔** — 等 Step 4 規模確認 + 使用者 ack

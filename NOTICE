@@ -29,10 +29,49 @@ Borrowed from:
                                    against the skill, plus a structural check that
                                    needs no model
   skills/ios-dev/scripts/validate-router.py
+  skills/phase-workflow            vertical slicing over layer-by-layer tickets,
+                                   split signals, a per-ticket verification step,
+                                   a closing checklist with red flags
 
-Changes: no code was copied. The cases, fixtures, runner, sandboxing, provenance
-tracking and the reference-integrity checks are an independent implementation for
-this repository's router.
+Changes: no code or text was copied. The cases, fixtures, runner, sandboxing,
+provenance tracking and the reference-integrity checks are an independent
+implementation for this repository's router; the phase-workflow rules are written
+for iOS feature planning.
+
+------------------------------------------------------------------------
+Spec Kit — https://github.com/github/spec-kit
+Copyright GitHub, Inc. — MIT License (LICENSES/MIT-spec-kit.txt)
+
+Borrowed from:
+  skills/phase-workflow            a blocking "foundational" phase followed by one
+                                   slice per user story; checking that every
+                                   requirement is covered by a task
+
+Changes: no code or text was copied.
+
+------------------------------------------------------------------------
+skills — https://github.com/mattpocock/skills
+Copyright (c) 2026 Matt Pocock — MIT License (LICENSES/MIT-mattpocock-skills.txt)
+
+Borrowed from:
+  skills/phase-workflow            tracer-bullet tickets that each declare what
+                                   blocks them; prefactoring first; expand-contract
+                                   for wide mechanical changes
+
+Changes: no code or text was copied.
+
+------------------------------------------------------------------------
+CCPM — https://github.com/automazeio/ccpm
+Copyright (c) 2025 Ran Aroussi — MIT License (LICENSES/MIT-ccpm.txt)
+
+Borrowed from:
+  skills/phase-workflow            flagging tickets that touch the same files so
+                                   they are not run in parallel; no circular
+                                   dependencies
+  skills/phase-workflow/scripts/lint-tickets.py
+
+Changes: no code or text was copied; the lint script is an independent
+implementation.
 
 ------------------------------------------------------------------------
 Impeccable — https://github.com/pbakaus/impeccable

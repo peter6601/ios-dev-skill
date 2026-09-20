@@ -193,6 +193,7 @@ bash -n install.sh && ./install.sh --check                                 # 語
 
 - `ios-review`、`ios-investigate`、`careful-ios`、`office-hours` 的骨架來自 [garrytan/gstack](https://github.com/garrytan/gstack)（MIT）
 - 路由評測（`skills/ios-dev/evals/`）與引用完整性檢查的做法借鑑 [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（MIT）的三層 `evals/`；程式碼是獨立實作
+- `phase-workflow` 切 ticket 的做法（先地基、再一條一條行為；需求涵蓋、依賴與同檔重疊檢查）參考 [github/spec-kit](https://github.com/github/spec-kit)、[mattpocock/skills](https://github.com/mattpocock/skills) 的 `to-tickets`、[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)、[automazeio/ccpm](https://github.com/automazeio/ccpm)（皆 MIT）；只借做法，規則與 `lint-tickets.py` 是獨立實作
 - `ios-critique`、`ios-harden`、`ios-distill`、`ios-polish` 改寫自 [pbakaus/impeccable](https://github.com/pbakaus/impeccable)（Apache-2.0）的 `critique`／`harden`／`distill`／`polish`
 
 ## License

@@ -36,7 +36,7 @@ updated: {TODAY}
 
 ---
 
-## 1. Full Onboarding（新 session 必跑）
+## 1. Onboarding（新 session 必跑）
 
 **目的**：讓 AI 在動任何 code 之前，完整理解 {FEATURE_NAME} 的專案全貌、架構、scope、descope、風險。
 
@@ -56,6 +56,7 @@ updated: {TODAY}
 1. {FEATURE_FOLDER_FULL_PATH}/overview.md
    → 全文 — {FEATURE_NAME} 全貌
 
+{IF_LARGE：整個第 2 項只有大型才留；中型刪掉並把後面的編號往前補}
 2. {FEATURE_FOLDER_FULL_PATH}/sprint-roadmap.md
    → 只讀以下章節：
      - § 1 架構分層圖
@@ -65,8 +66,8 @@ updated: {TODAY}
      - § 5 風險與緩解
      - § 6 Workflow
 
-3. {FEATURE_FOLDER_FULL_PATH}/architecture/networking.md（如有）
-   → 全文 — 後端協定總覽
+{IF_LARGE：3. {FEATURE_FOLDER_FULL_PATH}/architecture/<topic>.md（主題由 Step 3 決定，沒有固定檔名）
+   → 全文 — 後端協定總覽}
 
 4. {FEATURE_FOLDER_FULL_PATH}/context.md
    → 全文 — AI 行為準則 / 已決事項 / Skill 使用 / Branch 健康 / 完工回寫 / 遇到情況表
@@ -74,15 +75,15 @@ updated: {TODAY}
 5. {FEATURE_FOLDER_FULL_PATH}/tickets/README.md
    → 全文 — tickets 索引
 
-6. {FEATURE_FOLDER_FULL_PATH}/coordination/README.md（如有跨團隊）
-   → 全文 — 三份跨團隊文件 master/filter 關係
+{IF_LARGE：6. {FEATURE_FOLDER_FULL_PATH}/coordination/README.md（如有跨團隊）
+   → 全文 — 三份跨團隊文件 master/filter 關係}
 
 ## 🚫 Lite 版不讀（按需才讀）
 
 - ❌ `ai-prompts.md` 本身（使用者的 prompt 模板庫，AI 不需要讀）
 - ❌ `tickets/<id>.md`（拿到 ticket 才讀那一份）
-- ❌ 大型才有的 `architecture/<topic>.md`（ticket Refs 指到才讀對應章節）
-- ❌ 大型才有的 `sprint-roadmap.md § 7+`（Stage 細節按需讀）
+{IF_LARGE：- ❌ `architecture/<topic>.md`（ticket Refs 指到才讀對應章節）}
+{IF_LARGE：- ❌ `sprint-roadmap.md § 7+`（Stage 細節按需讀）}
 
 ---
 
@@ -118,178 +119,124 @@ AI 回報後，應該檢查它是否理解以下要點：
 
 ---
 
-## 3. Ticket Handoff Prompt 範本
+## 3. Ticket Handoff Prompt
 
-### 3.1 Service / Network / Model ticket 範本（type letter `S`）
+> 一張 ticket 的 prompt ＝ **§ 3.0 共同骨架** ＋ 它 frontmatter `layers` 列到的那幾個**層段落**（§ 3.1–3.4）。
+> ticket 是依行為切的（Foundation／Prefactor／Behavior），一張 Behavior 通常穿過好幾層，所以不是「一種 ticket 一份範本」。
+
+### 3.0 共同骨架（每張都用）
 
 ```
 繼續 {FEATURE_NAME} 開發。
 
 這次要做的 ticket：{ticket_id} {ticket_title}
+type：{Foundation|Prefactor|Behavior}｜layers：{這張 ticket 的 layers}
 
-請先讀以下 context（如果你已經在本 session 讀過可以跳過）：
+請先讀以下 context（本 session 讀過的可以跳過）：
 
 0. 核心原則 + 已決事項（**每次 ticket 都快速 skim**）：
    {FEATURE_FOLDER_FULL_PATH}/context.md
 
-1. Tickets 索引：
-   {FEATURE_FOLDER_FULL_PATH}/tickets/README.md
-   → 依 ticket id 前綴找到對應 parent 檔案
+1. 這張 ticket（整份讀）：
+   {FEATURE_FOLDER_FULL_PATH}/tickets/{ticket_id}.md
 
-2. 對應 ticket 完整內容：
-   {FEATURE_FOLDER_FULL_PATH}/tickets/<對應檔案>.md
-   → 搜尋 "{ticket_id}" 找到該 sub-ticket section
+2. ticket 的 Refs 指到的章節：
+   overview.md § {SECTION}（§0 架構形狀、這張涵蓋的 FR#）
+   → 未決問題看 overview.md「開放問題」段的 Q 編號
+   {IF_LARGE：→ 大型另有 architecture/<topic>.md 的對應 § X.X、coordination/open-questions.md 的 Q 編號}
 
-3. Backend API 規格（必讀，如涉及）：
-   {FEATURE_FOLDER_FULL_PATH}/architecture/networking.md
-   → 該 ticket 標的 Refs 章節
+3. 依賴確認：ticket `deps` 列的前置 ticket 是否都已 merge？還沒有請先告訴我。
 
-4. 該 ticket 提到的 open question（若有）：
-   {FEATURE_FOLDER_FULL_PATH}/coordination/open-questions.md
-   → 搜尋 ticket Refs 中提到的 Q 編號
+{接上 layers 對應層段落的「加讀」}
 
 讀完後，請向我報告：
-- 【這個 ticket 的 scope 是什麼】
-- 【要改/新建哪些檔案】
-- 【哪些欄位/方法名是 networking.md 已定義的（不能自己發明）】
-- 【這個 ticket 有沒有碰到已決事項任一條，怎麼處理】
-- 【你建議的實作計畫（3-5 步）】
+- 【這張 ticket 的 scope 是什麼；它涵蓋哪幾條 FR#】
+- 【要改／新建哪些檔案】
+- 【架構約束段裡哪幾條跟這張有關，打算怎麼守】
+- 【有沒有碰到已決事項任一條，怎麼處理】
+- （Behavior）【這條行為從哪個入口觸發、穿過哪些層、在哪裡結束；走通後怎麼 demo】
+- （Foundation）【哪幾張 Behavior 會依賴它；哪些型別整份實作（≥2 條行為共用、契約已定、≤0.5 人天）、哪些只給簽名＋骨架，各自為什麼】
+- （Prefactor）【行為不變怎麼證明——先補哪些行為快照測試】
+{接上 layers 對應層段落的「回報」}
+- 【你建議的實作計畫（3-5 步，依層施工：Model → Service → View → 導航 → 測試）】
 
 我確認後你才能開始寫 code。
 
-走 /writing-plans → 實作 → /review → /verification-before-completion 流程。
+走 `/ios-dev tickets/{ticket_id}.md`（情境 7）：/writing-plans → /subagent-driven-development → 閘門與 review 路線 → /verification-before-completion；
+收尾照 ticket 的 Verification 段跑（測試指令、build、實機走一遍）。commit／push 等我明講。
 ```
 
-### 3.2 UI / Page ticket 範本（type letter `U`）
+### 3.1 層段落：Service（`layers` 含 Service）
 
 ```
-繼續 {FEATURE_NAME} 開發。
+加讀：
+- 契約的來源：overview.md 的技術模組清單＋§0 模組邊界；Foundation ticket 定下的 protocol
+- {IF_LARGE：Backend API 規格（如涉及）：{FEATURE_FOLDER_FULL_PATH}/architecture/<topic>.md → ticket Refs 標的章節}
 
-這次要做的 ticket：{ticket_id} {ticket_title}（屬於 Page {X}）
+回報：
+- 【哪些欄位／方法名是根文件或 Foundation 契約已定義的（不能自己發明）】
+```
 
-請先讀以下 context：
+### 3.2 層段落：UI（`layers` 含 UI）
 
-0. 核心原則 + 已決事項：
-   {FEATURE_FOLDER_FULL_PATH}/context.md
+```
+加讀：
+- {IF_FIGMA：Figma node ID（在 SPEC 中會標示，請回報給我確認能 open）}
+- 既有共用元件（若 ticket 用到）：
+  - {SHARED_COMPONENT_LIST}
+  請讀該元件的檔案後再開始
 
-1. Tickets 索引：
-   tickets/README.md → 找到這張 ticket 在哪個 Stage
-
-2. 對應 ticket 完整內容：
-   tickets/{ticket_id}.md（整份讀）
-
-3. 這張 ticket 的 Refs 指到的章節：
-   overview.md § {SECTION}（畫面清單、§0 的 state／presentation 規則）
-   → 大型另有 architecture/<topic>.md 的對應 § X.X
-
-4. Figma node ID（在 SPEC 中會標示，請回報給我確認能 open）
-
-5. 既有共用元件（若 ticket 用到）：
-   - {SHARED_COMPONENT_LIST}
-   請讀該元件的檔案後再開始
-
-讀完後，請向我報告：
-- 【這個 ticket 的 UI scope 是什麼】
-- 【Figma 規範的樣式重點（顏色、圓角、padding、font size）】
+回報：
+- {IF_FIGMA：【Figma 規範的樣式重點（顏色、圓角、padding、font size）】；沒有設計稿改成【版面打算怎麼排、依據是什麼】}
 - 【要複用哪些既有元件 vs 新建什麼】
-- 【這個 ticket 有沒有碰到已決事項任一條，怎麼處理】
 - 【Accessibility Level 1 baseline 打算怎麼做】
-- 【你建議的實作步驟（3-5 步）】
 
-我確認後你才能開始寫 code。
-
-走 /writing-plans → /component（若新建元件）→ 實作 → /review → /verification-before-completion 流程。
+流程加一步：新建元件時，/writing-plans 的計畫裡先列元件的 API（輸入、狀態、a11y label）給我看。
 ```
 
-### 3.3 Delta（改既有）ticket 範本（type letter `D`）
+### 3.3 層段落：Delta（`layers` 含 Delta；改既有 code）⭐
 
 ```
-繼續 {FEATURE_NAME} 開發。
+⚠️ 這張會改 {EXISTING_SYSTEM_LABEL} 既有 view / code，regression 風險高。
 
-這次要做的 ticket：{ticket_id} {ticket_title}
-⚠️ **這是改 {EXISTING_SYSTEM_LABEL} 既有 view / code 的 Delta ticket，regression 風險高**
+加讀：
+- **{EXISTING_SYSTEM_LABEL} 既有 code（完整讀進來）**：
+  → ticket Files 區塊標「編輯」的每個既有檔都要用 Read tool 讀一遍
+  → 不要只 grep，要完整讀過該 view 的 body 結構
+- Negative Constraints：context.md § {EXISTING_SYSTEM_LABEL} 既有 code 保護
 
-請先讀以下 context：
-
-0. 核心原則 + 已決事項：
-   {FEATURE_FOLDER_FULL_PATH}/context.md
-
-1. Tickets 索引：
-   tickets/README.md → 找到這張 ticket 在哪個 Stage
-
-2. 對應 ticket 完整內容：
-   tickets/{ticket_id}.md（整份讀）
-
-3. 該 Delta 依據的規格：
-   ticket 的 Refs 指到的章節（切入點策略與差異清單）
-
-4. **{EXISTING_SYSTEM_LABEL} 既有 code（完整讀進來）**：
-   → ticket Files 區塊列的每個檔案路徑都要用 Read tool 讀一遍
-   → 不要只 grep，要完整讀過該 view 的 body 結構
-
-5. Negative Constraints {EXISTING_SYSTEM_LABEL} 既有 code 保護原則：
-   context.md § {EXISTING_SYSTEM_LABEL} 既有 code 保護
-
-讀完後，請向我報告：
-- 【這個 ticket 要改哪個既有檔案】
-- 【原本的 code 結構是什麼（以便判斷 regression 風險）】
+回報：
+- 【要改哪個既有檔案；原本的 code 結構是什麼（以便判斷 regression 風險）】
+{IF_REDLINE：下面的「改動策略選擇」與文末的「保護鐵律」只在這個 feature 有紅線檔、reuse 策略是「新建替代」時留著；既有檔本來就要改的專案（全新 app 的骨架）兩段都刪掉}
 - 【改動策略選擇】：
   - 策略 A：新建 outer view / VM 獨立業務邏輯（推薦）
   - 策略 B：共用 VM + View 加 `mode` parameter + 條件渲染
   - 策略 C：新建 view 複用既有 sub-components
   - → 你打算走哪條？理由？
 - 【影響的呼叫 site / 既有測試】
-- 【這個 ticket 有沒有碰到已決事項任一條，特別注意 {EXISTING_SYSTEM_LABEL} 既有 code 保護原則】
 - 【regression test 計畫】
-
-我確認後你才能開始寫 code。
 
 ⚠️ **{EXISTING_SYSTEM_LABEL} 保護鐵律**：
 - 優先走策略 A（新建），不動既有
 - 若必須改既有 view/class 簽名，加 optional parameter 預設值向下相容
 - 既有 body 邏輯不動，只加條件渲染或透過注入改行為
 
-走 /writing-plans → 實作 → **手動 {EXISTING_SYSTEM_LABEL} regression** → /review → /verification-before-completion 流程。
+流程加一步：實作後、進 review 路線前做**手動 {EXISTING_SYSTEM_LABEL} regression**。
 ```
 
-### 3.4 Integration ticket 範本（type letter `I`）
+### 3.4 層段落：Integration（`layers` 含 Integration；這條行為要接導航）
 
 ```
-繼續 {FEATURE_NAME} 開發。
+加讀：
+- 上下游頁面的規格：overview.md 頁面清單＋§0 的 presentation 規則（互斥呈現、轉移表）
+- 既有 navigation pattern：{EXISTING_SYSTEM_LABEL} root container / coordinator
+  （請先搜尋專案找到正確檔案）
 
-這次要做的 ticket：{ticket_id} {ticket_title}（屬於 Module {INTEGRATION_MODULE_NAME}）
-
-這是串接多個 Page/Module 的 integration ticket，依賴上下游都已完成。
-
-請先讀以下 context：
-
-0. 核心原則 + 已決事項：
-   {FEATURE_FOLDER_FULL_PATH}/context.md
-
-1. 對應 ticket 內容：
-   tickets/module-{INTEGRATION_MODULE_NAME}.md
-   → 搜尋 "{ticket_id}"
-
-2. **上下游 Page 的 SPEC**（至少 2 份）：
-   ticket 描述中提到的 Page SPEC，都要讀過對應的 § 互動流程 / § 跨頁依賴
-   同時讀對應的 `tickets/page-0X-*.md` 確認前置 sub-ticket 是否都已完成
-
-3. 既有 navigation pattern：
-   {EXISTING_SYSTEM_LABEL} root container / coordinator
-   （請先搜尋專案找到正確檔案）
-
-4. 依賴的 ticket 狀態確認：
-   ticket deps 中列的前置 ticket 是否都已完成 merge？若未完成請告知。
-
-讀完後，請向我報告：
-- 【這個 integration 要串接哪兩個（或多個）頁面】
-- 【使用者流程（3-5 步）】
+回報：
+- 【這條行為要串接哪兩個（或多個）頁面】
 - 【navigation 是 push / sheet / fullScreenCover？為什麼】
 - 【要動哪些既有 coordinator / root container 檔案】
 - 【{EXISTING_SYSTEM_LABEL} 既有 navigation pattern 是什麼】
-- 【這個 ticket 有沒有碰到已決事項任一條】
-
-我確認後你才能開始寫 code。
 ```
 
 ---
@@ -314,7 +261,7 @@ AI 應該回答：**stop + ask**，而不是「自己推理最合理的做法」
 
 ---
 
-## 9. 附錄：快速指令 & Ticket 前綴對照表
+## 9. 附錄：快速指令 & Ticket type 對照表
 
 ### 9.1 Session 一開始（5 秒啟動）
 
@@ -322,54 +269,51 @@ AI 應該回答：**stop + ask**，而不是「自己推理最合理的做法」
 照 ai-prompts.md § 1.1 跑 Lite onboarding，我要做 {FEATURE_NAME} 開發
 ```
 
-### 9.2 Ticket 前綴 → Template 對照表 ⭐
+### 9.2 Ticket type → Prompt 組法對照表 ⭐
 
-拉 ticket 前先查這張表決定用哪個 § 3.X：
+拉 ticket 前看它 frontmatter 的 `type` 與 `layers`：
 
-| Ticket 前綴 | 類型 | 用 Template | one-liner 範例 |
+| Ticket ID | type | 常見 layers | Prompt 組法 |
 |---|---|---|---|
-| `{S}-S{n}` | Service / API / Model / Protocol | § 3.1 Service | `照 § 3.1 做 {S}-S{n} <title>` |
-| `{S}-U{n}` | UI / View / Component | § 3.2 UI | `照 § 3.2 做 {S}-U{n} <title>` |
-| `{S}-D{n}` | Delta / 改既有 | § 3.3 Delta ⭐ | `照 § 3.3 做 {S}-D{n} <title>` |
-| `{S}-I{n}` | Integration / 導航串接 | § 3.4 Integration | `照 § 3.4 做 {S}-I{n} <title>` |
+| `{S}-F{n}` | Foundation（≥2 條行為共用的契約／骨架）| Service；要動既有的注入點／composition root 時再加 Delta | § 3.0＋§ 3.1（含 Delta 再加 § 3.3）|
+| `{S}-P{n}` | Prefactor（先整理既有 code，行為不變）| Delta | § 3.0＋§ 3.3 ⭐ |
+| `{S}-B{n}` | Behavior（一條使用者看得到的行為）| 看 ticket，常見 Service＋UI＋Integration | § 3.0＋`layers` 列到的每一段 |
 
-> 其中 `{S}` = Stage 編號（1-{STAGE_COUNT}），`{n}` = 該 stage 內該 type 的編號
-
-**新增 ticket 時，append 一行到此表（手動維護）**。
+> 其中 `{S}` = Stage 編號（1-{STAGE_COUNT}），`{n}` = 該 stage 內該 type 的編號。
+> 入口 B 的 ticket ID 是 `T{n}`，一樣看 `type`／`layers`。
 
 ### 9.3 判斷規則
 
 ```
-ticket 屬性 → template 選擇
+這個工作該切成哪種 ticket？
 
-1. 是否改既有 view / class 的 body？
-   └─ 是 → § 3.3 Delta ⭐
+1. 是不是 ≥2 條行為都依賴、而且不先定就無法平行？（契約、共用 Model、注入點、共用檔骨架）
+   └─ 是 → Foundation
    └─ 否 → 下一題
 
-2. 是否寫 UI / View / ViewModel？
-   └─ 是 → § 3.2 UI
-   └─ 否 → 下一題
+2. 是不是「行為不變，只是先把既有 code 整理到加得進去」？
+   └─ 是 → Prefactor（先補行為快照測試）
+   └─ 否 → Behavior：標題寫成「使用者能……」，寫得出 demo 步驟才算切對
 
-3. 是否串接 2+ Page 的導航？
-   └─ 是 → § 3.4 Integration
-   └─ 否 → § 3.1 Service
+這張 ticket 的 layers 有哪些？（可複選）
+   有 Service / Model / Repository 的新增或修改 → Service
+   寫 View / ViewModel                         → UI
+   改既有 view / class 的 body                 → Delta ⭐
+   串接 2+ 頁面的導航                          → Integration
 ```
 
 ### 9.4 one-liner 快速啟動範本
 
 ```
-# UI / Page ticket
-照 ai-prompts.md § 3.2，這次做 {ticket_id} {ticket_title}
+# Behavior ticket（最常見）
+照 ai-prompts.md § 3.0＋這張 layers 對應的層段落，這次做 {ticket_id} {ticket_title}
 
-# Service / Network / Model / Protocol ticket
-照 ai-prompts.md § 3.1，這次做 {ticket_id} {ticket_title}
+# Foundation ticket
+照 ai-prompts.md § 3.0＋§ 3.1，這次做 {ticket_id} {ticket_title}
 
-# Delta（改既有）ticket
-照 ai-prompts.md § 3.3，這次做 {ticket_id} {ticket_title}
-⚠️ 這是 Delta ticket，regression 風險高
-
-# Integration ticket
-照 ai-prompts.md § 3.4，這次做 {ticket_id} {ticket_title}
+# Prefactor ticket，或任何 layers 含 Delta 的 ticket
+照 ai-prompts.md § 3.0＋§ 3.3，這次做 {ticket_id} {ticket_title}
+⚠️ 會改既有 code，regression 風險高
 ```
 
 ### 9.5 Onboarding 完驗收不過時
@@ -389,10 +333,10 @@ ticket 屬性 → template 選擇
 
 # 要求 AI 在實作前停下來等你驗收
 每一步完成都停下來等我確認，不要一口氣跑完全部。
-  先跑 /writing-plans → 我看計畫 → 實作 code → /review → /verification-before-completion → 停下來等我決定 commit
+  先跑 /writing-plans → 我看計畫 → 實作 code → 閘門與 review 路線 → /verification-before-completion → 停下來等我決定 commit
 
 # 遇到 SPEC 沒寫的情境想讓 AI 停下
-如果遇到 SPEC / networking.md 沒寫到的情境，停下來問我，不要自己推理。
+如果遇到根文件沒寫到的情境，停下來問我，不要自己推理。
 ```
 
 ---
