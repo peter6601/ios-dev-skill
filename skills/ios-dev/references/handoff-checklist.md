@@ -36,7 +36,7 @@
 ## 共通收尾（每個情境都跑，順序固定）
 
 1. **定輕重**：照 `skill-router.md` §3——**風險三條**（concurrency／持久化／網路協定／
-   migration、公開契約、可重現測試）所有情境都適用，踩到就是重；**規模兩條**（範圍單一、
+   migration、公開契約、這次改動寫得出可重現的測試（本次補上即可）——情境 3 純呈現畫面以「Preview 或截圖可前後對照」代替測試）所有情境都適用，踩到就是重；**規模兩條**（範圍單一、
    diff ≤50 行）只用在情境 4 與情境 7。
    **實作完成後再判一次**：所有情境重判風險三條；**情境 4 與情境 7 另外重判規模兩條**
    （原估 30 行最後寫成 100 行，就不再是輕）。實作中才碰到的一樣從輕升重。
@@ -44,14 +44,19 @@
    輕＝該情境的單一 auditor → `ios-review`（fix-first）。
    重＝先派閘門 agent ＋ `review-swarm` → 主 session 一次統一修復 → `/ios-polish` → verification。
 
-3. **選 review 路線**（誰當第二雙眼睛）：照 `skill-router.md` §3 的三選一，預設 A。
-   - **A 共識**：**最後**派三個 specialist 各回一段 fenced JSON → `/consensus-review --profile ios --preflight`
+3. **選 review 路線**（誰當第二雙眼睛）：照 `skill-router.md` §3 的三選一，**預設 B**。A 只在使用者於 Step 0 確認畫面選了
+   「加 Codex 審核」、或複雜 Bugfix（強制）時走。
+   - **A 共識**（使用者選了加 Codex，或複雜 Bugfix 強制）：複雜 Bugfix 只有在 Codex 不可用＝`ai-review` 回 529、額度用完，或 context 過大導致輸出退化
+     時才降 B，降級要寫進 PR 描述。**最後**派三個 specialist 各回一段 fenced JSON → `/consensus-review --profile ios --preflight`
      （Codex 首輪 → 合併 → 單一 Claude 統一修復 → re-review，中途不停）。
      `--preflight` 對 `--profile ios` **必填**，且只認 `swiftui`／`ux`／`resilience` 三個 category——
      `ios-review`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`review-swarm`
      的 findings 一律在 `init` 前就修掉，餵進去會被拒、連 run 都不會建立。
-   - **B 純 agent**：三個 specialist 唯讀跑完 → 主 session 一次統一修復 → 驗證。不呼叫 `ai-review`。
-   - **C 輕量**：`ios-review` 的兩輪就是全部。
+   - **B 純 agent**：三個 specialist 唯讀跑完 → 主 session 一次統一修復 → `/ios-polish` →
+     `/verification-before-completion`。不呼叫 `ai-review`。
+   - **C 輕量**：`ios-review` 的兩輪就是全部。門檻：範圍單一、production diff ≤50 行，**而且**風險三條全綠。
+     趕時間不是理由、使用者要求也不能放寬；不符合就走 B，不要另開「你堅持就走 C」的選項。
+     實作完成後跟輕重一起重判，超過就從 C 升 B。
    B、C 要在 PR 描述註明「未經 Codex 交叉驗證」。
 4. **人工 Code Review**：三條路線都要，不可省。
    走 A 停在 `AWAITING_HUMAN_CODE_REVIEW`，**人工 `approve-code` 前不得 commit、push、
@@ -67,13 +72,16 @@
 - 只動版面、樣式、動畫時才是這一段；開發前只要答五問的第 3 問。
 - 先跑 `ux-critique` 與 `architecture-auditor`，findings 併入 `ios-polish` 那一次修復。
 - 收尾走輕。純呈現不派 `concurrency-auditor`。
+- 改動很小（範圍單一、production diff ≤50 行）時 review 走 C；純視覺調整沒有自動化測試可寫，
+  風險第三條以「Preview 或截圖可前後對照」算數。超過規模走預設的 B。
 - **一旦碰到驗證、持久化、連線、ViewModel 狀態、導航或 async**：它不是純呈現——回 `/ios-dev`
   當小功能或中功能重認，並補 presentation 轉移表。
 
 ## §4 修正（bug／issue／維護期）
 
 - `/ios-investigate` 找到 root cause 才修；root cause 未知或高風險 → 回 `/ios-dev` Step 1 的
-  「複雜 Bugfix」路徑（repair plan → `/consensus-plan` → 修 → `/consensus-review`）。
+  「複雜 Bugfix」路徑（repair plan → `/consensus-plan` → 修 → `/consensus-review`，強制走 A；
+  Codex 不可用＝`ai-review` 回 529、額度用完，或 context 過大導致輸出退化時才降 B，PR 描述註明降級）。
 - crash／regression／flaky 在假設階段起 `bug-hunt-swarm`。
 - 風險三條＋規模兩條定輕重（§3）；重時派 5 個 agent（裁掉 `ux-critique`）。
 - 修完回寫：issue／ticket 狀態、第二大腦「近期變更與教訓」（這是維護期最容易漏的一步）。

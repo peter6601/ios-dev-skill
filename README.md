@@ -100,6 +100,20 @@ cd ios-dev-skill
 python3 skills/ios-dev/scripts/swiftui-metrics.py path/to/YourApp --top 15
 ```
 
+**改完路由表先跑這兩個自我檢查**（做法借鑑 [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) 的 `evals/`）：
+
+```bash
+# 1. 引用完整性：§9 列的名字真的裝著嗎？/指令、§N、「標題」、路徑指得到東西嗎？（不呼叫模型，秒回）
+python3 skills/ios-dev/scripts/validate-router.py --workspace . --skill-dir skills/ios-dev
+
+# 2. 路由評測：19 個情境 case 用 headless Claude 實跑 Step 0，比對確認畫面的固定欄位＋模型評審
+python3 skills/ios-dev/evals/run_evals.py                 # 只列計畫與過期狀態，不花錢
+python3 skills/ios-dev/evals/run_evals.py --probe-sandbox # 先確認沙箱擋得住 repo 外的寫入（約 $0.05）
+python3 skills/ios-dev/evals/run_evals.py --run           # 全套約 $20–25、10–15 分鐘
+```
+
+評測用程式生成的假 iOS repo 當 fixture，被測的 Claude 跑在沙箱裡（Bash 只能寫那個假 repo、無網路，`/Users` 底下的 Edit／Write 一律拒絕），`results/` 不進版控。改了 case、fixture 或 parser，舊結果會自動標成過期。
+
 ## 相依一覽
 
 | 層級 | 名稱 | 缺了會怎樣 | 來源 |
@@ -162,7 +176,8 @@ Claude Code 裡輸入：
 ## 測試
 
 ```bash
-python3 -m unittest discover -s skills/ios-dev/scripts -p "test_*.py"   # SwiftUI 量測腳本
+python3 -m unittest discover -s skills/ios-dev/scripts -p "test_*.py"   # SwiftUI 量測腳本 ＋ 引用完整性檢查
+python3 skills/ios-dev/evals/test_run_evals.py                             # 路由評測的 parser 與 fixture（不呼叫模型）
 python3 skills/careful-ios/bin/test_check_careful_ios.py                   # careful-ios 的 hook
 ```
 
@@ -171,6 +186,7 @@ python3 skills/careful-ios/bin/test_check_careful_ios.py                   # car
 幾個 skill 是從別人的作品改寫成 iOS／SwiftUI 版本的，完整聲明見 [`NOTICE`](NOTICE)：
 
 - `ios-review`、`ios-investigate`、`careful-ios`、`office-hours` 的骨架來自 [garrytan/gstack](https://github.com/garrytan/gstack)（MIT）
+- 路由評測（`skills/ios-dev/evals/`）與引用完整性檢查的做法借鑑 [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（MIT）的三層 `evals/`；程式碼是獨立實作
 - `ios-critique`、`ios-harden`、`ios-distill`、`ios-polish` 改寫自 [pbakaus/impeccable](https://github.com/pbakaus/impeccable)（Apache-2.0）的 `critique`／`harden`／`distill`／`polish`
 
 ## License

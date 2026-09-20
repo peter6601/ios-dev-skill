@@ -58,13 +58,13 @@ metadata:
 | 起始狀態 | 路由 |
 |---|---|
 | 功能文件已成形、還沒有 Code | `consensus-plan`（唯讀文件審查）→ **人工改文件** → `re-review` |
-| 已有實作或 SDD 已完成的 Code | 預設 `consensus-review --profile ios`（路線 A）；Codex 不可用或改動極小時走 router §3 的 B／C |
-| 低風險 Bug | `ios-investigate` → 修正 → 依所選 review 路線收尾（小改動可走 C） |
+| 已有實作或 SDD 已完成的 Code | 預設路線 B（純 agent）；使用者在確認畫面選了「加 Codex 審核」才走 A（`consensus-review --profile ios`）；很小且風險三條全綠可走 C（router §3） |
+| 低風險 Bug | `ios-investigate` → 修正 → 依所選 review 路線收尾（很小且風險三條全綠可走 C） |
 | Root cause 未知或高風險 Bug | `ios-investigate`，先停下來取證與決策，再走對應共識路由 |
 
 共識入口看「Code 在不在」，不看「流程走到哪」：還沒有 Code 時審的是**文件**
 （`consensus-plan` 唯讀，產出 findings，不改文件也不寫 code），既有 Code 走
-`references/skill-router.md` §3 選定的 review 路線（預設 `consensus-review`）。文件審查沒有核准這件事——改文件的是人，Codex 的 `PASS` 只是
+`references/skill-router.md` §3 選定的 review 路線（預設 B）。文件審查沒有核准這件事——改文件的是人，Codex 的 `PASS` 只是
 一次仔細的閱讀，不是放行。
 
 根據情境決定要走哪些 Step（修正情境已在 Step 0 交棒給 `/ios-investigate`，這裡只剩規劃類）：
@@ -73,7 +73,7 @@ metadata:
 - **大功能（情境 1，有 PM spec）**：不走這裡，Step 0 已交棒 `phase-workflow` 入口 B；§0 由它的 Step 3B 產在 rd-spec.md
 - **複雜 Bugfix**（`/ios-investigate` 認定 root cause 未知或高風險時會回到這裡）：repair plan 文件 → `/consensus-plan`
   （唯讀文件審查，findings 交回人工改文件，需要再一輪就 `re-review`）→ 依文件修正
-  → `/consensus-review`（複雜 Bugfix 一律走路線 A）→ 人工 Code Review；人工核准前不得 commit、push、merge 或建立 PR
+  → `/consensus-review`（複雜 Bugfix 一律走路線 A——唯一不問、強制加 Codex 的情況；Codex 不可用才降 B）→ 人工 Code Review；人工核准前不得 commit、push、merge 或建立 PR
 
 閘門走輕的五條件見 `references/skill-router.md` §3，不在這裡複述——改門檻只改那一處。
 
@@ -191,18 +191,18 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 
 **先分叉**（router §2）：
 
-- **責任邊界命中中型或大型觸發條件**（router §2；新模組／多畫面流程／多 async 協調／要先拆 View 才加得進去）→ 不產整體 plan。Design Doc、Decision Log、§0 寫進 workspace（你放跨 repo 規劃文件的地方：筆記庫或獨立的文件 repo；沒有就用 iOS repo 的 `docs/features/`）的功能資料夾 `Projects/<專案>/<功能>/`，印出 `/phase-workflow <design doc 路徑>` 並建議開新 session 執行；Step 6–7 跳過。之後每張 ticket 用 `/ios-dev tickets/<T>.md` 接回來（情境 7）。
+- **責任邊界命中中型或大型觸發條件**（router §2；新模組／多畫面流程／多 async 協調／要先拆 View 才加得進去）→ 不產整體 plan。Design Doc、Decision Log、§0 寫進功能資料夾：**預設 iOS repo 的 `docs/features/<功能>/`**；你另外有跨 repo 的 workspace（筆記庫或獨立文件 repo）而且明講要用它時，才寫到 `<workspace>/Projects/<專案>/<功能>/`。印出 `/phase-workflow <design doc 路徑>` 並建議開新 session 執行；Step 6–7 跳過。之後每張 ticket 用 `/ios-dev tickets/<T>.md` 接回來（情境 7）。
 - **沿既有清楚契約增加操作**（不論幾張 ticket）→ 文件落在**目標 iOS repo 內**，沿用既有命名：
   - Design Doc：`docs/plans/YYYY-MM-DD-<feature>-design.md`
   - 實作計畫：`docs/plans/YYYY-MM-DD-<feature>.md`
-  - Step 7 呼叫 `consensus-plan` 時 `--repo` 就是這個 iOS repo（`--doc` 必須在 `--repo` 內）；走 phase-workflow 的那條路 `--repo` 才是 workspace。
+  - Step 7 呼叫 `consensus-plan` 時 `--repo` 就是這個 iOS repo（`--doc` 必須在 `--repo` 內）；走 phase-workflow 的那條路，`--repo` 是文件實際落點所在的 repo——預設仍是這個 iOS repo，只有指定了 external workspace 才是 workspace。
 
 Test cases 確認後，用 `/writing-plans` 產出完整的實作計畫，格式與 Phase 3 的 agent 清單見
 `references/plan-template.md`。
 
 Phase 3 品質閘門的輕／重照 `references/skill-router.md` §3 判，流程與收尾照
 `references/handoff-checklist.md` 的「共通收尾」跑——這裡不重畫一次。
-Phase 3 的產物就是 Code，所以收尾一律走 §3 的 review 路線（預設 `consensus-review`）；
+Phase 3 的產物就是 Code，所以收尾一律走 §3 的 review 路線（預設 B）；
 沒有另一條依 Plan 收尾的路。
 
 ---
@@ -229,17 +229,18 @@ findings 就是交付物：人讀完自己改文件，改完用 `ai-review re-re
 ## Step 8：Code 審核閘門（Code 出現之後）
 
 實作完成後——不論是這份文件展開的 SDD 產物、既有 branch，還是已修好的 Bug——先選一條
-review 路線（`references/skill-router.md` §3 的三選一），預設是 A。
+review 路線（`references/skill-router.md` §3 的三選一），**預設是 B**；Step 0 的確認畫面已經問過要不要加 Codex 審核。
 
-**A 共識**：呼叫 `/consensus-review`。它的 iOS profile 在 `init` 就用 `--preflight` 收下三個
+**A 共識**（使用者選了「加 Codex 審核」，或複雜 Bugfix 強制）：呼叫 `/consensus-review`。它的 iOS profile 在 `init` 就用 `--preflight` 收下三個
 specialist 的 findings（見 `references/handoff-checklist.md`），Codex 首輪之後直接合併進
 單一 Claude 統一修復，**中途不停**。
 
-**B 純 agent**：三個 specialist 唯讀跑完 → 主 session 一次統一修復 → `/ios-polish` →
-`/verification-before-completion`，不呼叫 `ai-review`。用在 Codex 不可用或這次不想耗共識額度時。
+**B 純 agent**（預設）：三個 specialist 唯讀跑完 → 主 session 一次統一修復 → `/ios-polish` →
+`/verification-before-completion`，不呼叫 `ai-review`。
 
-**C 輕量**：`ios-review` 的兩輪就是全部。門檻是 router §3 的**風險三條全綠**（不碰
-concurrency／持久化／網路協定／migration、不改公開契約、測得出來）；趕時間不能當理由。
+**C 輕量**：`ios-review` 的兩輪就是全部。門檻是 router §3 的**很小且風險三條全綠**（範圍單一、
+production diff ≤50 行；不碰 concurrency／持久化／網路協定／migration、不改公開契約、測得出來——純呈現畫面以 Preview 或截圖可前後對照算數）；
+趕時間不能當理由，使用者要求也不能放寬——不符合就走 B，不要另開「你堅持就走 C」的選項。
 
 B 與 C 沒有外部模型交叉驗證，PR 描述要註明。三條路線的終點都是人工 Code Review，
 但**核准的形式不同**。
@@ -270,7 +271,7 @@ push、merge 或建立 PR。這條規則綁的是「人看過」，不是綁那�
 > - **不要等所有 Task 做完才驗架構**：照計畫的「中途架構檢查點」，在每一段完整行為走通時就對照架構約束段驗一次。發現偏離先判是哪一種——**實作違約就修實作**並重驗（不准改契約遷就程式碼）；**契約確實不適用**才寫下理由、更新設計決策與測試後繼續。
 > - 所有 Task 完成後，執行 Phase 3 品質閘門（輕／重照 router §3，收尾照 handoff-checklist）。
 > - 走 phase-workflow 的功能：每張 ticket 用 `/ios-dev tickets/<T>.md` 開新 session 接手（情境 7），做完回寫看板再接下一張。
-> - 再依所選的 review 路線收尾（預設 `/consensus-review`；Codex 不可用或改動極小時走 router §3 的 B／C），最後一定交給使用者人工 Code Review。
+> - 再依所選的 review 路線收尾（預設 B；使用者選了加 Codex 才走 A `/consensus-review`；很小且風險三條全綠可走 C，見 router §3），最後一定交給使用者人工 Code Review。
 > - Step 3 長出的 `CONTEXT.md`／`docs/adr/` 隨實作維護；Phase 6 建第二大腦時 MOC 連結過去，不複製。
 
 固定順序是：`consensus-plan（唯讀文件審查）→ 人工改文件 → implementation →

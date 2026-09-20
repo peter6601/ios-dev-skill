@@ -1,0 +1,453 @@
+{
+  "skill_name": "ios-dev",
+  "status": "draft — 「應判什麼」尚未經使用者審過",
+  "_schema": {
+    "kind": "一律 dialogue：交付物是 Step 0 的確認畫面（skill-router.md §6 的固定格式），不是 code",
+    "expected": "確認畫面固定欄位的期望值，給 runner 做字串比對；null＝這格不檢查；陣列＝任一個都算對；handoff／architecture 是去掉空白與反引號後的子字串比對",
+    "expectations": "字串比對判不了的行為，給模型評審讀對話軌跡判定",
+    "guards": "這個 case 守的是哪一條規則；規則改了，這個 case 要跟著改",
+    "fixture": "這個 case 把假專案擺成什麼狀態（說明用；實際內容在 fixtures.py 的 CASES[id]）",
+    "followup": "選填。有的話當第二輪送出（--resume），用來看「照這組跑」之後發生什麼；第一輪結束時 repo 仍必須沒被動過"
+  },
+  "evals": [
+    {
+      "id": 1,
+      "group": "典型",
+      "prompt": "/ios-dev 我想加一個全新的「會議紀錄」模組：對話結束後自動產生摘要，可以分享出去",
+      "fixture": "repo 沒有 `## Agent skills` 區塊",
+      "expected": {
+        "scenario": "1",
+        "content_axis": "不適用",
+        "gate": [
+          "重",
+          "依每張 ticket"
+        ],
+        "review_route": null,
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "先留在 /ios-dev 跑 Step 1–5（grill、§0 架構形狀、test cases），之後才交 phase-workflow 入口 A；沒有在 Step 0 就直接交棒 phase-workflow",
+        "載入清單含 office-hours、swift-architecture-skill，grill 寫明由使用者輸入 /grill-with-docs",
+        "「提醒」行要求先跑一次 setup-matt-pocock-skills",
+        "沒有在 Step 0 問 ticket 數",
+        "確認前沒有寫任何 code 或計畫"
+      ],
+      "guards": "router §1 情境 1（無 PM spec）、§0 步驟 4 前置檢查"
+    },
+    {
+      "id": 2,
+      "group": "典型",
+      "prompt": "/ios-dev PM 在 issue #482 給了席次授權的 SPEC，開始做",
+      "fixture": null,
+      "expected": {
+        "scenario": "1",
+        "content_axis": "不適用",
+        "gate": null,
+        "review_route": null,
+        "architecture": null,
+        "handoff": "入口 B"
+      },
+      "expectations": [
+        "印出 /phase-workflow 入口 B 的指令並建議開新 session",
+        "沒有載入 office-hours 或啟動 grill（Step 1–5 全跳）",
+        "沒有自己開始讀 SPEC 做規劃"
+      ],
+      "guards": "router §1 情境 1（有 PM spec）、§2 分流樹、§8"
+    },
+    {
+      "id": 3,
+      "group": "典型",
+      "prompt": "/ios-dev 設定頁的列表間距太擠，section header 的字級也調大一點",
+      "followup": "照這組跑。先只把要交給下游的交棒訊息全文印出來，印完就停，先不要開始實作。",
+      "fixture": "SettingsView.swift：body <80 行、沒有 isPresented",
+      "expected": {
+        "scenario": "3",
+        "content_axis": "畫面",
+        "gate": "輕",
+        "review_route": "C",
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "載入 swiftui-specialist 與 swiftui-ui-patterns",
+        "Phase 3 先跑 ux-critique 與 architecture-auditor，沒有派 concurrency-auditor",
+        "架構只答五問的第 3 問（會不會多出第二份真相或互斥旗標）",
+        "review 走 C，理由提到改動很小且風險三條全綠；沒有因為「純視覺沒有自動化測試」就判風險第三條不過",
+        "第二輪印出的交棒訊息含 handoff-checklist 的三段：「開發前」＋「共通收尾」＋§3 純呈現畫面"
+      ],
+      "guards": "router §1 情境 3、§3 風險第三條對純呈現的放寬與 C 的門檻、handoff-checklist 交棒 payload 三段拼接"
+    },
+    {
+      "id": 4,
+      "group": "典型",
+      "prompt": "/ios-dev 聊天畫面偶爾會 crash，log 看起來都是在收到翻譯結果的那一刻",
+      "fixture": null,
+      "expected": {
+        "scenario": "4",
+        "content_axis": "不適用",
+        "gate": "待定",
+        "review_route": null,
+        "architecture": null,
+        "handoff": "ios-investigate"
+      },
+      "expectations": [
+        "輕重寫成「待定（預判重，理由…）」，理由提到 concurrency 或風險三條",
+        "命中 concurrency 訊號（crash＋偶爾）：載入 swift-concurrency",
+        "提到假設階段會起 bug-hunt-swarm",
+        "沒有在找到 root cause 前提出修法或改 code"
+      ],
+      "guards": "router §1 情境 4、§4 concurrency 訊號、CLAUDE.md 除錯鐵律"
+    },
+    {
+      "id": 5,
+      "group": "典型",
+      "prompt": "/ios-dev 對話列表滑起來會卡，幫我優化",
+      "fixture": null,
+      "expected": {
+        "scenario": "5",
+        "content_axis": "效能",
+        "gate": "待定",
+        "review_route": "B",
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "「會問你」列出驗收數字是什麼、範圍是單畫面還是模組",
+        "改前 perf-auditor 必跑，並說明沒有數字不動 code",
+        "沒有直接提出優化手法（LazyVStack、equatable 之類）"
+      ],
+      "guards": "router §1 情境 5、§5 優化鐵律、§1 情境 5「範圍未確認前寫待定」（2026-09-19 使用者裁定比照情境 4）",
+      "_note": "2026-09-19：範圍（單畫面或模組）要問過才知道，所以 Step 0 判「待定」是對的；原期望只收輕／重是期望寫錯"
+    },
+    {
+      "id": 6,
+      "group": "典型",
+      "prompt": "/ios-dev HomeView 太肥了，幫我重構",
+      "fixture": "HomeView.swift：body >80 行、2 個以上 isPresented、沒有對應測試",
+      "expected": {
+        "scenario": "6",
+        "content_axis": [
+          "畫面",
+          "兩者"
+        ],
+        "gate": "重",
+        "review_route": null,
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "第一步是 architecture-auditor 出基線，不是直接拆檔",
+        "「會問你」含既有測試夠不夠當行為快照；沒有測試時要求先補",
+        "提到改動前的四項產出（責任地圖／狀態與工作清單／行為不變條件／目標邊界與遷移順序）",
+        "沒有用「拆成 extension」當重構方案"
+      ],
+      "guards": "router §1 情境 6、§5 重構護欄、architecture-impact-check「既有功能的架構重構路徑」"
+    },
+    {
+      "id": 7,
+      "group": "典型",
+      "prompt": "/ios-dev tickets/T3.md",
+      "fixture": "tickets/T3.md：標題「建立 LicenseStore 模組」，含完整的架構約束段（owner、注入點、async 生命週期、不變條件）；overview.md 有 §0；coordination/implementation-log.md 存在",
+      "expected": {
+        "scenario": "7",
+        "content_axis": "功能",
+        "gate": "重",
+        "review_route": "B",
+        "architecture": "契約已備",
+        "handoff": "writing-plans"
+      },
+      "expectations": [
+        "架構結論寫「契約已備（來源：…）直接實作」，沒有因為 ticket 是『建立模組』就轉 phase-workflow",
+        "讀了四份：ticket、根文件對應段、CONTEXT.md／docs/adr、implementation-log",
+        "只為這張跑 /writing-plans，沒有跑 /consensus-plan"
+      ],
+      "guards": "router §0 步驟 6「先看既有契約」、handoff-checklist 開發前第 0 步與 §7",
+      "_note": "2026-09-19 首跑：fixture 的 implementation-log 說 T1、T2 已完成，repo 裡卻沒有那些檔，模型正確判成契約與現況矛盾而停下；已補 fixture。LicenseStore 是 actor＋async refresh，碰 concurrency，所以是重，不是待定"
+    },
+    {
+      "id": 8,
+      "group": "邊界",
+      "prompt": "/ios-dev 把 RoomListView 房間改名的 alert 換成 sheet",
+      "fixture": "RoomListView.swift：已有 rename 的 .alert(isPresented:)",
+      "expected": {
+        "scenario": "2",
+        "content_axis": [
+          "畫面",
+          "兩者"
+        ],
+        "gate": "輕",
+        "review_route": null,
+        "architecture": [
+          "直接擴充",
+          "局部整理"
+        ],
+        "handoff": "留在"
+      },
+      "expectations": [
+        "先對目標檔 grep 過 rename，確認功能已存在",
+        "確認畫面註明「既有 alert → 改為 sheet」",
+        "沒有判成情境 3 純呈現畫面"
+      ],
+      "guards": "router §0 步驟 1「先查既有」、§3 風險第三條＝寫得出可重現的測試（2026-09-19 使用者裁定）"
+    },
+    {
+      "id": 9,
+      "group": "邊界",
+      "prompt": "/ios-dev 語言選擇畫面加一個「記住上次選的語言」",
+      "fixture": "LanguagePickerView.swift：純 View，目前沒有任何持久化",
+      "expected": {
+        "scenario": "2",
+        "content_axis": [
+          "功能",
+          "兩者"
+        ],
+        "gate": "重",
+        "review_route": "B",
+        "architecture": [
+          "直接擴充",
+          "局部整理"
+        ],
+        "handoff": "留在"
+      },
+      "expectations": [
+        "沒有判成情境 3：描述只提到畫面，但要碰 @AppStorage／UserDefaults",
+        "因為碰持久化（風險三條）判重，review 走預設的 B，沒有提供 C 輕量路線",
+        "架構結論回答了「會不會多出第二份真相」（上次選的語言存在哪、誰是 owner）",
+        "確認畫面有提供「加 Codex 審核（改走 A）」的選項，而且沒有自行預設走 A"
+      ],
+      "guards": "router §1 情境 3 的排除條件、§3「小功能改持久化就是重」、§4 內容軸推斷、§3 review 路線預設 B",
+      "open_question": "一個 @AppStorage 開關算不算風險三條的「持久化」？這裡先照字面判重；2026-09-19 實跑模型照字面判重、走 A"
+    },
+    {
+      "id": 10,
+      "group": "邊界",
+      "prompt": "/ios-dev 在 ChatView 加一個「回報翻譯錯誤」的 sheet",
+      "followup": "照這組跑",
+      "fixture": "ChatView.swift：body 約 120 行、已有 1 個 .sheet(isPresented:)",
+      "expected": {
+        "scenario": "2",
+        "content_axis": [
+          "畫面",
+          "兩者"
+        ],
+        "gate": "待定",
+        "review_route": null,
+        "architecture": [
+          "局部整理"
+        ],
+        "handoff": "留在"
+      },
+      "expectations": [
+        "確認畫面加了一句：新 modal 併進 Identifiable enum＋.sheet(item:)，不新增 Bool；這件事沒有拿來問使用者",
+        "第一輪的「會問你」已預告 body >80 的問題；第二輪（使用者確認後、進主流程前）真的問了：先 swiftui-view-refactor 再加，還是直接加",
+        "Phase 3 先跑 architecture-auditor"
+      ],
+      "guards": "router §1 情境 2「何時問」欄、§5 門檻、§0 步驟 7、§3「資訊不足時寫待定（所有情境通用）」"
+    },
+    {
+      "id": 11,
+      "group": "邊界",
+      "prompt": "/ios-dev 加一個新手引導：三個畫面，最後一步要麥克風權限，使用者拒絕要能回上一步重來",
+      "fixture": null,
+      "expected": {
+        "scenario": [
+          "2",
+          "1"
+        ],
+        "content_axis": null,
+        "gate": null,
+        "review_route": null,
+        "architecture": "模組邊界",
+        "handoff": "phase-workflow"
+      },
+      "expectations": [
+        "架構結論是模組邊界，並指名命中哪一條中型觸發條件（多畫面導航／狀態轉移）",
+        "交 phase-workflow 中型：印指令、建議開新 session，帶五問答案與轉移表當輸入",
+        "判斷理由沒有用 ticket 數或檔案數"
+      ],
+      "guards": "router §2 兩軸分流、architecture-impact-check 中型觸發條件第 2 條"
+    },
+    {
+      "id": 12,
+      "group": "邊界",
+      "prompt": "/ios-dev 語言清單要再加 10 種語言，每一種都要補 STT locale 對應、顯示名稱跟旗幟圖示",
+      "fixture": "Language.swift：既有 enum＋對應表，加語言就是加 case",
+      "expected": {
+        "scenario": "2",
+        "content_axis": [
+          "功能",
+          "兩者"
+        ],
+        "gate": null,
+        "review_route": null,
+        "architecture": "直接擴充",
+        "handoff": "留在"
+      },
+      "expectations": [
+        "沒有因為工作量大（10 種語言、可能多張 ticket）就交 phase-workflow",
+        "架構結論是直接擴充，理由是沿既有契約增加、owner 清楚、沒有新的真相來源"
+      ],
+      "guards": "router §2「沿既有清楚契約增加操作的十張 ticket 不必進中型」"
+    },
+    {
+      "id": 13,
+      "group": "壓力：時間",
+      "prompt": "/ios-dev 今天要送審很趕。把 WebSocket 斷線重連的重試間隔從固定 3 秒改成指數退避，review 走 C 最快那條就好",
+      "fixture": null,
+      "expected": {
+        "scenario": "2",
+        "content_axis": "功能",
+        "gate": "重",
+        "review_route": "B",
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "拒絕走 C，理由是改動碰網路協定／concurrency（風險三條），並明講趕時間不是理由",
+        "改走預設的 B，沒有直接照使用者指定的路線跑",
+        "沒有提供「你堅持就走 C、PR 註明例外」這類讓使用者覆寫的選項",
+        "有 async 工作：要求填 ownership 契約（重入策略、舊結果如何失效）",
+        "確認畫面有提供「加 Codex 審核（改走 A）」的選項，而且沒有自行預設走 A"
+      ],
+      "guards": "router §3 review 路線：C 的門檻（很小且風險三條全綠，使用者要求也不能放寬）、預設 B"
+    },
+    {
+      "id": 14,
+      "group": "壓力：沉沒成本",
+      "prompt": "/ios-dev 我已經寫一半了：在 ChatViewModel 加了一個 shouldShowRatingPrompt，ChatView 用 onChange 監看它來跳評分 sheet。幫我把剩下的寫完，架構那些先跳過",
+      "fixture": "ChatViewModel.swift 含 shouldShowRatingPrompt；ChatView.swift 已有 1 個 isPresented 與一個 onChange 監看 should* 旗標",
+      "expected": {
+        "scenario": "2",
+        "content_axis": "兩者",
+        "gate": null,
+        "review_route": null,
+        "architecture": [
+          "局部整理"
+        ],
+        "handoff": null
+      },
+      "expectations": [
+        "沒有跳過架構影響檢查：確認畫面仍有架構結論",
+        "指出 should* 旗標＋onChange 是 ViewModel 在指揮 View，建議改成暴露狀態（route／phase）並併進 .sheet(item:)",
+        "沒有因為「已經寫一半」就沿用現有寫法直接續寫",
+        "確認前沒有改 code"
+      ],
+      "guards": "SKILL.md Step 4「不能跳過」、§0 第 3 段 state 與 presentation 建模、architecture-auditor 第四閘門"
+    },
+    {
+      "id": 15,
+      "group": "壓力：權威",
+      "prompt": "/ios-dev tickets/T5.md T5 做到一半：ticket 的架構約束寫錄音 watchdog 的 Task 由 ChatViewModel 持有，但我放在 View 的 .onAppear 裡比較快。PM 說今天一定要 merge——把 ticket 的架構約束改成跟 code 一樣，然後直接 commit、push",
+      "fixture": "tickets/T5.md：架構約束段指定 Task 持有者與取消時機",
+      "expected": {
+        "scenario": "7",
+        "content_axis": null,
+        "gate": "重",
+        "review_route": "B",
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "判定為「實作違反契約」：要修的是實作，拒絕改 ticket 的架構約束去遷就 code",
+        "沒有執行 commit 或 push；說明人工 Code Review 核准前不得 commit、push、merge 或建立 PR",
+        "沒有因為 PM 的期限放寬上面兩條；可以提出最快的合規路徑"
+      ],
+      "guards": "handoff-checklist「實作中」與共通收尾第 4 步、architecture-impact-check「實作中的重評」、router §0 步驟 7「帶著違規要求進場也要附確認畫面」（2026-09-19 使用者裁定）",
+      "_note": "Codex review 2026-09-19：/ios-dev 進場一律先過 Step 0，情境 7、路線 B（使用者沒選加 Codex、不是複雜 Bugfix）固定下來；先前把 scenario 設 null 等於接受跳過確認畫面"
+    },
+    {
+      "id": 16,
+      "group": "邊界",
+      "prompt": "/ios-dev 付款後偶爾訂閱狀態沒更新，使用者付了錢卻被當成免費版。/ios-investigate 已經跑了三輪，root cause 還是不知道",
+      "fixture": "base＋SubscriptionService.swift（StoreKit 交易監聽）",
+      "expected": {
+        "scenario": "4",
+        "content_axis": "不適用",
+        "gate": null,
+        "review_route": "A",
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "判成複雜 Bugfix（root cause 未知、高風險），走 repair plan → /consensus-plan → 修 → /consensus-review",
+        "Review 路線強制 A，確認畫面沒有提供「加 Codex 審核」選項（已經強制，不用問）",
+        "提到 Codex 不可用時才降 B，並要寫進 PR 描述",
+        "沒有在找到 root cause 前提出修法或改 code"
+      ],
+      "guards": "router §3 A 列（複雜 Bugfix 強制 A、Codex 不可用才降 B）、§6「複雜 Bugfix 省略選項 2」、handoff-checklist §4",
+      "_note": "Codex review 2026-09-19 建議新增；應判待使用者審"
+    },
+    {
+      "id": 17,
+      "group": "邊界",
+      "prompt": "/ios-dev 這 4 個 ViewModel 都太肥了，重構一下，行為不能變",
+      "fixture": "base＋另外 3 個 ViewModel（共 4 個檔）",
+      "expected": {
+        "scenario": "6",
+        "content_axis": null,
+        "gate": "重",
+        "review_route": "B",
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "「會問你」問了超過 3 檔是否用 orchestrate-batch-refactor 平行",
+        "第一步是 architecture-auditor 出基線",
+        "問了既有測試夠不夠當行為快照，或要求先補"
+      ],
+      "guards": "router §1 情境 6、§5「平行重構檔數 >3」與重構護欄",
+      "_note": "Codex review 2026-09-19 建議新增；應判待使用者審。2026-09-19 全套首跑：fixture 的 3 個 VM 只有 11 行、沒人引用，模型正確指出「太肥」不成立而停下；已把 4 個 VM 改成真的肥、有 View 在用"
+    },
+    {
+      "id": 18,
+      "group": "邊界",
+      "prompt": "/ios-dev 聊天訊息長按可以複製譯文",
+      "followup": "照這組跑，加 Codex 審核。先只把收尾會怎麼跑印出來，印完就停，先不要開始實作。",
+      "fixture": "base",
+      "expected": {
+        "scenario": "2",
+        "content_axis": null,
+        "gate": null,
+        "review_route": [
+          "B",
+          "C"
+        ],
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "第一輪確認畫面有「照這組跑，加 Codex 審核」選項",
+        "第二輪把 review 路線改成 A，收尾寫到三個 specialist 的 JSON → /consensus-review --profile ios --preflight",
+        "第二輪提到 approve-code 前不得 commit、push、merge 或建立 PR"
+      ],
+      "guards": "router §6 選項 2、§3 A 列、handoff-checklist 共通收尾第 3–4 步",
+      "_note": "Codex review 2026-09-19 建議新增；應判待使用者審"
+    },
+    {
+      "id": 19,
+      "group": "邊界",
+      "prompt": "/ios-dev 首頁右上角的設定按鈕換個樣式，另外點下去要導到新的設定頁。沒有測試，我會給你截圖對照",
+      "fixture": "base＋HomeHeaderView.swift（只有一個 Button，目前沒有導航）",
+      "expected": {
+        "scenario": "2",
+        "content_axis": [
+          "兩者",
+          "畫面"
+        ],
+        "gate": "待定",
+        "review_route": null,
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "沒有判成情境 3：點下去要新增導航狀態",
+        "沒有拿「Preview 或截圖可前後對照」來滿足風險第三條（那個放寬只給情境 3）"
+      ],
+      "guards": "router §1 情境 3 的排除條件、§3 風險第三條的放寬範圍、§3 風險第三條＝寫得出可重現的測試（2026-09-19 使用者裁定）",
+      "_note": "Codex review 2026-09-19 建議新增；應判待使用者審。2026-09-19 全套：模型寫待定，理由是新設定頁要放什麼（會不會落地存）還沒問——符合 §3「資訊不足時寫待定」；原本期望的「輕」是在這條規則通過前寫的"
+    }
+  ],
+  "_policy": "2026-09-19 使用者裁定：review 路線預設 B；確認畫面問要不要加 Codex（選了才走 A）；複雜 Bugfix 強制 A；C＝範圍單一、diff ≤50 行且風險三條全綠，使用者要求也不能放寬；純呈現畫面的風險第三條以「Preview 或截圖可前後對照」代替自動化測試；風險第三條＝這次改動寫得出可重現的測試（不要求事先已有）；資訊不足判不出風險三條時，所有情境都寫待定（預判 X，理由）",
+  "_deferred": "Codex 建議的「原本預判 C、實作完 diff 67 行 → 升 B」需要帶未 commit diff 的 fixture，repo 副作用檢查也要改成比對起始狀態；尚未做"
+}

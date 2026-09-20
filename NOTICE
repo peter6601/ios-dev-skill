@@ -20,6 +20,21 @@ rewritten for the Swift / SwiftUI / UIKit / StoreKit stack; the hook script
 skills/careful-ios/bin/check-careful-ios.sh is an independent implementation.
 
 ------------------------------------------------------------------------
+agent-skills — https://github.com/addyosmani/agent-skills
+Copyright (c) 2025 Addy Osmani — MIT License (LICENSES/MIT-agent-skills.txt)
+
+Borrowed from:
+  skills/ios-dev/evals/            the layered eval idea: a per-skill case file
+                                   (trigger prompts + behavioural expectations) run
+                                   against the skill, plus a structural check that
+                                   needs no model
+  skills/ios-dev/scripts/validate-router.py
+
+Changes: no code was copied. The cases, fixtures, runner, sandboxing, provenance
+tracking and the reference-integrity checks are an independent implementation for
+this repository's router.
+
+------------------------------------------------------------------------
 Impeccable — https://github.com/pbakaus/impeccable
 Copyright 2025 Paul Bakaus — Apache License 2.0 (LICENSES/Apache-2.0-impeccable.txt)
 

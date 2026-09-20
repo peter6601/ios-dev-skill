@@ -20,14 +20,14 @@
    - **有且涵蓋得了**（情境 7 接 ticket 最常見）→ **留在實作路徑，不要因為它命中「新增模組」之類的觸發條件就轉走**；那條觸發正是它被規劃出來的原因。確認畫面寫「契約已備（來源：<根文件／ticket>），直接實作」。
    - **沒有、有缺漏、或這次範圍超出它** → 照 `architecture-impact-check.md` 的五問判出**直接擴充／局部整理／模組邊界**；命中中型觸發條件就改走 §2 的中型路線，**回流時只帶缺的那幾格**，不重跑整套規劃。
    結論寫進下一步的確認畫面。
-7. **確認一次**：用 §6 的格式出一題 AskUserQuestion；使用者選「照這組跑」才往下。§5 的門檻問題（body >80）在這一題之後、進主流程之前用第二題問。
-8. **交棒**：依「主流程」欄啟動第一個 skill。情境 1（無 PM spec）與情境 2 留在 `/ios-dev` 走 Step 1–8；情境 1 有 PM spec 立即交棒 `phase-workflow` 入口 B（Step 1–5 全跳）；情境 3–7 交棒後 `/ios-dev` 不再介入執行，但**要把 `handoff-checklist.md` 該情境那一段原樣印進交棒訊息**——下游 skill 不知道還有收尾。交棒到 `phase-workflow` 時一律印指令、建議開新 session（§8）。
+7. **確認一次**（**帶著違規要求進場也一樣**：訊息同時要求改契約遷就 code、直接 commit／push、跳過流程時，先回應違規那一點——不照做、說明是哪條規則、給合規的最快做法——但**同一則回覆仍要附確認畫面**；確認畫面決定收尾派哪些 agent，省掉它收尾就會比規則輕）：用 §6 的格式出一題 AskUserQuestion；使用者選「照這組跑」或「照這組跑，加 Codex 審核」才往下（後者把 review 路線改成 A）。§5 的門檻問題（body >80）在這一題之後、進主流程之前用第二題問。
+8. **交棒**：依「主流程」欄啟動第一個 skill。情境 1（無 PM spec）與情境 2 留在 `/ios-dev` 走 Step 1–8；情境 1 有 PM spec 立即交棒 `phase-workflow` 入口 B（Step 1–5 全跳）；情境 3–7 交棒後 `/ios-dev` 不再介入執行，但**要把 `handoff-checklist.md` 的三段原樣印進交棒訊息：「開發前」＋「共通收尾」＋該情境那一段**——情境段只是前兩段的簡寫，單獨貼過去下游讀不到收尾規則。交棒到 `phase-workflow` 時一律印指令、建議開新 session（§8）。
 
 ## 1. 七情境組合表
 
 **輕／重只決定 Phase 3 做多少工**（派幾個 auditor、要不要統一修復循環）；**誰當第二雙眼睛由 §3 的 review 路線決定**，兩者正交。
 **輕**＝該情境指定的單一 auditor（有的話）先跑、findings 併入 → `ios-review`（兩輪，fix-first）→ 依所選路線收尾 → 人工 Code Review。
-**重**＝先派閘門 agent（依情境裁，全部唯讀）＋`review-swarm` → 統一修復 → `/ios-polish` → verification → 依所選路線收尾 → 人工 Code Review。三個 specialist 是 `--profile ios` 的入場券（`--preflight` 必填，且只認 `swiftui`／`ux`／`resilience` 三個 category），輕重都免不了；輕省下的是 6 個閘門 agent、`review-swarm` 與 Phase 3 的統一修復循環。完整順序以 `handoff-checklist.md` 的共通收尾為準。
+**重**＝先派閘門 agent（依情境裁，全部唯讀）＋`review-swarm` → 統一修復 → `/ios-polish` → verification → 依所選路線收尾 → 人工 Code Review。三個 specialist（`swiftui-reviewer`／`ux-critique`／`resilience-auditor`）走 A 或 B 都要跑、輕重都免不了——走 A 時它們的 JSON 還是 `--profile ios` 的入場券（`--preflight` 必填，且只認 `swiftui`／`ux`／`resilience` 三個 category）；只有走 C 不派。輕省下的是 6 個閘門 agent、`review-swarm` 與 Phase 3 的統一修復循環。完整順序以 `handoff-checklist.md` 的共通收尾為準。
 
 | 情境 | 內容軸 | 主流程 | 主 session 載入 | 派 agent | 何時問 | 收尾 |
 |---|---|---|---|---|---|---|
@@ -35,9 +35,9 @@
 | **2 小功能** | 問 | Step 1 → Step 2（有第二大腦才讀）→ Step 3 縮 1 輪 → Step 5 test cases → Step 6 短 plan → Step 7 `/consensus-plan` → `/subagent-driven-development` → 輕 | 功能：專案層 framework skill（自動）＋`swift-concurrency`；畫面：`swiftui-specialist`＋`swiftui-ui-patterns`；兩者都載 | 輕，外加一個先跑：畫面→`architecture-auditor`；功能且符合 §4 concurrency 訊號→`concurrency-auditor` | 目標 view body >80 行：先 `swiftui-view-refactor` 再加，還是直接加。目標 view 已有 ≥1 個 `isPresented`：不問，確認畫面加一句「新 modal 併進 `Identifiable` enum＋`.sheet(item:)`，不新增 Bool」 | 留在 `/ios-dev` Step 1–8 |
 | **3 純呈現畫面**（只動版面、樣式、動畫；一碰驗證、持久化、連線、VM 狀態、導航或 async 就**不是**這一列）| 固定畫面 | 答架構五問的第 3 問（會不會多出第二份真相或互斥旗標）→ 直接 Phase 2 → `ios-polish` → 輕 | `swiftui-specialist`＋`swiftui-ui-patterns` | 輕＋先跑 `ux-critique`＋`architecture-auditor` | 同上 body >80 與 isPresented 規則 | `handoff-checklist.md` §3 |
 | **4 修正**（bug／issue／維護期） | 不問（填「不適用」） | 有第二大腦先由 `/ios-dev` 讀該功能 MOC（Step 2 的 context budget）→ `/ios-investigate` 五階段 → 修 → 輕或重。root cause 未知或高風險時回 `/ios-dev` Step 1 的「複雜 Bugfix」路徑（repair plan → `/consensus-plan` → 修 → `/consensus-review`） | `ios-investigate`；crash／regression／flaky 在假設階段起 `bug-hunt-swarm`；符合 §4 concurrency 訊號→`swift-concurrency` | 五條件定輕重，確認畫面寫「待定（預判 X，理由）」；重時派 5 個（裁掉 `ux-critique`） | 不問 | `handoff-checklist.md` §4 |
-| **5 優化** | 問（效能／行為） | 先量 → 改 → 再量對比 → 重（單畫面改輕） | `swiftui-performance-audit`、`swift-concurrency`、`swiftui-expert-skill/references/performance-patterns.md` | 改前 `perf-auditor` 必跑（疑慮→`trace-analyzer` 錄 trace）；改後 `perf-auditor` 再跑 | 驗收數字是什麼；範圍單畫面還是模組 | `handoff-checklist.md` §5 |
+| **5 優化** | 問（效能／行為） | 先量 → 改 → 再量對比 → 重（單畫面改輕） | `swiftui-performance-audit`、`swift-concurrency`、`swiftui-expert-skill/references/performance-patterns.md` | 改前 `perf-auditor` 必跑（疑慮→`trace-analyzer` 錄 trace）；改後 `perf-auditor` 再跑。範圍未確認前，確認畫面的輕重寫「待定（預判 X，理由）」，問完範圍再定 | 驗收數字是什麼；範圍單畫面還是模組 | `handoff-checklist.md` §5 |
 | **6 重構** | 問 | 照 `architecture-impact-check.md`「既有功能的架構重構路徑」：`architecture-auditor` 出基線 → 四項產出（責任地圖／狀態與工作清單／行為不變條件＋補測試／目標邊界與遷移順序）→ `swift-architecture-skill` Deep Refactor Mode 定目標形狀（記 ADR）→ **沿完整行為切分**逐段改 → 測試前後綠 → `architecture-auditor` 對比 → 重。涉及多個 state owner／presentation 流程／async 生命週期時走 `phase-workflow` 重構規劃模式 | `swift-architecture-skill`、`swiftui-view-refactor`（畫面）、`swift-concurrency`（功能）、`orchestrate-batch-refactor`（>3 檔） | 前後 `architecture-auditor`；結束重（純畫面重構省 `concurrency-auditor`） | >3 檔是否平行；既有測試夠不夠當行為快照 | `handoff-checklist.md` §6 |
-| **7 接 ticket** | 從 ticket 檔案清單推斷 | 讀 ticket＋根文件對應段＋`CONTEXT.md`／`docs/adr/`＋`coordination/implementation-log.md` → `/writing-plans`（只為這張，不跑 consensus-plan）→ `/subagent-driven-development` → 五條件定輕重 → `/consensus-review` → 回寫 ticket 狀態與 implementation-log → 問「接下一張？」 | 同小功能那列，依內容軸 | 五條件定輕重 | 不問；全部 ticket 完成時提醒 Phase 5 worklog 與 Phase 6 second-brain | `handoff-checklist.md` §7（完整流程在那裡，SKILL.md 不另寫） |
+| **7 接 ticket** | 從 ticket 檔案清單推斷 | 讀 ticket＋根文件對應段＋`CONTEXT.md`／`docs/adr/`＋`coordination/implementation-log.md` → `/writing-plans`（只為這張，不跑 consensus-plan）→ `/subagent-driven-development` → 五條件定輕重 → 依所選 review 路線收尾（§3，預設 B）→ 回寫 ticket 狀態與 implementation-log → 問「接下一張？」 | 同小功能那列，依內容軸 | 五條件定輕重 | 不問；全部 ticket 完成時提醒 Phase 5 worklog 與 Phase 6 second-brain | `handoff-checklist.md` §7（完整流程在那裡，SKILL.md 不另寫） |
 
 ## 2. 兩軸分流：工作量 × 責任邊界
 
@@ -81,24 +81,26 @@ ticket 數**只決定 `phase-workflow` 的輸出規模**（中型 4 份檔／大
 - 輕：小功能、純畫面（這兩個只受風險三條約束）；以及風險三條全綠**且**規模兩條符合的修正與 ticket
 - 重：情境 1、模組級優化、重構，以及**任何踩到風險三條的情境**
 - **五條件拆成兩類，適用範圍不同**（這是「兩套答案」的唯一解法）：
-  - **風險三條——所有情境、初判與重判都適用**：不碰 concurrency／state machine／持久化／網路協定／migration；不改公開契約；有直接可重現的測試。**踩到任何一條就是重**，不論情境是什麼——小功能改持久化就是重。
+  - **風險三條——所有情境、初判與重判都適用**：不碰 concurrency／state machine／持久化／網路協定／migration；不改公開契約；這次改動**寫得出**直接可重現的測試（本次會補上即可，不要求動手前就已有測試；**情境 3 純呈現畫面**改成：有 Preview 或截圖可前後對照——純視覺調整沒有自動化測試可寫，不因此算踩線；一碰狀態、導航或 async 就不是情境 3，這條放寬也跟著失效）。**踩到任何一條就是重**，不論情境是什麼——小功能改持久化就是重。
   - **規模兩條——只用在情境 4（修正）與情境 7（接 ticket）**：範圍單一且清楚；production diff ≤50 行。小功能與純畫面本來就可能超過 50 行，不套這兩條。
+- **資訊不足時寫待定（所有情境通用）**：Step 0 還判不出風險三條（範圍、資料送去哪、會不會碰持久化或網路都還沒問清楚）時，確認畫面的輕重寫「待定（預判 X，理由）」，問完再定——不要先假設一個答案寫成輕或重。情境 4、5 的待定就是這一條。
 - **判定優先序**：情境決定工作流程（載哪些 skill、派哪些 agent），五條件只決定審查強度。
 - **實作完成後重判一次（所有情境）**：只看風險三條——實作過程中碰到持久化、改了公開契約、或測不出來，就從輕升重，補派該情境的閘門 agent 再收尾；情境 4、7 另加規模兩條。
 
-### Review 路線（三選一，`/consensus-review` 是預設不是唯一）
+### Review 路線（三選一，預設 B；要不要加 Codex 由使用者在確認畫面決定）
 
-輕／重決定做多少工，這一欄決定**誰當第二雙眼睛**。在 Step 0 的確認畫面就講出這次走哪條。
+輕／重決定做多少工，這一欄決定**誰當第二雙眼睛**。在 Step 0 的確認畫面就講出這次走哪條，並用 §6 的選項問一次「要不要加 Codex 審核」——選了才走 A。
 
 | 路線 | 怎麼跑 | 什麼時候選 |
 |---|---|---|
-| **A 共識**（預設） | 三個 specialist 各回 JSON → `/consensus-review --profile ios --preflight` → Codex 首輪 → 合併 → 單一 Claude 統一修復 → re-review | 改動會進 main、想要 Codex 這個外部模型的第二意見、額度正常 |
-| **B 純 agent** | 三個 specialist ＋ 該情境的 auditor（唯讀）→ 主 session 一次統一修復 → `/ios-polish` → `/verification-before-completion` | Codex 不可用（529／額度用完／context 過大導致輸出退化）、或這次不想耗一次共識額度 |
-| **C 輕量** | `ios-review`（兩輪 fix-first）→ `/verification-before-completion` | **風險三條全綠**的小改動、純設定或文件。趕時間**不是**理由：踩到風險三條的改動一律不得走 C，至少走 B |
+| **A 共識** | 三個 specialist 各回 JSON → `/consensus-review --profile ios --preflight` → Codex 首輪 → 合併 → 單一 Claude 統一修復 → re-review | **使用者在確認畫面選了「加 Codex 審核」**；或**複雜 Bugfix**（root cause 未知或高風險）——這是唯一不問、強制走 A 的情況，Codex 不可用才降 B（Codex 不可用＝`ai-review` 回 529、額度用完，或 context 過大導致輸出退化；降級要寫進 PR 描述） |
+| **B 純 agent**（預設） | 三個 specialist ＋ 該情境的 auditor（唯讀）→ 主 session 一次統一修復 → `/ios-polish` → `/verification-before-completion` | **預設**。使用者沒選加 Codex、又不符合 C 的門檻時都走這條 |
+| **C 輕量** | `ios-review`（兩輪 fix-first）→ `/verification-before-completion` | **很小且風險三條全綠**：範圍單一、production diff ≤50 行，**而且**風險三條全綠；純設定或文件同理。只調間距、字級、顏色的純呈現小改動就是這一條的典型。這裡的規模兩條**所有情境都套**（跟上面定輕重時只套情境 4、7 不同）。趕時間**不是**理由，**使用者要求也不行**：踩到風險三條或超過規模就走 B——不要提供「你堅持就走 C、PR 註明例外」這種選項 |
 
 - 三條路線的終點都是**人工 Code Review**，這一站不可省；A 路線另有 `approve-code` 的硬閘門。
 - **B、C 沒有外部模型交叉驗證**，PR 描述要註明走的是哪條路線，讓 reviewer 知道這份 diff 沒被 Codex 看過。
 - 選了 A 才有「`init` 前／後誰能改 code」的分界；B、C 全程由主 session 修，但一樣只修一次、修完就驗證。
+- **C 是預判，實作完成後跟輕重一起重判**：diff 超過 50 行、或實作中踩到風險三條，就從 C 升 B。
 
 ## 4. 內容軸推斷規則
 
@@ -129,14 +131,17 @@ ticket 數**只決定 `phase-workflow` 的輸出規模**（中型 4 份檔／大
 題目：情境＝<情境名>（內容＝<功能／畫面／兩者／不適用>）<既有功能時加：既有 X → 改為 Y>。這次會：
   載入：<skill a>、<skill b>、<skill c>
   Phase 3 派：<agent d>、<agent e>（<輕／重／待定（預判 X，理由）>）
-  Review 路線：<A 共識（預設）／B 純 agent／C 輕量>（<一句理由>）
+  Review 路線：<B 純 agent（預設）／C 輕量（很小且風險三條全綠）／A 共識（複雜 Bugfix 強制）>（<一句理由>）
   架構結論：<契約已備（來源：根文件／ticket）直接實作／直接擴充／局部整理（範圍）／模組邊界（命中哪條觸發條件）>；<要不要產轉移表／async 契約>
   交棒：<第一個 skill 或指令；情境 1 無 PM spec 與情境 2 寫「留在 /ios-dev Step 1」；交棒 phase-workflow 寫指令＋「建議新 session」>
   會問你：<何時問欄的內容，或「不問」>
   提醒：<§0 前置檢查或硬規則，沒有就省略此行>
 選項：
   1. 照這組跑（Recommended）
-  2. 我要調整（用 Other 說明要加減什麼）
+  2. 照這組跑，加 Codex 審核（review 改走 A 共識）
+  3. 我要調整（用 Other 說明要加減什麼）
+
+複雜 Bugfix 已強制走 A，省略選項 2。
 ```
 
 ## 7. 不進表、永遠生效
