@@ -17,7 +17,7 @@
   - tools 含 Bash → sandbox_mode = "workspace-write"（要跑 build／trace 工具、會寫快取），
     並在 developer_instructions 開頭加一句唯讀提醒——Codex 沒有逐工具白名單，只能靠這句話
   - 其他工具組合（Write、Edit…）不猜，直接報錯，要先改這支腳本決定怎麼對應
-  - 本文裡的 ~/.claude/skills/<skill 名稱> 換成在 Codex 上找到的實際位置；
+  - 本文裡的 ~/.claude/skills/<skill 名稱>（或 ~/.claude/commands/<skill 名稱>）換成在 Codex 上找到的實際位置；
     找不到就換成「<找不到 <skill 名稱>：請先安裝>」並警告，但不讓整支失敗
   - 只覆寫第一行有本工具標記的 .toml；沒標記的同名檔（使用者自己寫的）跳過並警告
 
@@ -46,8 +46,9 @@ READ_ONLY_TOOLS = {"Read", "Grep", "Glob"}
 SHELL_TOOLS = {"Bash"}
 BASH_PREAMBLE = "你是唯讀審查 agent：可以執行指令收集資訊，但不准修改專案檔案。"
 
-# ~/.claude/skills/<skill 名稱>；名稱只收 skill 目錄常見的字元，句尾標點不會被吃進去
-CLAUDE_SKILL_REF = re.compile(r"~/\.claude/skills/([A-Za-z0-9_-]+)")
+# ~/.claude/skills/<skill 名稱>，或把 skill 目錄掛在 commands/ 底下的 ~/.claude/commands/<skill 名稱>；
+# 名稱只收 skill 目錄常見的字元，句尾標點不會被吃進去
+CLAUDE_SKILL_REF = re.compile(r"~/\.claude/(?:skills|commands)/([A-Za-z0-9_-]+)")
 # 改寫完還留著的 ~/.claude/ 路徑（不是 skill 引用）：Codex 上一樣不存在，要提醒
 LEFTOVER_CLAUDE_PATH = re.compile(r"(~|\$HOME|\$\{HOME\})/\.claude/")
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_-]+$")

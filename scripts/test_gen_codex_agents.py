@@ -169,6 +169,19 @@ class SkillPaths(GenBase):
         self.assertNotIn("~/.claude", body)
         self.assertNotIn("警告", p.stdout)
 
+    def test_commands_style_reference_is_rewritten_too(self):
+        """有些安裝方式把 skill 目錄掛在 ~/.claude/commands/ 底下，agent 會寫那種路徑。"""
+        root = os.path.join(self.tmp, "roots", "one")
+        self.make_skill(root, "delta")
+        body = "讀 `~/.claude/commands/delta/references/rules.md`\n"
+        self.write_agent("a.md", agent_md("a", "Read", body))
+        p = self.run_gen("--skills-root", root)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        out = self.generated("a")["developer_instructions"]
+        self.assertIn(f"`{root}/delta/references/rules.md`", out)
+        self.assertNotIn("~/.claude", out)
+        self.assertNotIn("警告", p.stdout)
+
     def test_roots_are_searched_in_order(self):
         first = os.path.join(self.tmp, "first")
         second = os.path.join(self.tmp, "second")
