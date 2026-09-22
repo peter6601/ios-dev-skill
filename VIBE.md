@@ -5,11 +5,13 @@
 ## 你需要
 
 - 一台 Mac，從 App Store 裝好 **Xcode**，打開一次、同意授權條款
-- **Claude**：Claude 桌面 app（推薦，可以看著 AI 操作模擬器）或 Claude Code。Codex 版本準備中
+- **Claude 或 Codex**（擇一，兩個都有也行）：
+  - Claude 桌面 app（推薦，可以看著 AI 操作模擬器）或 Claude Code
+  - Codex 桌面 app（推薦）或 Codex CLI
 - 一支 iPhone（沒有也可以，改在電腦上的模擬器試）
 - 一個 Apple 帳號（免費的就可以）
 
-## 安裝：把這段話貼給 Claude
+## 安裝：把這段話貼給 Claude 或 Codex
 
 ```text
 請幫我安裝 iOS vibe 開發工具：
@@ -18,17 +20,17 @@
 3. 我同意之後，再執行 ./install.sh --vibe --yes，把結果用白話告訴我；有沒裝成功的，帶我一步一步補裝。
 ```
 
-裝好後重新打開 Claude。
+裝好後重新打開 Claude 或 Codex。**用 Codex 的話多一步**：輸入 `/hooks`，把「careful-ios」那一條設為信任。它會在 AI 想執行危險指令（例如刪掉整個資料夾）時擋下來，只要設一次。
 
 ## 開始
 
-輸入 `/ios-vibe`，接著用白話說你想做什麼：
+Claude 輸入 `/ios-vibe`、Codex 輸入 `$ios-vibe`，接著用白話說你想做什麼：
 
 ```text
 /ios-vibe 我想做一個記帳 app，可以記每天花了多少錢
 ```
 
-之後每次想加功能、改畫面、回報哪裡怪怪的，一樣用 `/ios-vibe` 開頭說就好。
+之後每次想加功能、改畫面、回報哪裡怪怪的，一樣用 `/ios-vibe`（Codex 是 `$ios-vibe`）開頭說就好。
 
 ## 過程中會發生什麼
 
@@ -73,8 +75,8 @@
 
 - **沒有人類讀過 AI 寫的程式碼**。每張試用卡都會寫明這件事，以及這次有哪些 AI 審查過。app 如果要給很多人用，建議請工程師看過再上架。
 - **用免費 Apple 帳號裝到 iPhone 的 app，大約 7 天後會打不開**，跟 AI 說一聲它就會重新幫你裝。免費帳號同時最多裝 3 個自己做的 app。
-- 想更仔細檢查，可以讓另一家公司的 AI（Codex）也看一次：第一次使用時 AI 會問你，需要 ChatGPT 帳號。
+- 想更仔細檢查，可以讓另一家公司的 AI（Codex）也看一次：第一次使用時 AI 會問你，需要 ChatGPT 帳號。這個選項只有「主要用 Claude、也裝了 Codex」時才有。
 
 ## 解除安裝
 
-把這句話貼給 Claude：「請在 ~/Developer/ios-dev-skill 執行 ./install.sh --vibe --uninstall，並告訴我移除了什麼。」
+把這句話貼給 Claude 或 Codex：「請在 ~/Developer/ios-dev-skill 執行 ./install.sh --vibe --uninstall，並告訴我移除了什麼。」

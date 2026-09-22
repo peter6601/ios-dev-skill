@@ -1,6 +1,6 @@
 # ios-dev-skill
 
-給 [Claude Code](https://claude.com/claude-code) 的 iOS／SwiftUI 開發工具組，涵蓋需求規劃、實作、除錯與審查。依你讀不讀程式碼，有兩個入口：
+給 [Claude Code](https://claude.com/claude-code) 與 [Codex](https://developers.openai.com/codex) 的 iOS／SwiftUI 開發工具組，涵蓋需求規劃、實作、除錯與審查。依你讀不讀程式碼，有兩個入口：
 
 | 你是 | 從這裡開始 |
 |---|---|
@@ -9,7 +9,7 @@
 
 ---
 
-以下給 iOS 工程師。在 Claude Code 輸入需求即可開始：
+以下給 iOS 工程師。在 Claude Code 輸入需求即可開始（Codex 用 `$ios-dev`，需求寫在同一則訊息）：
 
 ```text
 /ios-dev 在設定頁新增匯出功能
@@ -21,7 +21,7 @@
 
 ## 安裝
 
-需要 Claude Code、Git，以及能執行 `npx` 的 Node.js 環境。量測與測試腳本另需 Python 3。
+需要 Claude Code 或 Codex（兩個都裝也可以）、Git，以及能執行 `npx` 的 Node.js 環境。安裝程式與量測、測試腳本另需 Python 3。
 
 ### 1. 安裝必要套件
 
@@ -39,6 +39,12 @@ npx skills@latest add https://github.com/AvdLee/SwiftUI-Agent-Skill --skill swif
 /plugin install superpowers@claude-plugins-official
 ```
 
+用 Codex 的話，上面三行的 `-a claude-code` 改成 `-a codex`，Superpowers 改用：
+
+```bash
+codex plugin add superpowers@openai-curated
+```
+
 這四個套件（`swift-architecture-skill`、`swift-concurrency`、`swiftui-expert-skill`、`superpowers`）分別提供架構、並行處理、SwiftUI，以及計畫、測試與驗證指引。缺少任一項，主要流程就無法完整執行。
 
 ### 2. 安裝本專案
@@ -49,19 +55,34 @@ cd ios-dev-skill
 ./install.sh
 ```
 
-安裝程式會將 skill 與 agent 連結到 `~/.claude/skills`、`~/.claude/agents`，並列出缺少的套件。已有的檔案不會被覆蓋；若顯示「跳過」，請確認是否為你要使用的版本。
+安裝程式會偵測這台電腦有 Claude Code、Codex 或兩者，每邊各裝一份，並列出缺少的套件：
 
-安裝使用符號連結，請保留這個專案目錄。六個審查 agent 也會直接讀取 `~/.claude/skills/swiftui-expert-skill/SKILL.md`，請確認該檔案存在。
+- **Claude Code**：skill 與 agent 連結到 `~/.claude/skills`、`~/.claude/agents`。
+- **Codex**：skill 連結到 `~/.agents/skills`；agent 由 `scripts/gen-codex-agents.py` 轉成 Codex 的 `.toml` 格式放到 `~/.codex/agents`，agent 裡引用的 skill 路徑會換成這台電腦實際的位置。`~/.codex/skills` 已有同名的別的版本時會跳過，避免 Codex 看到兩個同名 skill。
+
+已有的檔案不會被覆蓋；若顯示「跳過」，請確認是否為你要使用的版本。安裝使用符號連結，請保留這個專案目錄。六個審查 agent 開工時會讀 `swiftui-expert-skill`，請確認它已安裝。
+
+<details>
+<summary>Codex 上的差異</summary>
+
+- 呼叫方式是 `$ios-dev`，不支援 `/ios-dev <描述>` 這種帶參數的寫法。
+- Codex 一般模式沒有選項式提問工具，確認畫面改成列出編號選項，回數字即可；Plan 模式會用 `request_user_input`。
+- `careful-ios` 的防呆寫在 skill 設定裡，Codex 會忽略。要在 Codex 擋破壞性指令，用 `./install.sh --vibe` 把同一支檢查腳本掛進 `~/.codex/hooks.json`，再到 Codex 輸入 `/hooks` 設為信任；Codex 只能擋下、不能先問。
+- `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 由官方 Build iOS Apps plugin 提供（`codex plugin add build-ios-apps@openai-curated`，內含 XcodeBuildMCP）。
+- review 路線 A（`consensus-review`）的修正步驟要呼叫 Claude 的 CLI，只有 Codex 時不能用，改走路線 B。
+
+</details>
 
 | 指令 | 用途 |
 |---|---|
 | `./install.sh --check` | 只檢查相依套件 |
-| `./install.sh --uninstall` | 只移除指向本專案的連結 |
+| `./install.sh --uninstall` | 只移除本專案裝的連結與產生的檔案 |
+| `./install.sh --platform=claude` | 不自動偵測，只裝指定平台（`claude`／`codex`／`both`） |
 | `./install.sh --vibe --dry-run` | vibe 版安裝：列出會做的事；加 `--yes` 才執行（見 [VIBE.md](VIBE.md)） |
 
 ## 使用方式
 
-在 iOS 專案中開啟 Claude Code，用 `/ios-dev` 描述需求：
+在 iOS 專案中開啟 Claude Code，用 `/ios-dev` 描述需求（Codex 用 `$ios-dev`）：
 
 ```text
 /ios-dev 規劃一個記帳 App
@@ -169,6 +190,7 @@ python3 skills/ios-dev/evals/test_run_evals.py
 python3 skills/careful-ios/bin/test_check_careful_ios.py
 python3 -m unittest discover -s skills/ios-vibe/scripts -p "test_*.py"
 python3 skills/ios-vibe/scripts/check-touchpoints.py
+python3 scripts/test_gen_codex_agents.py
 python3 test_install_sh.py
 bash -n install.sh
 ./install.sh --check

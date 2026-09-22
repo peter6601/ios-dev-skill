@@ -67,7 +67,7 @@
 - 會派的 agent：<把名字列出來，不要寫「依情境裁」>
 - 走 A 或 B 時，三個 specialist（`swiftui-reviewer`／`ux-critique`／`resilience-auditor`）
   一定要跑；走 A 時它們的 JSON 是 `--preflight` 的唯一合法內容
-- 完整收尾步驟：交棒訊息裡已展開的「共通收尾」那一段（來源 `~/.claude/skills/ios-dev/references/handoff-checklist.md`）。
+- 完整收尾步驟：交棒訊息裡已展開的「共通收尾」那一段（來源：`ios-dev` skill 的 `references/handoff-checklist.md`）。
   交棒訊息沒帶到那一段就是交棒漏了，回去要，不要靠這行自己去讀檔——下游可能讀不到那個路徑
 
 判定與 agent 清單在寫這份計畫時就填死：讀這份計畫的 session 不一定載入了 `/ios-dev`，

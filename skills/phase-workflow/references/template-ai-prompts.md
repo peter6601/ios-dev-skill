@@ -9,7 +9,7 @@ updated: {TODAY}
 # AI Prompt Guide — {FEATURE_NAME}
 
 > **專屬於 {PROJECT_NAME} {FEATURE_NAME} 的 AI prompt 指南**
-> 通用 iOS 工作流見 `/ios-dev`（`~/.claude/skills/ios-dev/SKILL.md`）
+> 通用 iOS 工作流見 `/ios-dev`（`ios-dev` skill 的 `SKILL.md`）
 > **這份文件補充的是「{FEATURE_NAME} 專屬 context + negative constraints」**
 
 ---

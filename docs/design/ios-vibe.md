@@ -368,7 +368,7 @@ git 只退得回 code，退不回手機裡已經升級過的資料。所以資�
 - **什麼時候問**：第一次使用時問一次，記在 `docs/vibe-decisions.md` 開頭的設定區。之後只在高風險改動時再提一次 b：改到存資料的方式、會刪東西、要新的權限、改到同時進行的背景工作（也就是 v1 範圍內會踩到 `ios-dev` 風險三條的改動；連網已排除在範圍外）。提的時候講清楚多了誰在看、會多花時間。
 - **b 的順序**：實作 → 審查 agent（a 的部分）→ Codex 唯讀審查 → 統一修復一次 → §6 強制測試與 UI 測試 → 存檔 → 試用卡。
 - **b 只在一種環境提供**：主力是 Claude、而且裝了 Codex。主力是 Codex 時，找 Codex 審等於自己審自己，不是交叉審查；反方向（Claude 審 Codex 寫的）v1 不做。其他環境問的時候直接說明「你的環境只能用 a，因為……」。
-- **b 的相依不在預設安裝**：Codex CLI 與登入，第一次選 b 時才帶著裝。實作時先查 `ai-review` 有沒有不帶 `approve-code` 閘門的唯讀 code 審查模式：有就用它；沒有就直接用 `codex exec` 在唯讀 sandbox 裡跑一次審查。
+- **b 的相依不在預設安裝**：Codex CLI 與登入，第一次選 b 時才帶著裝。唯讀審查用 Codex CLI 內建的 `codex review --base <主線分支>`（加 `-c sandbox_mode="read-only"`）；`ai-review` 的 `review` 模式最後要人執行核准指令，不適用（階段 3 查證）。
 - **b 只作用在 code 審查**。計畫文件的審查在 vibe 版一律由同一個 AI 的 sub-agent 做（§4 D）。
 
 ## 9. 第一次裝到 iPhone
@@ -401,7 +401,7 @@ VIBE.md 要先講清楚免費 Apple ID 的限制：裝上去的 app 大約 7 天
 |---|---|
 | `install.sh` 只裝進 `~/.claude/` | 偵測這台電腦有 Claude、Codex 或兩者，每邊各裝一份。Codex 的 skill 裝到 `~/.agents/skills` |
 | 9 個審查 agent 是 Claude 的 `.md` 格式，Codex 只讀 `.toml` | agent 原稿維持一份 `.md`，由 `scripts/gen-codex-agents.py` 轉出 `.toml` 裝到 `~/.codex/agents/`。Codex 不能逐一限制工具，唯讀 agent 用 `sandbox_mode = "read-only"` |
-| skill 與 agent 共 16 個檔、50 行寫死 `~/.claude/` 路徑 | skill 內的引用改成相對於 skill 目錄。agent 引用其他 skill 的路徑寫成佔位字，由 `install.sh` 安裝時代換成該平台的實際位置（Codex 上，本 repo 的 skill 在 `~/.agents/skills`，但 `npx skills -a codex` 裝的第三方 skill 在 `~/.codex/skills`） |
+| skill 與 agent 共 16 個檔、50 行寫死 `~/.claude/` 路徑 | skill 內的引用改成不綁平台的寫法（「`ios-dev` skill 的 `references/…`」）。agent 原稿維持 Claude 的 `~/.claude/skills/…`，轉成 Codex 格式時由 `gen-codex-agents.py` 換成這台電腦的實際位置（依序找 `~/.agents/skills`、`~/.codex/skills`、Codex plugin 快取，同一個 plugin 多個版本時新版優先）；找不到的換成「請先安裝」的佔位字並警告 |
 | 選項式提問在 Codex 一般模式不能用 | 改寫成「有選項式提問工具就用；沒有就列編號選項，等使用者回數字」 |
 | `careful-ios` 的 hook 在 Codex 無效 | §10 |
 | `localize-strings` 的 `$ARGUMENTS` 在 Codex 不會被代換 | 改寫成「使用者呼叫時附帶的描述」 |
@@ -520,15 +520,16 @@ README 與路由表對「沒裝 mattpocock 時怎麼辦」寫法互相矛盾：R
 | 風險 | 怎麼處理 |
 |---|---|
 | Codex 的系統提示要求「skill 的指示由主 agent 自己讀，不要交給 sub-agent 讀」，而審查 agent 開工時就是在讀另一個 skill 的檢查清單 | 第 3 次實測驗證。不行的話，改成由主 agent 讀檢查清單，把相關段落放進派 agent 的指示 |
-| Build iOS Apps plugin 內含 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`，和路由表引用的第三方 skill 同名 | 階段 3 比對內容是否相同，決定用哪一份 |
-| Codex plugin（superpowers、Build iOS Apps）能不能用指令安裝，目前查不到 | 階段 3 查。不行就放進 VIBE.md 的引導步驟 |
-| XcodeBuildMCP 的 UI 自動化功能組怎麼用設定打開 | 階段 1 查官方設定文件 |
+| Build iOS Apps plugin 內含 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`，和路由表引用的第三方 skill 同名 | **已解（階段 3）**：兩邊內容只差 plugin 版多一行「可上網查最新 Apple 文件」。Codex 上改用 plugin 版，`npx` 不再重複安裝這三個 |
+| Codex plugin（superpowers、Build iOS Apps）能不能用指令安裝，目前查不到 | **已解（階段 3）**：`codex plugin add superpowers@openai-curated`、`codex plugin add build-ios-apps@openai-curated` |
+| XcodeBuildMCP 的 UI 自動化功能組怎麼用設定打開 | **已解（階段 1）**：環境變數 `XCODEBUILDMCP_ENABLED_WORKFLOWS=simulator,simulator-management,ui-automation`；Codex 的 build-ios-apps plugin 自帶這個設定 |
 | 同一個 session 做多張 ticket，對話變長、觸發自動壓縮 | ticket 與進度寫在檔案裡；實測時觀察壓縮後能不能正確接續 |
 | 單一模型審查會漏掉什麼，目前不知道 | 使用者試不出來的風險，已經用範圍限制（§2）與強制測試（§6）先擋一層；三次實測後回頭看漏掉的，再決定要不要把 b 擴大到其他環境 |
 | `ios-dev` 改版時新增問人點或硬關卡 | 兩層盡力而為（§4）：標記加關鍵字檢查擋下大部分；換了說法漏抓的，由執行期紀錄的 `unmapped` 抓到。執行期紀錄靠 AI 自己寫，實測時作者對照對話紀錄驗證 |
 | 自動備份與還原機制寫在範本裡，它本身有 bug 就會連帶弄丟資料 | 範本的備份與還原有自己的測試；第 2 次實測刻意跨升級回退一次 |
 | 不連網與唯一儲存方式都是盡力而為：不經一般網路介面的連線、把資料塞進 UserDefaults 或 Keychain，字串掃描抓不完整 | 三層檢查加審查 agent；實測時作者在實機開飛航模式跑一輪。之後若發現漏網的寫法，補進 `check-boundaries.py` |
-| 設定 b 的唯讀跨模型審查，目前沒有現成工具確定可用 | 階段 1 先查 `ai-review`；沒有就用 `codex exec` 唯讀 sandbox |
+| 設定 b 的唯讀跨模型審查，目前沒有現成工具確定可用 | **已解（階段 3）**：用 Codex CLI 內建的 `codex review --base <主線>`；`ai-review` 的 `review` 模式最後要人核准，不適用 |
+| Codex 產出的 agent `.toml` 與 careful-ios 的 hook 只用腳本與格式檢查驗過，還沒讓 Codex 實際載入；hook 假設 `tool_input.command` 是字串（官方文件如此），若實際是陣列會解析失敗而放行 | 第 3 次實測（只用 Codex）驗證 |
 | phase-workflow 的 STOP 被規則 1 自動略過後，漏掉原本該由人發現的規劃問題 | 根文件仍由 sub-agent 審；實測時觀察規劃產物的品質，必要時把特定 STOP 改列例外、翻成產品問題問使用者 |
 | 範圍限制被使用者繞過（例如把「同步」說成「備份到雲端」） | 判斷依據是功能會不會把資料送出這支手機，不看使用者用什麼字；實測時刻意換說法試一次 |
 

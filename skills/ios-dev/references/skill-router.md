@@ -9,15 +9,18 @@
 
 依序執行以下八步；`SKILL.md` 以此為準。
 
+<!-- touchpoint: none -->
+**選項式提問**：本檔說「問」或「確認」時，用當下平台的選項式提問工具——Claude 是 `AskUserQuestion`；Codex 在 Plan 模式是 `request_user_input`（一般模式沒有這個工具）。都沒有時，把題目與編號選項直接寫在回覆裡，請使用者回數字。
+
 1. **查既有功能**：需求有指名檔案或功能時，搜尋目標檔的相關關鍵字。既有功能改呈現方式（如 alert 改 sheet）算情境 2，確認畫面註明「既有 X → 改為 Y」。
    <!-- touchpoint: ios-dev-043 kind=engineering -->
-2. **判斷情境**：依需求、檔案或 ticket 路徑選 §1 的情境。無法判斷才用 AskUserQuestion 詢問，七種情境分兩題（4＋3）。
+2. **判斷情境**：依需求、檔案或 ticket 路徑選 §1 的情境。無法判斷才用選項式提問，七種情境分兩題（4＋3）。
 3. **判斷內容**：小功能、優化、重構與接 ticket 依 §4 判斷功能／畫面／兩者；無法判斷才問。
 4. **檢查前置設定**：情境 1 無 PM spec、或情境 2，檢查 `CLAUDE.md`／`CLAUDE.local.md`／`AGENTS.md` 是否有 `## Agent skills`。沒有就把「先跑一次 `setup-matt-pocock-skills`」列入提醒。
 5. **選工具與審查方式**：依 §1 選 skill、agent 與待問事項，依 §3 判定輕重及 Review 路線，依 §9 檢查所需工具。
 6. **檢查架構影響**：情境 2–7 先查既有契約，再依下表決定是否補規劃。任何改變行為的任務都要檢查，結論寫入確認畫面。
    <!-- touchpoint: ios-dev-044 kind=gate -->
-7. **確認後開始**：用 §6 的 AskUserQuestion 格式，等使用者選「照這組跑」或「照這組跑，加 Codex 審核」；後者改走 A。需要詢問 body >80 的處理方式時，在這題之後、主流程之前另問一題。
+7. **確認後開始**：用 §6 的選項式提問格式，等使用者選「照這組跑」或「照這組跑，加 Codex 審核」；後者改走 A。需要詢問 body >80 的處理方式時，在這題之後、主流程之前另問一題。
    <!-- touchpoint: ios-dev-045 kind=command -->
 8. **執行或交棒**：依下表啟動流程。交棒 `phase-workflow` 時印出 §8 的指令，建議開新 session。
 
@@ -226,12 +229,12 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 | 平行重構檔數 | >3 → 問是否 `orchestrate-batch-refactor` | 情境 6 |
 | 優化鐵律 | 改前沒有 `perf-auditor` 或 trace 數字不動 code；改後同一把尺再量寫進 PR | 情境 5 |
 | 重構護欄 | 目標範圍無測試覆蓋 → 先用 SDD 補行為快照測試再動 | 情境 6 |
-| architecture-auditor 四閘門 | body >80、`@State` >5、`isPresented:` >1、`onChange` 監看 `should*/did*` | 所有派它的情境；腳本 `~/.claude/skills/ios-dev/scripts/swiftui-metrics.py` |
+| architecture-auditor 四閘門 | body >80、`@State` >5、`isPresented:` >1、`onChange` 監看 `should*/did*` | 所有派它的情境；腳本是 `ios-dev` skill 目錄下的 `scripts/swiftui-metrics.py` |
 | ticket 數 | **只決定 `phase-workflow` 的輸出規模**（1–8 張中型 4 份檔／>8 張大型 7 份檔），**不決定要不要進去**——入場看責任邊界（§2） | phase-workflow Step 4 |
 | production diff 行數 | >50 行 → 不算輕（規模兩條之一，§3） | **只有情境 4 與情境 7**；小功能與純畫面不套 |
 
 <!-- touchpoint: ios-dev-056 kind=gate -->
-## 6. 確認畫面格式（AskUserQuestion，一題）
+## 6. 確認畫面格式（選項式提問，一題）
 
 <!-- touchpoint: ios-dev-057 kind=command -->
 <!-- touchpoint: ios-dev-058 kind=mixed -->
@@ -277,23 +280,26 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
 ## 9. 本表引用的名字與沒裝時的替代
 
 安裝指令與來源見 repo 根目錄 `README.md`。進場時只檢查 §1 對應情境需要的工具。
-skill 三種安裝形狀任一存在就算裝了，三個 pattern 都要查：
+skill 下列任一位置存在就算裝了，依你所在的平台查：
 
 ```
-~/.claude/skills/<name>/SKILL.md
-~/.claude/commands/<name>/SKILL.md
-~/.claude/commands/<name>.md
+Claude：~/.claude/skills/<name>/SKILL.md
+        ~/.claude/commands/<name>/SKILL.md
+        ~/.claude/commands/<name>.md
+Codex： ~/.agents/skills/<name>/SKILL.md
+        ~/.codex/skills/<name>/SKILL.md
+        ~/.codex/plugins/cache/*/*/*/skills/<name>/SKILL.md（plugin 附帶的 skill）
 ```
 
-agent 查 `~/.claude/agents/<name>.md`。缺的照下表替代，並寫進確認畫面的「提醒」行。
+agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<name>.toml`（由 `install.sh` 從同名 `.md` 轉出）。缺的照下表替代，並寫進確認畫面的「提醒」行。
 **第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
 - **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
-- **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`asc-*`
+- **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`asc-*`
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
   <!-- touchpoint: ios-dev-061 kind=command -->
-- **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補
+- **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
 - **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）
 
 **本 repo 不含、作者自用未公開的 skill**——表裡仍保留名字，沒裝就走替代：

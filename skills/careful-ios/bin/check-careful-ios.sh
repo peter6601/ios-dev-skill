@@ -3,6 +3,20 @@
 # 讀 stdin 的 hook JSON，取出 Bash 指令，比對 SKILL.md「防護清單」的 pattern。
 # 命中 → 回 permissionDecision=ask（警告，讓使用者選繼續或取消）；沒命中 → 靜默放行。
 # 這個 hook 只提醒、不阻擋；解析失敗一律放行，不讓護欄自己變成故障點。
+#
+# 用法：
+#   bash check-careful-ios.sh           Claude Code 用（命中時 ask）
+#   bash check-careful-ios.sh --codex   Codex 用（在 ~/.codex/hooks.json 註冊時加這個參數）
+# Codex 的 hook 不支援 ask、只能擋，所以 --codex 命中時改回 permissionDecision=deny，
+# 理由用白話寫，請使用者自己在終端機執行。判斷規則（清單、安全例外、解析失敗放行）兩邊完全共用，
+# 只有最後輸出那一段分兩種。
+
+CAREFUL_IOS_MODE="claude"
+for arg in "$@"; do
+  case "$arg" in
+    --codex) CAREFUL_IOS_MODE="codex" ;;
+  esac
+done
 
 INPUT="$(cat)"
 
@@ -10,7 +24,7 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 0
 fi
 
-CAREFUL_IOS_INPUT="$INPUT" python3 - <<'PY'
+CAREFUL_IOS_INPUT="$INPUT" CAREFUL_IOS_MODE="$CAREFUL_IOS_MODE" python3 - <<'PY'
 import json, os, re, shlex, sys
 
 # 不會被誤認成 source 目錄的 cache 名字：路徑裡任何一段是它，整條就是 cache。
@@ -273,11 +287,29 @@ if not hits:
 hits.sort(key=lambda h: ORDER[h[0]])
 level, message = hits[0]
 extra = f"（另有 {len(hits) - 1} 項）" if len(hits) > 1 else ""
+
+if os.environ.get("CAREFUL_IOS_MODE") == "codex":
+    # Codex 只能擋、不能先問：擋下，並把「擋了什麼、為什麼、要做請自己來」講白
+    shown = cmd.strip()
+    if len(shown) > 300:
+        shown = shown[:300] + "…"
+    decision = "deny"
+    reason = (
+        f"[careful-ios] {ICON[level]} {level}：已擋下這個指令，沒有執行。\n"
+        f"擋下的指令：{shown}\n"
+        f"原因：{message}{extra}\n"
+        "這類動作做了很難復原，所以不會由 AI 代為執行。"
+        "如果確定要做，請使用者自己在終端機執行上面的指令。"
+    )
+else:
+    decision = "ask"
+    reason = f"[careful-ios] {ICON[level]} {level}：{message}{extra}"
+
 print(json.dumps({
     "hookSpecificOutput": {
         "hookEventName": "PreToolUse",
-        "permissionDecision": "ask",
-        "permissionDecisionReason": f"[careful-ios] {ICON[level]} {level}：{message}{extra}",
+        "permissionDecision": decision,
+        "permissionDecisionReason": reason,
     }
 }, ensure_ascii=False))
 PY
