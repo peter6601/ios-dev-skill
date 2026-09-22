@@ -18,8 +18,10 @@ updated: {TODAY}
 
 **不清楚就問，不要自己推理。**
 
+<!-- touchpoint: phase-workflow-062 kind=mixed -->
 - 遇到 SPEC / 文件沒寫到的情況 → **stop + ask**
 - 可以提供建議、可以列選項，但**不要立刻動手做**
+  <!-- touchpoint: phase-workflow-063 kind=mixed -->
 - 有疑問就回報使用者，等確認後再動
 - 寫 code 前先確認 scope 邊界
 
@@ -58,6 +60,7 @@ updated: {TODAY}
 <!-- {IF_REDLINE}：design doc 有列紅線檔才留這個 callout 與下面兩個 bullet；沒有紅線檔（例如全新專案、既有骨架本來就要改）
 整段換成一句「本 feature 沒有紅線檔；改既有檔照 ticket 的 Files 與架構約束」。不要照抄下面的策略。 -->
 
+<!-- touchpoint: phase-workflow-064 kind=engineering -->
 > [!WARNING]
 > **紅線檔——預設不動；非動不可時最小化、additive、向下相容**（優先序：additive overload → optional default-arg → 在新檔 scope 加 extension；動之前先列理由與範圍給使用者確認）
 > **本 feature 的新頁面全部採用「新建 view + 複用子元件」策略**。整頁 view / 整頁 ViewModel 一律不動。
@@ -110,6 +113,8 @@ updated: {TODAY}
 
 完整流程在 `/ios-dev` 的 handoff-checklist § 7，這裡只列順序：
 
+<!-- touchpoint: phase-workflow-065 kind=mixed -->
+<!-- touchpoint: phase-workflow-066 kind=code-review -->
 ```
 1. 讀 ticket → 根文件對應段 → repo 的 CONTEXT.md／docs/adr/
 2. /writing-plans（只為這一張）→ 列出實作計畫與 unit test cases → 【停下來等使用者確認】
@@ -118,6 +123,7 @@ updated: {TODAY}
 5. 【停下來等使用者讀完 diff】→ 使用者明講才 commit／push → 回寫 ticket
 ```
 
+<!-- touchpoint: phase-workflow-067 kind=gate -->
 **⚠️ 關鍵**：步驟 2 要**先讓使用者看過才動工**；步驟 5 **預設不自行 commit、不自行 push**，使用者對當前任務明講才放寬，而且只覆蓋他明講的那個動作。
 
 ### 驗證指令（ticket 的 Verification 段用這裡的指令，不要自己發明）
@@ -143,6 +149,7 @@ updated: {TODAY}
 
 - **動手寫 UI 之前**，先提醒使用者：「請提供 Figma 截圖或用 Figma MCP 取得設計稿」
 - **不要自己想像 UI 長什麼樣** — 顏色、間距、圓角、字體大小全部以 Figma 為準
+  <!-- touchpoint: phase-workflow-068 kind=mixed -->
 - 如果使用者沒給 Figma 參考，**stop + ask**
 
 ---
@@ -199,6 +206,7 @@ updated: {TODAY}
 | Branch 標題不符？ | 例 `stage1/foundation` 但 ticket 是 stage2 | 建議開新 branch |
 | 新 branch 要相依嗎？ | 看 ticket deps 是否在前一個 branch | 是 → fork；否 → fork base |
 
+<!-- touchpoint: phase-workflow-069 kind=engineering -->
 **不要自己直接開 branch** — 列出建議讓使用者決定。
 
 ---
@@ -209,6 +217,7 @@ updated: {TODAY}
 
 ### Step 1：Ticket 跟實際不符時（實作過程中）
 
+<!-- touchpoint: phase-workflow-070 kind=mixed -->
 發現差異 → **stop + 跟使用者討論** → 使用者決定後：
 - 更新 `tickets/<id>.md` 的 Tasks / Files / 說明
 - 若影響 overview.md 的技術模組清單或 §0 → 同步更新
@@ -232,6 +241,11 @@ updated: {TODAY}
 
 ## 🔧 遇到情況怎麼辦
 
+<!-- touchpoint: phase-workflow-071 kind=mixed -->
+<!-- touchpoint: phase-workflow-072 kind=engineering -->
+<!-- touchpoint: phase-workflow-073 kind=mixed -->
+<!-- touchpoint: phase-workflow-074 kind=product -->
+<!-- touchpoint: phase-workflow-075 kind=engineering -->
 | 情況 | 怎麼做 |
 |---|---|
 | Ticket 範圍不清 | stop + 問使用者 |

@@ -23,6 +23,7 @@ tags:
 
 > **Type**: {Foundation|Prefactor|Behavior}｜**Layers**: {穿過的層}（→ handoff prompt＝ai-prompts.md § 3.0 骨架＋對應的層段落）
 > **Stage**: {STAGE_NAME}（分組見 [`README.md`](./README.md)）
+> <!-- touchpoint: phase-workflow-077 kind=mixed -->
 > **Demo**: {Behavior 必填：這張單獨做完，從哪個入口進去、做什麼、會看到什麼。只是 demo 時需要別張先 merge（要有資料才看得到）就寫在這一行「需 2-B1 已 merge，或用 debug seed」，不要塞進 `deps`。寫不出來先分清楚原因——是切法問題（這張不是完整行為）就回頭重切；是根文件缺資訊（例：入口還沒定）就 stop＋問使用者，不要硬寫。Foundation／Prefactor 寫「不適用——{哪幾張 Behavior 靠它}」}
 
 ---
@@ -100,6 +101,7 @@ Foundation 裡整份實作的型別（SKILL.md「Foundation 放多少」第 3 �
 > **一定要做**：本檔 frontmatter `status` 改 `done`、填 `pr`（這是看板的資料來源）；commit 與選項決策／踩坑寫進上面的「實作筆記」段。
 > {IF_LARGE：**大型另外**：commit 後到 [`../coordination/branch-tracker.md`](../coordination/branch-tracker.md) 加一列；有選項決策／踩坑寫 [`../coordination/implementation-log.md`](../coordination/implementation-log.md)。}
 
+<!-- touchpoint: phase-workflow-078 kind=engineering -->
 <!--
 frontmatter status 值對照（驅動 board.base 分欄）:
   backlog      未開工

@@ -40,6 +40,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 
 ### 1.2 確認模式
 
+<!-- touchpoint: office-hours-001 kind=product -->
 向使用者提問：
 
 > 在開始之前 — 這個想法的背景是？
@@ -70,6 +71,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 
 ### 四個關鍵問題
 
+<!-- touchpoint: office-hours-002 kind=product -->
 根據專案階段選擇要問的問題。**每次只問一個**，等回答後再問下一個。
 
 | 階段 | 必問 | 視情況問 |
@@ -111,6 +113,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 
 **Bonus 追問：** 「如果使用者什麼都不用設定、不用登入、打開就能用 — 那會長什麼樣？」
 
+<!-- touchpoint: office-hours-003 kind=engineering -->
 #### Q4：技術風險在哪？
 
 **問：** 「這個功能最大的技術不確定性是什麼？哪一塊你不確定 Apple 的框架能不能支援？」
@@ -146,6 +149,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 
 ### 問題（生成式的，不是審問式的）
 
+<!-- touchpoint: office-hours-004 kind=product -->
 **每次只問一個**，等回答後再問下一個。
 
 1. **最酷的版本長什麼樣？** 如果沒有任何限制，這個東西的完美型態是什麼？什麼會讓人說「哇」？
@@ -173,6 +177,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 3. **現有 codebase 有沒有已經能用的東西？** 有沒有既有的 pattern、utility、模組可以直接 reuse？
 4. **Apple 有沒有原生方案？**（iOS 特化）很多問題 Apple 已經有 framework 解了，不需要自己造輪子。
 
+<!-- touchpoint: office-hours-005 kind=mixed -->
 將前提整理成清楚的陳述，要使用者逐一確認：
 
 ```
@@ -191,6 +196,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 產出 2-3 個不同的實作方向。**這不是可選步驟。**
 
 每個方案：
+<!-- touchpoint: none -->
 ```
 方案 A：[名稱]
   摘要：[1-2 句]
@@ -210,6 +216,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 
 **建議：** 選 [X] 因為 [一句話原因]。
 
+<!-- touchpoint: office-hours-006 kind=gate -->
 向使用者確認選擇。**未經確認不往下走。**
 
 ---
@@ -220,6 +227,7 @@ ls TODO.md TODOS.md ROADMAP.md docs/TODO.md 2>/dev/null
 
 ### 公司專案 Design Doc
 
+<!-- touchpoint: none -->
 ```markdown
 # Design Doc：[標題]
 
@@ -326,6 +334,9 @@ FILENAME="design-doc-$(date +%Y%m%d)-[主題關鍵字].md"
 
 Design doc 完成後，根據內容建議下一步：
 
+<!-- touchpoint: office-hours-007 kind=command -->
+<!-- touchpoint: office-hours-008 kind=product -->
+<!-- touchpoint: office-hours-009 kind=product -->
 | 情境 | 建議 |
 |------|------|
 | 範圍明確、準備開始實作 | 「用 Superpowers 從這份 design doc 產出 SPEC.md 和 Task 清單」 |
@@ -338,12 +349,15 @@ Design doc 完成後，根據內容建議下一步：
 ## 重要規則
 
 - **絕不開始實作。** 這個 skill 只產出 design doc。不寫 code、不 scaffold、不建檔案結構。
+<!-- touchpoint: none -->
 - **問題一次一個。** 不要把多個問題塞進一次提問。
 - **下一步是必要的。** 每一份 design doc 都必須有具體的下一步 action。
 - **即使使用者已有完整計畫：** 跳過 Phase 2 但仍然要跑 Phase 3（前提挑戰）和 Phase 4（多方案）。即使「簡單」的計畫也會從前提檢查和強制多方案中受益。
 
 ### 完成狀態
 
+<!-- touchpoint: office-hours-010 kind=product -->
+<!-- touchpoint: office-hours-011 kind=mixed -->
 | 狀態 | 定義 |
 |------|------|
 | **DONE** | Design doc 完成且使用者確認 |

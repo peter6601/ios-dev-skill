@@ -26,6 +26,7 @@ Multipeer Connectivity 等 iOS 技術棧深度客製。
 
 ## 鐵律 Iron Law
 
+<!-- touchpoint: ios-investigate-001 kind=gate -->
 **沒有找到 Root Cause 前，禁止修改任何 Code。**
 
 修症狀只會製造打地鼠式的 debug 循環。每一次沒有解決根因的修改，都讓下一個 bug 更難找。
@@ -68,6 +69,7 @@ git log --oneline --since="1 week ago" -- <affected-directory>
 
 ### 1.4 重現問題
 
+<!-- touchpoint: ios-investigate-002 kind=product -->
 能否穩定重現？記錄：
 - 重現步驟（越精確越好）
 - 重現率（100%？偶發？特定條件？）
@@ -132,6 +134,7 @@ print("⚠️ DEBUG: originalTransactionId=\(tx.originalID), currentId=\(tx.id),
 
 ### 3.3 三振出局規則 3-Strike Rule
 
+<!-- touchpoint: ios-investigate-003 kind=engineering -->
 如果 3 個假設都失敗了，**停下來**。向使用者提問：
 
 ```
@@ -191,6 +194,7 @@ xcodebuild test -scheme <Scheme> -destination 'platform=iOS Simulator,name=iPhon
 
 ### 4.5 大範圍修改警示
 
+<!-- touchpoint: ios-investigate-004 kind=engineering -->
 如果修改超過 5 個檔案，先向使用者確認：
 
 ```
@@ -207,6 +211,7 @@ C) 重新思考 — 可能有更精準的做法
 
 ### 5.1 重新驗證
 
+<!-- touchpoint: ios-investigate-005 kind=gate -->
 用原始的重現步驟確認 bug 已修復。**這不是可選步驟。**
 
 跑測試 suite 並貼出結果。
@@ -230,13 +235,17 @@ DEBUG REPORT
 
 ## 重要規則 Important Rules
 
+  <!-- touchpoint: ios-investigate-006 kind=engineering -->
 - **3 次修復嘗試失敗 → 停下來質疑架構。** 不是假設錯了，是架構有問題。
 - **無法驗證的修復不要提交。** 如果不能重現並確認，不要 ship。
 - **永遠不要說「這應該能修好」。** 驗證並證明。跑測試。
+  <!-- touchpoint: ios-investigate-007 kind=engineering -->
 - **修改超過 5 個檔案 → 向使用者確認** blast radius 再繼續。
 
 ### 完成狀態定義
 
+<!-- touchpoint: ios-investigate-008 kind=engineering -->
+<!-- touchpoint: ios-investigate-009 kind=mixed -->
 | 狀態 | 定義 |
 |------|------|
 | **DONE** | Root cause 找到、修復完成、regression test 已寫、所有測試通過 |

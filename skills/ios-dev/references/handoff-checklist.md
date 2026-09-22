@@ -10,6 +10,7 @@
 > 2. 下面「共通收尾」**整段原樣**
 > 3. 該情境那一段（§3–§7 擇一）原樣
 >
+> <!-- touchpoint: none -->
 > 情境段裡的「收尾走輕」「風險三條＋規模兩條定輕重」「重時派 5 個 agent」都是**指回前兩段的簡寫**，
 > 單獨貼過去下游讀不到輕重怎麼判、三條 review 路線是什麼、人工核准前不得做什麼、回寫寫哪三個地方。
 > 下游是獨立 context，它看不到這個檔——**沒貼到的規則等於不存在**。
@@ -30,12 +31,14 @@
 - **沒有**（情境 2–6 直接進來的新工作）→ 往下跑 1–4。
 
 1. 照 `architecture-impact-check.md` 答五問，結論三選一：**直接擴充／局部整理／模組邊界**。
+   <!-- touchpoint: ios-dev-033 kind=command -->
 2. 命中中型觸發條件（新模組／多畫面流程／多 async 協調／要先拆 View 才加得進去）→ **停下來交
    `phase-workflow` 中型**，不要直接開工；與 ticket 數無關。
 3. 有新的非同步工作 → 填 ownership 契約六格；涉及流程 → 產一張 presentation 轉移表。
 4. 結論寫進 plan／ticket 的「架構約束」段（`plan-template.md`），那是收尾時 `architecture-auditor`
    的尺。
 
+<!-- touchpoint: ios-dev-034 kind=engineering -->
 **實作中**若必須新增計畫沒有的流程旗標、Task 或跨模組依賴，停下來先判是哪一種：
 
 - **實作違反了既有契約**（契約是對的）→ **修實作**、重跑驗證。**不准改契約來遷就程式碼**——
@@ -43,6 +46,7 @@
 - **契約確實不適用**（當初判斷錯、或需求變了）→ 寫下理由、重跑五問、更新契約**與對應的測試**，
   再繼續。
 
+<!-- touchpoint: ios-dev-035 kind=engineering -->
 判不出來是哪一種就停下來問人，不要預設走第二條。
 
 ## 共通收尾（每個情境都跑，順序固定）
@@ -70,6 +74,9 @@
      趕時間不是理由、使用者要求也不能放寬；不符合就走 B，不要另開「你堅持就走 C」的選項。
      實作完成後跟輕重一起重判，超過就從 C 升 B。
    B、C 要在 PR 描述註明「未經 Codex 交叉驗證」。
+   <!-- touchpoint: ios-dev-036 kind=code-review -->
+   <!-- touchpoint: ios-dev-037 kind=gate -->
+   <!-- touchpoint: ios-dev-038 kind=gate -->
 4. **人工 Code Review**：三條路線都要，不可省。
    走 A 停在 `AWAITING_HUMAN_CODE_REVIEW`，**人工 `approve-code` 前不得 commit、push、
    merge 或建立 PR**；走 B、C 沒有 run、也沒有 `approve-code` 這道指令，改成使用者讀完
@@ -77,6 +84,7 @@
 5. **回寫**（有才寫，沒有就跳過，不要為此建檔）：
    ticket 的 `status` → 功能資料夾的 `coordination/implementation-log.md` →
    第二大腦該功能 MOC 的「近期變更與教訓」。
+   <!-- touchpoint: ios-dev-039 kind=engineering -->
 6. **收工**：問使用者要不要跑 Phase 5 `/work-log-writer`。
 
 ## §3 純呈現畫面
@@ -116,6 +124,7 @@
 - **本次範圍內可以自由新增／拆分／搬移檔案與型別**，不必逐檔問（見 reference 的「允許新增檔案」）。
 - 收尾走重；純畫面重構省 `concurrency-auditor`。
 
+<!-- touchpoint: ios-dev-040 kind=command -->
 ## §7 接 ticket（`/ios-dev tickets/<T>.md`，每張一個新 session）
 
 這是最高頻的路徑，完整流程在這裡，不在 SKILL.md：
@@ -130,4 +139,5 @@
    照 ticket 的「中途檢查點」在那一段行為走通時就先驗一次契約，不要全部寫完才檢查。
 5. **共通收尾 1–5**。跑 verification 時**先照 ticket 的 Verification 段**（測試指令、build、實機走一遍）；
    舊 ticket 沒有這一段就照 Acceptance Criteria 自己列驗證步驟。回寫時 ticket 的 `covers` 列到的 FR# 不用另外處理，看板靠 `status`。
+   <!-- touchpoint: ios-dev-041 kind=command -->
 6. **問「接下一張？」**；全部 ticket 完成時提醒 Phase 5 `/work-log-writer` 與 Phase 6 `/second-brain`。

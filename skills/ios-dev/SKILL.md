@@ -12,6 +12,7 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 ## 你的任務
 
+<!-- touchpoint: ios-dev-001 kind=gate -->
 作為 iOS 開發工作流的**唯一入口**：先認情境（Step 0），秀出這次會載入的 skill 與派出的 agent 讓使用者確認一次，再依情境交棒或往下走。
 
 規劃類情境（新專案／大功能、小功能）留在本 skill 的 Step 1–8，**產出是計畫，不寫 code**。其他情境（純畫面、修正、優化、重構、接 ticket）在 Step 0 交棒後由該 skill 執行，本 skill **不再介入執行，但仍持有收尾清單**。
@@ -33,6 +34,7 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 只有三件事寫在這裡：
 
+<!-- touchpoint: none -->
 - **交棒後誰持有收尾**：情境 1（無 PM spec）與情境 2 留在本 skill 往 Step 1；情境 1 有 PM spec 立即交棒 `phase-workflow` 入口 B；情境 3–7 交棒給下游 skill 執行，但交棒訊息**一定要附上 `references/handoff-checklist.md` 的三段拼接：「開發前」全文 ＋「共通收尾」全文 ＋ 該情境那一段**——下游是獨立 context，只貼情境段的話輕／重怎麼判、review 三路線、人工核准前的禁止事項與回寫順序全都讀不到。
 - **開發前一定要有架構結論**：情境 2–7 在確認畫面就要講出這次是「直接擴充／局部整理／模組邊界」，依據是 `references/architecture-impact-check.md` 的五問。命中中型觸發條件就改走 router §2 的中型路線，**與 ticket 數無關**。
 - `careful-ios` 與 `verification-before-completion` 不進 bundle、永遠生效。
@@ -52,6 +54,8 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 先看「Code 現在存在嗎」，再決定共識入口：
 
+<!-- touchpoint: ios-dev-002 kind=gate -->
+<!-- touchpoint: ios-dev-003 kind=engineering -->
 | 起始狀態 | 路由 |
 |---|---|
 | 功能文件已成形、還沒有 Code | `consensus-plan`（唯讀文件審查）→ **人工改文件** → `re-review` |
@@ -66,8 +70,13 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 根據情境決定要走哪些 Step（修正情境已在 Step 0 交棒給 `/ios-investigate`，這裡只剩規劃類）：
 - **小功能（情境 2）**：Step 2（有第二大腦才讀）→ Step 3 的 grill 縮成 1 輪 → **Step 4 精簡版（五問；有 async 補 ownership 契約、有流程補轉移表）** → Step 5 → Step 6（短 plan）→ Step 7；閘門走輕
+  <!-- touchpoint: ios-dev-004 kind=command -->
 - **大功能（情境 1，無 PM spec）**：走完整 Step 2–5（Step 3 由使用者輸入 `/grill-with-docs`）；Step 4 的責任邊界結論是**模組邊界**（或本來就是跨模組大功能）→ 交 `phase-workflow` 入口 A（帶 Decision Log 與 §0，Step 6–7 跳過）；沿既有契約增加操作 → Step 6–7。ticket 數只決定 phase-workflow 產幾份檔
 - **大功能（情境 1，有 PM spec）**：不走這裡，Step 0 已交棒 `phase-workflow` 入口 B；§0 由它的 Step 3B 產在 rd-spec.md
+  <!-- touchpoint: ios-dev-005 kind=gate -->
+  <!-- touchpoint: ios-dev-006 kind=gate -->
+  <!-- touchpoint: ios-dev-007 kind=code-review -->
+  <!-- touchpoint: ios-dev-008 kind=gate -->
 - **複雜 Bugfix**（`/ios-investigate` 認定 root cause 未知或高風險時會回到這裡）：repair plan 文件 → `/consensus-plan`
   （唯讀文件審查，findings 交回人工改文件，需要再一輪就 `re-review`）→ 依文件修正
   → `/consensus-review`（複雜 Bugfix 一律走路線 A——唯一不問、強制加 Codex 的情況；Codex 不可用才降 B）→ 人工 Code Review；人工核准前不得 commit、push、merge 或建立 PR
@@ -84,6 +93,7 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 2. 近期踩坑與既有 invariant。
 3. 本功能直接涉及的 code path。
 
+<!-- touchpoint: ios-dev-009 kind=engineering -->
 **交付物是 `--source` 候選清單**，不是 manifest 檔：每個來源寫成
 `"/絕對路徑.md#精確標題"`（`consensus-plan` 只吃 Markdown 章節錨點，最多 5 個、
 16,000 token 預算，它在 `init` 前會再跟使用者確認一次）。已檢查但未選入的來源與
@@ -95,6 +105,8 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 ## Step 3：需求訪談與 Decision Log（以 `/grill-with-docs` 執行）
 
+<!-- touchpoint: ios-dev-010 kind=command -->
+<!-- touchpoint: ios-dev-011 kind=mixed -->
 請使用者輸入 `/grill-with-docs`（repo 內；尚無 repo 用 `/grill-me`）——這兩個是 mattpocock plugin 的 user-invoked skill，模型呼叫不到；使用者不在時用 `mattpocock-skills:grilling` 頂替，但要自己補 `CONTEXT.md`／`docs/adr/`。它做審訊式訪談：
 它把設計畫成決策樹，分輪問出目前能問的所有決策、每題附建議答案；
 事實自己派 sub-agent 查，只把**決策**交給使用者。涵蓋面要包含：問題與使用情境、
@@ -108,10 +120,13 @@ grill 同時長出 repo 的 `CONTEXT.md`（純術語 glossary）與 `docs/adr/`
 （只記難逆轉＋沒脈絡看不懂＋真有取捨的決策）——這兩份是術語與「為什麼」的真相來源，
 Claude/Codex 共識閘門兩邊都讀；Phase 6 第二大腦 MOC 只連結不複製。
 
+<!-- touchpoint: ios-dev-012 kind=engineering -->
+<!-- touchpoint: ios-dev-013 kind=command -->
 規則：**同一功能只 grill 一次**；時間預算 3 輪或 30 分鐘，未收斂的標記為未知事項。
 grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散當保險嗎？」（備選，預設不跑）。
 前置：repo 首次使用前跑一次 `setup-matt-pocock-skills`（需 `mattpocock-skills` plugin）。
 
+<!-- touchpoint: ios-dev-014 kind=gate -->
 只有必要問題都有答案、未知事項被標記，且使用者確認需求摘要後，
 才能寫實作 Plan。
 
@@ -125,6 +140,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 ## 成功標準（怎麼知道做好了）
 ```
 
+<!-- touchpoint: ios-dev-015 kind=mixed -->
 如果答案不清楚，**必須停下來詢問用戶**，不要假設。
 
 ---
@@ -138,6 +154,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 | 小功能 | `architecture-impact-check.md` 的五問答案（一句話寫進 plan）；有 async 補契約、有流程補轉移表 |
 | 純呈現畫面 | 只答第 3 問（會不會多出第二份真相或互斥旗標）|
 
+<!-- touchpoint: ios-dev-016 kind=engineering -->
 呼叫 `swift-architecture-skill`：新功能用 Quick Recommendation Mode，既有模組改造用 Deep Refactor Mode。它會先跑決策矩陣（state 複雜度、單向流需求、非同步編排、既有慣例、學習成本）再選主從組合；預設落點是 **Clean 分層 ＋ MVVM 或 MVI 當 presentation**，SOLID 體現在 protocol DI 與 state ownership。它的護欄照守：小功能不換架構、不引入 TCA 除非使用者接受、取最小改動。
 
 **產出寫成「§0 架構形狀」四段**，放進 Design Doc；交 phase-workflow 時原樣填進 overview.md 的 §0：
@@ -153,6 +170,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 
 ## Step 5：TDD Test Cases 規劃（`superpowers:test-driven-development` 精神）
 
+<!-- touchpoint: ios-dev-017 kind=gate -->
 根據 Design Doc 和架構，列出 Test Cases。**先列 test cases，讓用戶審核後才進入實作。**
 列完順便估 ticket 數（一個 ticket ≈ 一組可獨立驗收的 test cases）。**ticket 數不決定要不要進 phase-workflow**（那是 Step 4 的責任邊界結論），它只決定進去之後產幾份檔：1–8 張中型 4 份、>8 張大型 7 份。
 
@@ -179,6 +197,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 @Test func fetchData_apiReturns404_throwsNotFoundError() async { }
 ```
 
+<!-- touchpoint: ios-dev-018 kind=mixed -->
 **列出後暫停，詢問用戶：**
 「以上是初步規劃的 test cases，有需要調整或新增嗎？確認後我們進入實作計畫。」
 
@@ -188,6 +207,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 
 **先分叉**（router §2）：
 
+<!-- touchpoint: ios-dev-019 kind=command -->
 - **責任邊界命中中型或大型觸發條件**（router §2；新模組／多畫面流程／多 async 協調／要先拆 View 才加得進去）→ 不產整體 plan。Design Doc、Decision Log、§0 寫進功能資料夾：**預設 iOS repo 的 `docs/features/<功能>/`**；你另外有跨 repo 的 workspace（筆記庫或獨立文件 repo）而且明講要用它時，才寫到 `<workspace>/Projects/<專案>/<功能>/`。印出 `/phase-workflow <design doc 路徑>` 並建議開新 session 執行；Step 6–7 跳過。之後每張 ticket 用 `/ios-dev tickets/<T>.md` 接回來（情境 7）。
 - **沿既有清楚契約增加操作**（不論幾張 ticket）→ 文件落在**目標 iOS repo 內**，沿用既有命名：
   - Design Doc：`docs/plans/YYYY-MM-DD-<feature>-design.md`
@@ -208,6 +228,7 @@ Phase 3 的產物就是 Code，所以收尾一律走 §3 的 review 路線（預
 
 走 phase-workflow 的功能，根文件（overview.md／rd-spec.md）已由它的 Step 4.5／3.5B 審過，這步跳過，不重複審。
 
+<!-- touchpoint: ios-dev-020 kind=gate -->
 呼叫 `/consensus-plan`，一次一份文件、一把尺，**尺照文件種類綁死，不臨場判**：
 
 | 文件 | lens |
@@ -216,9 +237,11 @@ Phase 3 的產物就是 Code，所以收尾一律走 §3 的 review 路線（預
 | 實作計畫（`docs/plans/<feature>.md`） | `implementation`——對不對得上既有 code 的名字、契約、呼叫點 |
 | PM／RD 需求 spec | `requirement`（由 phase-workflow 的入口 B 處理，不在這裡） |
 
+<!-- touchpoint: ios-dev-021 kind=engineering -->
 它做的是**唯讀文件審查**：Codex 讀完這份文件、寫完 findings 就停在
 `AWAITING_HUMAN_DOC_REVIEW`，**不改文件、不寫 code、也不產生可核准的 Plan run**。
 
+<!-- touchpoint: ios-dev-022 kind=engineering -->
 findings 就是交付物：人讀完自己改文件，改完用 `ai-review re-review` 跑下一輪
 （文件沒動會被拒）。Codex 的 `PASS` 只是一次仔細的閱讀，不是核准——這道閘門沒有
 簽章、沒有核准指令，文件收斂到什麼程度才開工由使用者說了算。
@@ -239,9 +262,11 @@ specialist 的 findings（見 `references/handoff-checklist.md`），Codex 首�
 production diff ≤50 行；不碰 concurrency／持久化／網路協定／migration、不改公開契約、測得出來——純呈現畫面以 Preview 或截圖可前後對照算數）；
 趕時間不能當理由，使用者要求也不能放寬——不符合就走 B，不要另開「你堅持就走 C」的選項。
 
+<!-- touchpoint: ios-dev-023 kind=code-review -->
 B 與 C 沒有外部模型交叉驗證，PR 描述要註明。三條路線的終點都是人工 Code Review，
 但**核准的形式不同**。
 
+<!-- touchpoint: ios-dev-024 kind=gate -->
 **只在 A 路線成立的規則**：`--preflight` 對 `--profile ios` 必填，且只認 `swiftui`／`ux`／
 `resilience` 三個 category，所以走 A 時**輕重都要派這三個 specialist**——`ios-review`、
 `perf-auditor`、`architecture-auditor` 那些的產出餵不進去，必須在 `init` 前就修掉（輕省下
@@ -249,6 +274,8 @@ B 與 C 沒有外部模型交叉驗證，PR 描述要註明。三條路線的終
 停在 `AWAITING_HUMAN_CODE_REVIEW`，**人工 `approve-code` 前不得 commit、push、merge
 或建立 PR**。
 
+<!-- touchpoint: ios-dev-025 kind=code-review -->
+<!-- touchpoint: ios-dev-026 kind=gate -->
 **B 與 C 不建立 ai-review run**，所以沒有 `approve-code` 可跑，也不會出現
 `AWAITING_HUMAN_CODE_REVIEW`：改成使用者讀完 diff 口頭確認，確認前一樣不得 commit、
 push、merge 或建立 PR。這條規則綁的是「人看過」，不是綁那一道指令。
@@ -267,13 +294,17 @@ push、merge 或建立 PR。這條規則綁的是「人看過」，不是綁那�
 > - 遇到 bug 時呼叫 `/ios-investigate`；效能問題先 `perf-auditor`，需要證據再用 `trace-analyzer` 錄 trace
 > - **不要等所有 Task 做完才驗架構**：照計畫的「中途架構檢查點」，在每一段完整行為走通時就對照架構約束段驗一次。發現偏離先判是哪一種——**實作違約就修實作**並重驗（不准改契約遷就程式碼）；**契約確實不適用**才寫下理由、更新設計決策與測試後繼續。
 > - 所有 Task 完成後，執行 Phase 3 品質閘門（輕／重照 router §3，收尾照 handoff-checklist）。
+> <!-- touchpoint: ios-dev-027 kind=command -->
 > - 走 phase-workflow 的功能：每張 ticket 用 `/ios-dev tickets/<T>.md` 開新 session 接手（情境 7），做完回寫看板再接下一張。
+> <!-- touchpoint: ios-dev-028 kind=code-review -->
 > - 再依所選的 review 路線收尾（預設 B；使用者選了加 Codex 才走 A `/consensus-review`；很小且風險三條全綠可走 C，見 router §3），最後一定交給使用者人工 Code Review。
 > - Step 3 長出的 `CONTEXT.md`／`docs/adr/` 隨實作維護；Phase 6 建第二大腦時 MOC 連結過去，不複製。
 
+<!-- touchpoint: ios-dev-029 kind=gate -->
 固定順序是：`consensus-plan（唯讀文件審查）→ 人工改文件 → implementation →
 review 路線（A／B／C）→ 人工 Code Review`。文件還沒審過就不要啟動 SDD——這條由工作流
 自己守，工具端沒有閘門會擋。不要自動開始實作，讓用戶決定何時執行。
 
+<!-- touchpoint: ios-dev-030 kind=code-review -->
 Code 已經存在（既有 branch、SDD 產物、已修好的 Bug）時，直接從 Step 8 選一條 review
 路線進場，終點一樣是人工 Code Review。

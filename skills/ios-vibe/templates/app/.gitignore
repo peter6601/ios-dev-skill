@@ -1,0 +1,22 @@
+# AI 的執行期紀錄，不進版本紀錄
+.vibe/
+
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcresult
+
+# Swift Package Manager
+.build/
+.swiftpm/

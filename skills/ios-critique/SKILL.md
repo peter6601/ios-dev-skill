@@ -13,6 +13,7 @@ argument-hint: "[要批評的功能或畫面]"
 ## 前置準備
 
 1. **讀取目標畫面的程式碼**：找到相關的 SwiftUI View 檔案，理解完整的 View 結構
+   <!-- touchpoint: ios-critique-001 kind=product -->
 2. **理解上下文**：這個畫面解決什麼問題？目標用戶是誰？在 App 中的位置？
 3. **如果有 Preview**：嘗試理解不同 state 下的呈現
 
@@ -118,11 +119,13 @@ argument-hint: "[要批評的功能或畫面]"
 - **What**：清楚命名問題
 - **Why it matters**：這如何傷害用戶或損害目標
 - **Fix**：具體的修復建議（寫出 SwiftUI code 方向）
+  <!-- touchpoint: ios-critique-002 kind=command -->
 - **Command**：建議使用哪個 command 修復（`/ios-distill`、`/ios-harden`、`/ios-polish`、`/ios-review`、`/ios-investigate`）
 
 ### Minor Observations
 較小但值得處理的問題的快速筆記。
 
+<!-- touchpoint: ios-critique-003 kind=product -->
 ### Questions to Consider
 可能解鎖更好方案的挑戰性問題：
 - 「如果主要操作更突出會怎樣？」

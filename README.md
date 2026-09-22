@@ -1,8 +1,15 @@
 # ios-dev-skill
 
-給 [Claude Code](https://claude.com/claude-code) 的 iOS／SwiftUI 開發工具組，涵蓋需求規劃、實作、除錯與審查。
+給 [Claude Code](https://claude.com/claude-code) 的 iOS／SwiftUI 開發工具組，涵蓋需求規劃、實作、除錯與審查。依你讀不讀程式碼，有兩個入口：
 
-在 Claude Code 輸入需求即可開始：
+| 你是 | 從這裡開始 |
+|---|---|
+| **不寫 code，想做出自己的 iPhone app** | 讀 [VIBE.md](VIBE.md)：把一段話貼給 AI 就能安裝，接著用白話說你想做什麼 |
+| **iOS 工程師** | 往下讀：用 `/ios-dev` 從需求規劃、實作一路走到審查 |
+
+---
+
+以下給 iOS 工程師。在 Claude Code 輸入需求即可開始：
 
 ```text
 /ios-dev 在設定頁新增匯出功能
@@ -32,7 +39,7 @@ npx skills@latest add https://github.com/AvdLee/SwiftUI-Agent-Skill --skill swif
 /plugin install superpowers@claude-plugins-official
 ```
 
-這四個套件分別提供架構、並行處理、SwiftUI，以及計畫、測試與驗證指引。缺少任一項，主要流程就無法完整執行。
+這四個套件（`swift-architecture-skill`、`swift-concurrency`、`swiftui-expert-skill`、`superpowers`）分別提供架構、並行處理、SwiftUI，以及計畫、測試與驗證指引。缺少任一項，主要流程就無法完整執行。
 
 ### 2. 安裝本專案
 
@@ -50,6 +57,7 @@ cd ios-dev-skill
 |---|---|
 | `./install.sh --check` | 只檢查相依套件 |
 | `./install.sh --uninstall` | 只移除指向本專案的連結 |
+| `./install.sh --vibe --dry-run` | vibe 版安裝：列出會做的事；加 `--yes` 才執行（見 [VIBE.md](VIBE.md)） |
 
 ## 使用方式
 
@@ -78,11 +86,12 @@ cd ios-dev-skill
 
 ## 內含工具
 
-**11 個 skill**，分工如下：
+**12 個 skill**，分工如下：
 
 | Skill | 用途 |
 |---|---|
 | [ios-dev](skills/ios-dev/SKILL.md) | 統一入口，選擇流程與工具 |
+| [ios-vibe](skills/ios-vibe/SKILL.md) | 給不讀 code 的人的入口：背後照跑 `ios-dev`，只問產品問題，每次給試用卡 |
 | [office-hours](skills/office-hours/SKILL.md) | 釐清產品方向與最小可行版本 |
 | [phase-workflow](skills/phase-workflow/SKILL.md) | 將需求整理成規格與 ticket |
 | [ios-investigate](skills/ios-investigate/SKILL.md) | 找出 bug 原因並驗證修正 |
@@ -109,7 +118,7 @@ cd ios-dev-skill
 | 建議 | [Dimillian/Skills](https://github.com/Dimillian/Skills)：`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`review-swarm`、`bug-hunt-swarm`、`orchestrate-batch-refactor` | 畫面設計、重構、效能與審查 |
 | 建議 | [mattpocock/skills](https://github.com/mattpocock/skills)：`mattpocock-skills` plugin | 需求訪談；未安裝時改用 Superpowers |
 | 建議 | [ai-review](https://github.com/peter6601/ai-review)：`consensus-plan`、`consensus-review` | Codex 文件與程式碼交叉審查 |
-| 選配 | [app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills) | App Store 送審前檢查 |
+| 選配 | [app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills)：`app-store-preflight-skills` | App Store 送審前檢查 |
 | 選配 | [Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill)：`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer` | 建置分析與修正；只分析可不裝 fixer |
 | 選配 | [app-store-connect-cli-skills](https://github.com/rorkai/app-store-connect-cli-skills)：`asc-*` | App Store Connect 發佈流程 |
 
@@ -158,6 +167,8 @@ python3 skills/ios-dev/scripts/validate-router.py --workspace . --skill-dir skil
 python3 -m unittest discover -s skills/ios-dev/scripts -p "test_*.py"
 python3 skills/ios-dev/evals/test_run_evals.py
 python3 skills/careful-ios/bin/test_check_careful_ios.py
+python3 -m unittest discover -s skills/ios-vibe/scripts -p "test_*.py"
+python3 skills/ios-vibe/scripts/check-touchpoints.py
 python3 test_install_sh.py
 bash -n install.sh
 ./install.sh --check

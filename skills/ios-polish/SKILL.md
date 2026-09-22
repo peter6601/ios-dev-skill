@@ -14,6 +14,7 @@ argument-hint: "[要打磨的功能或區域]"
 
 ## 打磨前評估
 
+<!-- touchpoint: ios-polish-001 kind=mixed -->
 1. **確認完成度**：
    - 功能上是否完整？
    - 是否有已知問題需要保留？（標記 TODO）
@@ -294,10 +295,13 @@ var body: some View {
 
 ## 最終驗證
 
+<!-- touchpoint: ios-polish-002 kind=gate -->
 在標記為完成之前：
 
 - **自己使用它**：真正互動操作這個功能
+  <!-- touchpoint: ios-polish-003 kind=product -->
 - **在真機上測試**：不只是 Simulator
+  <!-- touchpoint: ios-polish-004 kind=code-review -->
 - **請別人 review**：新鮮的眼睛能抓到你忽略的東西
 - **對比設計稿**：符合預期的設計
 - **檢查所有狀態**：不只是 happy path

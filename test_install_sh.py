@@ -146,6 +146,116 @@ class TestHasSkill(unittest.TestCase):
         self.assertIn("✗", self._check_line({}))
 
 
+FAKE_BIN = """#!/bin/bash
+echo "$(basename "$0") $*" >> "$FAKE_LOG"
+if [ "$(basename "$0")" = "claude" ] && [ "$1" = "mcp" ] && [ "$2" = "get" ]; then
+  [ -f "$FAKE_MCP_PRESENT" ] && exit 0
+  exit 1
+fi
+if [ "$(basename "$0")" = "claude" ] && [ "$1" = "mcp" ] && [ "$2" = "add" ]; then
+  touch "$FAKE_MCP_PRESENT"
+fi
+exit 0
+"""
+
+
+class TestVibe(unittest.TestCase):
+    """--vibe 流程：先列清單、要同意才動、寫入的全域路由可以乾淨移除。npx／claude 換成假指令。"""
+
+    def setUp(self):
+        self.home = tempfile.mkdtemp()
+        self.bindir = tempfile.mkdtemp()
+        self.log = os.path.join(self.bindir, "calls.log")
+        for name in ("npx", "claude"):
+            path = os.path.join(self.bindir, name)
+            with open(path, "w") as fh:
+                fh.write(FAKE_BIN)
+            os.chmod(path, 0o755)
+        self.env = {
+            "NPX_BIN": os.path.join(self.bindir, "npx"),
+            "CLAUDE_BIN": os.path.join(self.bindir, "claude"),
+            "VIBE_SKIP_PREREQ": "1",
+            "FAKE_LOG": self.log,
+            "FAKE_MCP_PRESENT": os.path.join(self.bindir, "mcp-present"),
+        }
+
+    def tearDown(self):
+        shutil.rmtree(self.home, ignore_errors=True)
+        shutil.rmtree(self.bindir, ignore_errors=True)
+
+    def calls(self):
+        if not os.path.exists(self.log):
+            return ""
+        with open(self.log) as fh:
+            return fh.read()
+
+    def routing(self):
+        path = os.path.join(self.home, "CLAUDE.md")
+        if not os.path.exists(path):
+            return ""
+        with open(path, encoding="utf-8") as fh:
+            return fh.read()
+
+    def test_dry_run_lists_plan_and_touches_nothing(self):
+        r = run(["--vibe", "--dry-run"], self.home, self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("vibe 版會做這些事", r.stdout)
+        self.assertIn("swift-architecture-skill", r.stdout)
+        self.assertIn("XcodeBuildMCP", r.stdout)
+        self.assertEqual(os.listdir(self.home), [])
+        self.assertNotIn("npx", self.calls())
+        self.assertNotIn("plugin install", self.calls())
+
+    def test_without_yes_and_no_tty_refuses(self):
+        r = run(["--vibe"], self.home, self.env)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("--yes", r.stdout)
+        self.assertEqual(os.listdir(self.home), [])
+
+    def test_dry_run_requires_vibe(self):
+        r = run(["--dry-run"], self.home, self.env)
+        self.assertEqual(r.returncode, 2)
+
+    def test_yes_installs_everything_once(self):
+        r = run(["--vibe", "--yes"], self.home, self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("unbound variable", r.stderr)
+        self.assertTrue(os.path.islink(os.path.join(self.home, "skills", "ios-vibe")))
+        calls = self.calls()
+        self.assertIn("npx skills add https://github.com/efremidze/swift-architecture-skill", calls)
+        self.assertIn("--skill review-swarm", calls)
+        self.assertIn("claude plugin install superpowers@claude-plugins-official", calls)
+        self.assertIn("XCODEBUILDMCP_ENABLED_WORKFLOWS=simulator,simulator-management,ui-automation", calls)
+        body = self.routing()
+        self.assertEqual(body.count("ios-vibe:begin"), 1)
+        self.assertIn("ios-vibe", body)
+
+        # 第二次執行：路由不重複寫，MCP 已存在就不再加
+        r = run(["--vibe", "--yes"], self.home, self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.routing().count("ios-vibe:begin"), 1)
+        self.assertEqual(self.calls().count("mcp add"), 1)
+
+    def test_uninstall_removes_only_our_block(self):
+        path = os.path.join(self.home, "CLAUDE.md")
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("# 我自己的設定\n\n保留這行\n")
+        run(["--vibe", "--yes"], self.home, self.env)
+        self.assertIn("ios-vibe:begin", self.routing())
+        r = run(["--vibe", "--uninstall"], self.home, self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        body = self.routing()
+        self.assertNotIn("ios-vibe", body)
+        self.assertIn("保留這行", body)
+        self.assertFalse(os.path.lexists(os.path.join(self.home, "skills", "ios-vibe")))
+
+    def test_vibe_check_touches_nothing(self):
+        r = run(["--vibe", "--check"], self.home, self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("vibe 版檢查", r.stdout)
+        self.assertEqual(os.listdir(self.home), [])
+
+
 class TestDepsListsAgree(unittest.TestCase):
     """install.sh 的相依表是唯一真相；README「相依一覽」與 router §9 不得漏名字。"""
 

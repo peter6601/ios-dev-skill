@@ -35,6 +35,7 @@ design doc 通常是「某個時間點的 codebase audit + 前瞻計畫」。直
 
 ## 執行步驟
 
+<!-- touchpoint: phase-workflow-048 kind=engineering -->
 ```
 1. 列整合面清單（從 design doc 的「改動範圍」「模組對映」「reuse 策略」段抽符號）
 2. 一輪 grep/find 定位全部符號（一個 Bash 多指令搞定）
@@ -86,4 +87,5 @@ xcodebuild -list -json 2>/dev/null | head -40
 - **讀**：類別 1+2+3 的主檔（通常 3-5 檔）完整讀；其餘 grep 定位即可
 - **不讀**：無關 feature、UI theme、第三方、utility
 - 預算感：grounding pass ≈ 5-15 分鐘 / ~10-30k token。比起「文件寫錯害下游 agent 做錯」便宜太多
+  <!-- touchpoint: phase-workflow-049 kind=engineering -->
 - 沒有任何會被碰到的既有 code → 整個跳過，直接 Step 2；這時驗證指令向使用者要，ticket 的 Files 不得出現「編輯」既有檔

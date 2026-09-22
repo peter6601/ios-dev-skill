@@ -84,6 +84,7 @@ exit 0＝沒有 🔴（🟡 不擋，加 `--strict` 才擋）；exit 1＝有 �
 - [ ] 沒有循環依賴
 - [ ] 不得依賴更後面 Stage 的 ticket（禁止前向依賴）
 
+<!-- touchpoint: phase-workflow-052 kind=engineering -->
 ### H. 同檔重疊與 ticket 大小（🟡 警告，不擋；回報給使用者裁定）
 - [ ] 兩張 ticket 的 `## Files` 有同一個標「編輯」的檔，且互不在對方的 `deps` 鏈上 → 「同檔未排序」。
       修法三選一：加 `deps` 串行／合併成一張／在 `tickets/README.md`「不可平行」註明

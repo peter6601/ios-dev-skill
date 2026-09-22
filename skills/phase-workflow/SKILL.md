@@ -10,6 +10,7 @@ metadata:
 
 # Phase Workflow — 新功能 / 新專案文件 + Ticket Scaffolding
 
+<!-- touchpoint: phase-workflow-001 kind=command -->
 > **本 skill 只做規劃，不寫 code**。職責邊界：把已通過 Phase 0（office-hours / brainstorming）收斂的 design doc，展開成可分散 dispatch 的 reference 文件 + ticket bundle。下游（`/writing-plans` → 實作）由使用者手動接續；唯一自動接的下游是對**根文件**跑一次 `/consensus-plan` 唯讀審查——入口 A 在 Step 4.5 審 overview.md、入口 B 在 Step 3.5B 審 rd-spec.md（理由見各流程圖下方）。
 
 ---
@@ -27,6 +28,7 @@ metadata:
 | Bug fix | ❌ 不用，`/ios-dev` 情境 4（→ `/ios-investigate`）；除非根因是責任邊界壞掉，那就當中型進來 |
 | 重構 | 範圍單純 → `/ios-dev` 情境 6 局部重構；**涉及多個 state owner、presentation 流程或 async 生命週期 → ✅ 走本 skill 的重構規劃模式**（見下）|
 
+<!-- touchpoint: phase-workflow-002 kind=mixed -->
 **前置條件**：使用者已有 design doc（手寫 PRD 或 `/office-hours` 產出）。沒有 doc 時 skill 會 fallback 問你補（一次列長 list），但 skill 不取代 Phase 0 產品思考。
 
 **入口 B 例外**：PM 已給 SPEC 的公司功能不需 design doc 也不需 Phase 0（視為 PM 已完成產品思考），直接走下方「處理流程 — 入口 B」。
@@ -35,6 +37,7 @@ metadata:
 
 ## 入口分流
 
+<!-- touchpoint: phase-workflow-003 kind=mixed -->
 | 入口 | 適用 | 輸入 | Step 3 人審產物 |
 |---|---|---|---|
 | **A**（現行） | 自家功能，已過 Phase 0（office-hours / grill） | design doc | overview.md（Step 4 確認是大型後，才補 sprint-roadmap.md 大綱）|
@@ -65,11 +68,13 @@ Step 1.5. Codebase Grounding ⭐（這次會改到或引用**任何**既有檔�
   ├─ grep-find 定位每個符號 → 主檔（protocol / 被 mirror 的 service / 注入點）**完整 Read**
   ├─ 建「verified facts」表：真實類名 / 簽名 / 屬性名 / 檔路徑 / 常數值 / 檔是否存在——Step 3 寫進 overview.md「現況盤點」段（入口 B 放 context.md），不要只留在記憶裡
   ├─ iOS domain：派 `architecture-auditor` 對整合面模組跑一次（四個量化閘門＋pattern），結果進 verified facts 的「現況形狀」欄——ticket 才知道要不要先拆再加
+  │  <!-- touchpoint: phase-workflow-004 kind=engineering -->
   └─ ⚠️ **design doc 的前瞻假設 ≠ 現況** — 凡 doc 寫「X 改成 Y」「加 Z 檔」都要對「當前 code」重新 grep 驗證，查無就標 (新建) 或 stop+問，不照抄
 
 Step 2. 完整性檢查
   ├─ 跑 references/intake-long-list.md 的 8 項 checklist
   ├─ 識別已涵蓋項 ✅ + 缺項 ❓（item 4 模組 / item 5 reuse 策略 依賴 Step 1.5 verified facts）
+  │  <!-- touchpoint: phase-workflow-005 kind=mixed -->
   └─ 缺項 priority-batched 列長 list 問使用者一次補完
       ├─ Critical batch: feature 一句話 / 頁面數 / 模組數 / 規模 / 行為清單與優先序
       └─ Secondary batch: 風險 / descope / 跨團隊 deps / 既有系統 reuse 策略
@@ -83,31 +88,40 @@ Step 3. 出大綱（只產 overview.md；這時規模還沒確認，不產 sprin
   │   │       Step 5 才發現的，回來把那條 FR 拆開（新的往後編，純文字拆分不用重審），不要一條 FR 配兩張 ticket——那樣涵蓋檢查抓不到「只做了一半」
   │   └─ iOS domain：「§0 架構形狀」段由 `swift-architecture-skill` 填（`/ios-dev` 交棒時已有 §0 → 直接貼；否則此時跑 Quick Recommendation Mode）；§0 在 overview.md 裡，所以 Step 4.5 的根文件審查一併審架構
   │   ├─ Stage 切分草案寫在「時程與里程碑」段、風險寫在「最重要的風險點」段
+  │   │  <!-- touchpoint: phase-workflow-006 kind=mixed -->
   │   ├─ 跨 ticket 的未決問題寫在「開放問題」段；會擋 Stage 1–2 ticket 的，這次 STOP 就一併問使用者
+  │   │  <!-- touchpoint: phase-workflow-007 kind=engineering -->
   │   └─ **交棒來的 §0 比模板薄時不自行推導**：對照模板要的格子（模組表、三種 owner、每項 async 的六格、
   │       涉及流程的轉移表、5–8 條 PR checklist）列出缺哪幾格 → 跑 `swift-architecture-skill` 補，或問使用者。
   │       模板格子以外的契約缺口（多訂閱者語意、漏掉的變更怎麼補、錯誤模型）一樣算缺格。
   │       標「推導」的格子不得送 Step 4.5——送審的 §0 每一格都要是使用者或架構 skill 定的
+  │  <!-- touchpoint: phase-workflow-008 kind=engineering -->
   └─ STOP，等使用者 review 大綱
   ⚠️ overview 的「技術模組清單 / 紅線檔 / reuse 策略」只能用 verified facts，不用未驗證符號名
 
 Step 4. 確認規模
   ├─ 先草切一遍（只列 ID／type／標題／估計，不寫檔）：跑「Foundation 放多少」那幾題，得到 ticket 預估數；
   │   有壓線的型別（估 0.4–0.6 人天）就把兩種切法各會串行幾張一起列出來
+  │  <!-- touchpoint: phase-workflow-009 kind=engineering -->
   ├─ 使用者確認 stage 數 + ticket 預估數（＋壓線型別選哪種切法）
   ├─ 規模分流（只決定輸出幾份檔）：1-8 ticket = 中型 / >8 ticket = 大型
   ├─ 確認後把 `scale: medium|large` 寫進 overview.md 的 frontmatter（Resume 靠它分辨過沒過 Step 4）
   ├─ **大型**：這時才產 sprint-roadmap.md 大綱（Stage 切分從 overview 的草案展開）
+  │  <!-- touchpoint: phase-workflow-010 kind=engineering -->
   └─ STOP，等使用者 ack「繼續展開」
 
 Step 4.5. 根文件審查 ⭐（唯讀，本 skill 唯一自動接的下游；入口 B 的對應落點是 Step 3.5B）
+  │  <!-- touchpoint: phase-workflow-011 kind=gate -->
   ├─ 對「根文件」跑一次 `/consensus-plan`（Codex 一輪唯讀文件審查，不改文件）
   │   └─ 根文件 = 其他東西從它展開的那一份；入口 A 就是 overview.md
+  │  <!-- touchpoint: phase-workflow-012 kind=engineering -->
   ├─ lens 多半落在 `requirement`（overview 是需求面文件），但判哪把尺、跟使用者確認，
   │   都由 `/consensus-plan` 自己走，本 skill 不代它決定、也不代它問
   ├─ 拿到 findings 後照 severity 分三種走法：
   │   ├─ verdict `PASS`，或 findings 全是 `minor`／`info` → 繼續 Step 5
+  │   │  <!-- touchpoint: phase-workflow-013 kind=engineering -->
   │   ├─ 有 `major` → 不自動往下，把報告交使用者判斷「先改文件還是照原樣展開」
+  │   │  <!-- touchpoint: phase-workflow-014 kind=engineering -->
   │   └─ 有 `blocker` → **STOP**，把報告路徑（`status` 的 `summary_path`）交給使用者
   │       └─ 文件由使用者自己改（Codex 唯讀，本 skill 也不代改），改完跑 `re-review`
   └─ 只自動審這一份；context / architecture / 個別 ticket 要審，由使用者指定哪一份再跑
@@ -125,7 +139,9 @@ Step 5. 展開其餘檔（依規模）
   ├─ ⚠️ **產完先跑 `python3 scripts/lint-tickets.py <feature-folder>`，有 🔴 不進 Step 6**（規則在 `references/lint-rules.md`；腳本判不了的兩條——標題語意、模組相不相依——自己對）：
   │   ├─ 涵蓋：每個 FR# 至少一張 ticket 的 `covers` 列到，或標 deferred／列在「不做」
   │   ├─ 依賴：`deps` 都對得到檔、無循環、無前向依賴
+  │   │  <!-- touchpoint: phase-workflow-015 kind=engineering -->
   │   └─ 同檔重疊與拆分訊號：命中的列給使用者，排序／合併／註記理由放行
+  │  <!-- touchpoint: phase-workflow-016 kind=engineering -->
   ├─ ⚠️ **切 ticket 時才發現的契約層未決決策**（protocol 形狀、通知形式、錯誤模型）不寫進 ticket 當待辦：
   │   回 Step 3 補進 §0（使用者定案）；已過 Step 4.5 就告訴使用者根文件變了，由他決定要不要 `re-review`
   ├─ ⚠️ **每個 ticket 的 Files/Refs 寫進去前**，對其中每個既有符號（類名/檔路徑/屬性/常數）用 Step 1.5 verified facts 核對；新東西標 (新建)，未驗證的查無就 grep 補驗
@@ -135,12 +151,16 @@ Step 5. 展開其餘檔（依規模）
 Step 6. 收尾
   ├─ 逐項對「出口檢查」（見文末），每項要有證據
   ├─ 再跑一次 `python3 scripts/lint-tickets.py <feature-folder>`，把輸出貼進回報（0 個 🔴 才算過；🟡 逐條寫處置）
+  │  <!-- touchpoint: phase-workflow-017 kind=code-review -->
   ├─ 列出產出的檔案清單與 diff 給使用者看，**預設到此為止：不 commit、不 merge、不 push**
+  │  <!-- touchpoint: phase-workflow-018 kind=gate -->
   ├─ 使用者明確要求才進 git（照他指定的方式：worktree commit／直接 commit／開 PR）
   │   ├─ 目標 branch 有未提交變更時，先以可回復方式保留，不得覆寫或丟棄
   │   └─ 動完驗證產出在位、必要檔案存在、git status 符合預期，並回報 commit SHA
+  │  <!-- touchpoint: phase-workflow-019 kind=gate -->
   ├─ 提醒目前在 Phase A（初版建構期，見「兩階段」）；commit／push 的授權照使用者或團隊的規則——沒講就是不自行 commit、不自行 push，
   │   講了也只覆蓋他明講的那個動作（說了 commit 不等於可以 push）；本 skill 不碰 PR
+  │  <!-- touchpoint: phase-workflow-020 kind=command -->
   ├─ 提醒下游：每張 ticket 用 `/ios-dev tickets/<T>.md` 開新 session 接手（情境 7：writing-plans → SDD → 閘門 → review 路線（預設 B，可選加 Codex）→ 回寫看板）；本 skill 不自動接
   └─ STOP
 ```
@@ -149,6 +169,7 @@ Step 6. 收尾
 > **根文件審查是「不自動接下游 skill」的唯一例外（入口 A 在此，入口 B 在 Step 3.5B），而且只有一個理由。** 其餘 reference 檔、所有 ticket、之後的實作，全都從根文件長出來；根文件帶著一個錯往下走，等於把同一個錯複製進七份文件和一疊 ticket。所以它值得在任何東西從它展開之前，先花一輪 Codex 唯讀審查。例外只到根文件為止——`/writing-plans`、`/subagent-driven-development` 一律還是使用者手動接。
 > **也只審這一份。** 4-7 份全審＝4-7 個連續 Codex session（一小時起跳），而且 findings 大量重複；其餘文件要審，使用者指定哪一份再跑。
 
+<!-- touchpoint: phase-workflow-021 kind=gate -->
 > [!IMPORTANT]
 > **完工條件是「檔案都產出來、lint 過、使用者看過 diff」，不是「已經進 git」。**
 > 本 skill **預設不碰 git**：不 commit、不 merge、不 push、不開 PR——每個 repo 的分支與審查規則不一樣，
@@ -172,8 +193,10 @@ Step 1.5 Codebase Grounding（同入口 A，必做）
       與定案前提的偏離點（可派 read-only agent 對照他平台 T 卡逐項盤點）
 
 Step 2B. Grill（取代入口 A Step 2 的長 list）
+  │  <!-- touchpoint: phase-workflow-022 kind=engineering -->
   ├─ 審訊式多輪 frontier：每輪編號提問、每題附推薦答案，等使用者答完再下一輪
   ├─ 上限 3 輪或 30 分鐘；只問 RD 答得了的決策，事實自己查
+  │  <!-- touchpoint: phase-workflow-023 kind=product -->
   └─ 需 PM/PO/後端拍板的 → 不硬追，收進 rd-spec「待 PO 決定」區
   └─ grill 定案中「難逆轉＋沒脈絡看不懂＋真有取捨」的寫 repo `docs/adr/`、新術語寫 `CONTEXT.md`（與入口 A 的 grill-with-docs 同一份真相來源；情境 7 接 ticket 時會讀）
 
@@ -185,29 +208,37 @@ Step 3B. 產 rd-spec.md（取代 overview.md + sprint-roadmap.md，這兩份不�
   ├─ **需求對照表**：PM spec 每個條目給 FR#＋PM spec 章節 → 對到哪張 T 卡 → 狀態（已涵蓋／Out of Scope＋理由／待 PO）。
   │   PM spec 的條目在轉 rd-spec 時掉了，只有這張表抓得到；任何一列空著就不進 Step 3.5B
   ├─ Ticket ID 用 M/T；他平台已有拆解時**沿用其 T 編號**（同義同號），本平台特有從尾號續編
+  │  <!-- touchpoint: phase-workflow-024 kind=mixed -->
   └─ STOP，等使用者人審
 
 Step 3.5B. rd-spec 審查 ⭐（唯讀，貼 issue 前的最後一道）
+  │  <!-- touchpoint: phase-workflow-025 kind=gate -->
   ├─ 對 rd-spec.md 跑一次 `/consensus-plan`（Codex 一輪唯讀文件審查，不改文件）
   │   └─ rd-spec 就是入口 B 的根文件：ticket、sub-issue、PM／QA 的理解全從它長出來
+  │  <!-- touchpoint: phase-workflow-026 kind=engineering -->
   ├─ lens 多半落在 `requirement`（rd-spec 是需求面文件），但判哪把尺、跟使用者確認，
   │   都由 `/consensus-plan` 自己走，本 skill 不代它決定、也不代它答 Codex 的問題
   ├─ 拿到 findings 後照 severity 分三種走法：
   │   ├─ verdict `PASS`，或 findings 全是 `minor`／`info` → 繼續 Step 4B 發佈
+  │   │  <!-- touchpoint: phase-workflow-027 kind=engineering -->
   │   ├─ 有 `major` → 不自動往下，把報告交使用者判斷「先改文件還是照原樣貼」
+  │   │  <!-- touchpoint: phase-workflow-028 kind=engineering -->
   │   └─ 有 `blocker` → **STOP**，把報告路徑（`status` 的 `summary_path`）交給使用者
   │       └─ 文件由使用者自己改（Codex 唯讀，本 skill 也不代改），改完跑 `re-review`
   └─ 審在 Step 4B 之前，不在之後 ⚠️ 一旦貼上 issue，PM／QA 就開始照它辦事、ticket 也跟著切下去；
       那之後才到的 findings 追不回已經拆散出去的東西
 
 Step 4B. 發佈
+  │  <!-- touchpoint: phase-workflow-029 kind=gate -->
   ├─ 經使用者核可後貼 GitHub issue comment（去 frontmatter；gh issue comment --body-file）
+  │  <!-- touchpoint: phase-workflow-030 kind=command -->
   └─ 改版：新 comment 標「vN 取代 vN-1」（舊 comment 請使用者刪除或收合），`<output_root>` 的源檔同步 bump
 
 Step 5B. 展開 ticket（同入口 A Step 5，規模分流照舊）
   ├─ 產 context.md / tickets/（一張 T 卡一檔）/ ai-prompts.md
   ├─ ticket frontmatter：`ticket` = T 編號（如 "T12"）、`type`／`layers`／`covers`／`deps` 照常填（不進 ID）
   ├─ 沿用他平台 T 編號的卡不重切；本平台特有的卡照「Ticket 切法與格式」切
+  │  <!-- touchpoint: phase-workflow-031 kind=engineering -->
   └─ GitHub sub-issue：使用者逐張挑要上的，套公司 ticket 模板，T 編號→實際 issue 編號
 
 Step 6B. 收尾（同入口 A Step 6）
@@ -253,11 +284,13 @@ Step 6B. 收尾（同入口 A Step 6）
 
 **Foundation 放多少**——對技術模組清單上的每個型別依序問三題（以**型別**為粒度，不是以方法）：
 
+<!-- touchpoint: phase-workflow-032 kind=engineering -->
 0. **先過前置條件：這個型別的契約定了嗎？**（只問這次要切的 ticket 會碰到的型別。只被 deferred 的 FR# 用到的型別跳過這題：缺口記進開放問題，等補切那個 Stage 時再問。）
    - **§0 有空格**（方法清單對不上 §0 的描述、async 六格填不出來、通知形式沒定）→ **停，不切 ticket**。回 Step 3 補完 §0 再回來——不要切一份「暫定、補完要重切」的 ticket，也不要把地基標 `blocked` 先出貨。
    - **契約卡在外部**（等後端、等 PM，現在補不了）→ 這個型別只給簽名＋mock，方法本體跟行為走；ticket 的 Refs 指到開放問題的 Q 編號。
 1. **幾條行為用到它？**（「這次要做」的每條 FR# 都算，deferred 的也算。）只有一條 → 放進那條行為的 ticket，再小也不進地基；那條行為還沒切（deferred）就記在 README 涵蓋表那一列。
 2. **它是不是某個畫面自己的 View／ViewModel？** 是 → 歸第一條**新建或動到**這個畫面的行為；後面的行為用 `deps` 接著往上加。畫面不進地基。Tab／導航殼這種畫面容器一樣，歸第一條需要它的行為；**注入點**（composition root 裡建 store、往下傳）才是地基。
+   <!-- touchpoint: phase-workflow-033 kind=engineering -->
 3. **（只問有方法本體的實作型別；Model 與 protocol 本身就是簽名，過了第 1 題就整份進地基。）整個型別的實作連同單元測試，估多少？** ≤0.5 人天 → **整份進 Foundation**，這次切的 Behavior 只用它、不再編輯那個檔。＞0.5 人天 → Foundation 只放簽名＋空骨架＋mock，方法本體跟行為走、`deps` 串行。**估在 0.4–0.6 之間算壓線**：不要自己定，Step 4 的 STOP 列給使用者（附兩種切法各會串行幾張）。
 
 其他限制：整份進地基的型別，單元測試必須在同一張 ticket。Foundation 照樣受拆分訊號約束（production 檔 >5 或 estimate >0.5 人天就拆成 `1-F1`、`1-F2`；彼此沒有依賴才可平行，有就寫 `deps`）。實作時發現超過半天就停：只留 P1 行為會用到的方法，其餘移回對應行為的 ticket 並回寫。
@@ -280,6 +313,7 @@ Step 6B. 收尾（同入口 A Step 6）
 
 - `covers`：這張涵蓋根文件的哪幾條需求（`[FR1, FR3]`）。只有 Foundation／Prefactor 可以是空的。
 - `deps`：YAML list（`["1-F1", "2-B1"]`）。只能指向同資料夾真的存在、且不在更後面 Stage 的 ticket。**只放「不先 merge 就無法開工」的**：程式碼依賴、同檔排序。只是 demo 時需要資料的前置（清單頁要先有辦法收藏才看得到東西）**不進 `deps`**，寫在 Demo 行（「需 2-B1 已 merge，或用 debug seed」）——否則檔案上可以平行的 ticket 會被白白串起來。
+  <!-- touchpoint: phase-workflow-034 kind=engineering -->
 - **拆分訊號**（命中任一條就考慮再拆；Step 4／5 回報給使用者，可註記理由放行；**都是警告，不是硬上限**）：production 檔 >5、estimate >0.5 人天、驗收條件 >4、Behavior 標題並列兩件以上的事（看語意——用頓號、逗號繞過字面比對不算過；Foundation 不適用這條）、跨兩個不相依模組（＝技術模組清單裡彼此沒有依賴的兩個）。
 
 ---
@@ -304,6 +338,7 @@ Step 6B. 收尾（同入口 A Step 6）
 | 中型 | 1-8 ticket，1-3 Stage | overview / context / tickets / ai-prompts |
 | 大型 | **>8 ticket**（判準只有這一條；通常也是 4+ Stage、含 Service 層大改動）| + sprint-roadmap / architecture / coordination |
 
+<!-- touchpoint: phase-workflow-035 kind=engineering -->
 **規模在 Step 4 確認**。如果 Step 3 出大綱時不確定，預設假設大型，使用者 ack 時可下修。
 **不要因為只切得出 2 張 ticket 就把中型退回短 plan**——它是不是中型，看的是責任邊界。
 
@@ -378,10 +413,12 @@ Step 6B. 收尾（同入口 A Step 6）
 | macOS | 同 iOS，Figma 規範略過 | `swift-architecture-skill` |
 | web / 純後端 / 其他 | 跳過 iOS-specific section（紅線檔、SwiftUI、Figma、auditor）；§0 四段照填但由使用者或通用推理回答 | 未定：進第一個該 domain 專案時再選，標準＝pattern 決策框架＋反模式修法＋checklist，不要框架參考書 |
 
+<!-- touchpoint: phase-workflow-036 kind=engineering -->
 **domain 推斷**（不問）：repo 有 `.xcodeproj`／`Package.swift` 且 target 為 iOS → iOS；macOS target → macOS；`package.json` → web；推不出才在 intake 問一題。`/ios-dev` 交棒過來時 domain 已知，直接帶入。
 
 第一版只測試 iOS path；其他 domain 暫只移除 iOS-specific section，不替換為 domain-specific 內容。
 
+<!-- touchpoint: phase-workflow-037 kind=engineering -->
 **紅線檔規則**：紅線檔＝本 feature 開發期間要保護的既有系統主檔。不是絕對禁止碰，但改動必須**最小化、additive、向下相容**，不動既有 method body。形態優先序：①additive overload（既有 callsite 0 改動）②帶預設值的 optional 參數 ③在新檔 scope 加 extension。動之前先列「為何新建路徑不行」＋改動範圍（行數、影響 callsite 數）給使用者確認；動完報那幾個檔的 diff 行數。
 
 **兩階段**：**Phase A 初版建構**＝規劃＋連續跑 ticket（dispatch-friendly）；**Phase B rolling 修正**＝初版完工後的 bug fix／Delta／polish，每個 PR 恢復完整 gate（review＋實機驗證）。切換點由使用者宣告。本 skill 是 Phase A 的規劃工具。
@@ -392,6 +429,10 @@ Step 6B. 收尾（同入口 A Step 6）
 
 Skill 被觸發時，**先檢查 feature folder 是否已存在**：
 
+<!-- touchpoint: phase-workflow-038 kind=engineering -->
+<!-- touchpoint: phase-workflow-039 kind=engineering -->
+<!-- touchpoint: phase-workflow-040 kind=engineering -->
+<!-- touchpoint: phase-workflow-041 kind=engineering -->
 | 已存在的檔 | 推進度 | 行為 |
 |---|---|---|
 | 無檔（folder 不存在） | Step 0 | 從 Step 1 開始 |
@@ -410,6 +451,10 @@ Resume 不另建狀態檔，狀態完全從檔案存在性推。
 
 Step 2 intake 時收以下變數，Step 5 寫 `ai-prompts.md` 時自動代入：
 
+<!-- touchpoint: phase-workflow-042 kind=engineering -->
+<!-- touchpoint: phase-workflow-043 kind=engineering -->
+<!-- touchpoint: phase-workflow-044 kind=engineering -->
+<!-- touchpoint: phase-workflow-045 kind=engineering -->
 | 變數 | 範例 | 詢問時機 |
 |---|---|---|
 | `{PROJECT_NAME}` | `TodoApp` | 從 design doc 或 cwd 推 |
@@ -427,6 +472,9 @@ Step 2 intake 時收以下變數，Step 5 寫 `ai-prompts.md` 時自動代入：
 
 ## 與其他 skill / memory 的關係
 
+<!-- touchpoint: phase-workflow-046 kind=command -->
+<!-- touchpoint: phase-workflow-047 kind=engineering -->
+<!-- touchpoint: none -->
 | 對象 | 關係 |
 |---|---|
 | `/office-hours` | 上游（產出 design doc 餵給本 skill；入口 A）|
@@ -445,6 +493,7 @@ Step 2 intake 時收以下變數，Step 5 寫 `ai-prompts.md` 時自動代入：
 ## 出口檢查（Step 6 逐項對；每項要有證據，不是打勾了事）
 
 - [ ] 沒寫任何 production code
+  <!-- touchpoint: none -->
 - [ ] 根文件審查跑過；`blocker` 已清，或使用者裁定照原樣展開
 - [ ] 每個 `FR#` 有 ticket 接、或標 deferred／不做（lint § F）
 - [ ] 每張 ticket 有 Acceptance Criteria、Verification、架構約束；Files 裡的既有符號都對過 verified facts（Step 1.5 真的跳過時，Files 不得出現「編輯」既有檔）
@@ -452,6 +501,7 @@ Step 2 intake 時收以下變數，Step 5 寫 `ai-prompts.md` 時自動代入：
 - [ ] `deps` 無循環、無前向依賴；同檔重疊已排序或已註明不可平行（lint § G／H）
 - [ ] 拆分訊號命中的都處理了，或註記了放行理由
 - [ ] `scripts/lint-tickets.py` 0 個 🔴，🟡 逐條有處置（這一條涵蓋 frontmatter、連結、wikilink、殘留 `{IF_…}`、callout、涵蓋、deps、同檔重疊）
+  <!-- touchpoint: none -->
 - [ ] 產出清單與 diff 已列給使用者；使用者要求進 git 的，commit SHA 已回報
 
 ### Red Flags（出現任一條就回頭重切）

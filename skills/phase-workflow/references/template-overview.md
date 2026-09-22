@@ -268,6 +268,7 @@ updated: {TODAY}
 
 ## ❓ 開放問題
 
+<!-- touchpoint: phase-workflow-076 kind=mixed -->
 <!-- 跨 ticket 的未決問題放這裡。大型改放 coordination/open-questions.md，這一段只留一行連結。
 會擋 Stage 1–2 ticket 的，Step 3 STOP 時就問使用者；有答案後在這裡標 ✅＋一句答案；Step 5 產 context.md 時再抄進「已決事項」（Step 5 之前 context.md 還不存在）。 -->
 

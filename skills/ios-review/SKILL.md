@@ -228,6 +228,7 @@ CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FI
 [AUTO-FIXED] [file:line] 問題 → 做了什麼
 ```
 
+<!-- touchpoint: ios-review-001 kind=mixed -->
 ### 5c：批次詢問 ASK 項目
 
 如果有需要判斷的項目，用一次提問統一詢問：
@@ -246,6 +247,7 @@ CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FI
 建議: 兩個都修 — #1 在 strict concurrency 下會 crash，#2 會導致訂閱歸錯帳號。
 ```
 
+<!-- touchpoint: none -->
 ### 5d：套用使用者核准的修改
 
 使用者選「修」的項目，套用修改並輸出結果。
@@ -289,6 +291,7 @@ Scope: [CLEAN / DRIFT DETECTED]
 ## 重要規則
 
 - **先讀完整個 diff 再發表意見。** 不要標記 diff 裡已經處理的問題。
+  <!-- touchpoint: ios-review-002 kind=gate -->
 - **Fix-first，不是唯讀 review。** AUTO-FIX 直接改，ASK 經使用者同意才改。絕不 commit / push / 開 PR — 那是 ship 的工作。
 - **精簡。** 一行描述問題，一行寫修法。不要前言、不要摘要、不要「整體看起來不錯」。
 - **只標記真正的問題。** 沒問題的就跳過。

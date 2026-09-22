@@ -4,6 +4,7 @@
 > 輕／重判準見 `skill-router.md` §3，收尾見 `handoff-checklist.md`；
 > 架構約束段怎麼填、轉移表與 async 契約的格式見 `architecture-impact-check.md`。
 
+<!-- touchpoint: ios-dev-042 kind=engineering -->
 ````markdown
 # [功能名稱] 實作計畫
 

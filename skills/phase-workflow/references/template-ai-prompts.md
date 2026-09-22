@@ -31,11 +31,13 @@ updated: {TODAY}
 
 ## 🎯 使用情境
 
+<!-- touchpoint: phase-workflow-053 kind=command -->
 ### 情境 A：**新 session 第一次開工** → 走 § 1 Full Onboarding
 ### 情境 B：**同一 session 繼續做下一個 ticket** → 走 § 3 Ticket Handoff
 
 ---
 
+<!-- touchpoint: none -->
 ## 1. Onboarding（新 session 必跑）
 
 **目的**：讓 AI 在動任何 code 之前，完整理解 {FEATURE_NAME} 的專案全貌、架構、scope、descope、風險。
@@ -46,6 +48,8 @@ updated: {TODAY}
 
 ### 複製以下整段給 AI：
 
+<!-- touchpoint: phase-workflow-054 kind=gate -->
+<!-- touchpoint: phase-workflow-055 kind=mixed -->
 ```
 你是 {PROJECT_NAME} team 的工程師，我們要開始 {FEATURE_NAME} 的開發。
 
@@ -126,6 +130,9 @@ AI 回報後，應該檢查它是否理解以下要點：
 
 ### 3.0 共同骨架（每張都用）
 
+<!-- touchpoint: phase-workflow-056 kind=engineering -->
+<!-- touchpoint: phase-workflow-057 kind=gate -->
+<!-- touchpoint: phase-workflow-058 kind=gate -->
 ```
 繼續 {FEATURE_NAME} 開發。
 
@@ -242,6 +249,7 @@ type：{Foundation|Prefactor|Behavior}｜layers：{這張 ticket 的 layers}
 ---
 
 ## 4. 驗收 AI 開工前理解的三題測試
+<!-- touchpoint: phase-workflow-059 kind=gate -->
 
 無論用哪個 ticket 範本，AI 開始寫 code 之前，**至少問 AI 三題**確認它真的理解：
 
@@ -255,6 +263,7 @@ AI 應該能清楚說：**我會改這些檔案，不會碰這些檔案**。
 
 ### 問題 3：如果遇到 SPEC 沒寫的情況，你會怎麼做？
 
+<!-- touchpoint: none -->
 AI 應該回答：**stop + ask**，而不是「自己推理最合理的做法」。
 
 **這三題答不好 = AI 還沒準備好寫 code，叫它重讀文件**。
@@ -324,6 +333,8 @@ AI 應該回答：**stop + ask**，而不是「自己推理最合理的做法」
 
 ### 9.6 常見搭配指令
 
+<!-- touchpoint: phase-workflow-060 kind=command -->
+<!-- touchpoint: phase-workflow-061 kind=mixed -->
 ```
 # 做完一個 ticket 想壓縮 context 繼續下一個
 /compact 然後繼續下一個 ticket

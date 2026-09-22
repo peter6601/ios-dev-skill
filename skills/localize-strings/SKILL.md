@@ -12,6 +12,7 @@ argument-hint: "[要處理的檔案或功能區域]"
 - 將字串替換為 LocalizedStringKey 或 String(localized:)
 - 生成對應的 Localizable.xcstrings 條目（JSON 格式）
 - Key 的命名規則：模組名.畫面名.元素描述，例如 "settings.profile.title"
+  <!-- touchpoint: localize-strings-001 kind=product -->
 - 預設提供繁體中文（zh-Hant）與英文（en）翻譯
 - 處理帶有變數的字串插值情境
 

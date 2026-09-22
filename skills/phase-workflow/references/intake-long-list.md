@@ -2,6 +2,7 @@
 
 Skill 流程 Step 2 用。
 
+<!-- touchpoint: phase-workflow-050 kind=mixed -->
 讀完 design doc 後，跑這 8 項 checklist。識別已涵蓋項（標 ✅）+ 缺項（標 ❓），用以下 long list 一次列給使用者補。**不要逐題分批問 — 一次列完讓使用者一次補完**。
 
 ---
@@ -140,4 +141,5 @@ elif estimated_tickets > 8:
 
 1. **更新 working state**（在記憶中而非寫檔；唯一的例外是 Step 1.5 的 verified facts 表，Step 3 要寫進 overview.md「現況盤點」段）
 2. **跳到 Step 3**：只寫 overview.md（大綱階段；sprint-roadmap.md 等 Step 4 確認是大型才產）
+   <!-- touchpoint: phase-workflow-051 kind=engineering -->
 3. **不要立刻寫其餘的檔** — 等 Step 4 規模確認 + 使用者 ack

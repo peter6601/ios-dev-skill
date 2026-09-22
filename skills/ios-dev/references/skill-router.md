@@ -1,5 +1,6 @@
 # Skill Router — `/ios-dev` Step 0 的流程選擇
 
+<!-- touchpoint: none -->
 這份文件決定每次任務要載入哪些 skill、派哪些 agent，以及何時詢問使用者。工具介紹與安裝方式見根目錄 `README.md`。
 
 查閱順序：**§0 執行步驟 → §1 任務類型 → §2 架構路線 → §3 審查方式 → §6 確認畫面**。缺少工具時查 §9；交棒後的完整收尾見 `handoff-checklist.md`，計畫格式見 `plan-template.md`。
@@ -9,12 +10,15 @@
 依序執行以下八步；`SKILL.md` 以此為準。
 
 1. **查既有功能**：需求有指名檔案或功能時，搜尋目標檔的相關關鍵字。既有功能改呈現方式（如 alert 改 sheet）算情境 2，確認畫面註明「既有 X → 改為 Y」。
+   <!-- touchpoint: ios-dev-043 kind=engineering -->
 2. **判斷情境**：依需求、檔案或 ticket 路徑選 §1 的情境。無法判斷才用 AskUserQuestion 詢問，七種情境分兩題（4＋3）。
 3. **判斷內容**：小功能、優化、重構與接 ticket 依 §4 判斷功能／畫面／兩者；無法判斷才問。
 4. **檢查前置設定**：情境 1 無 PM spec、或情境 2，檢查 `CLAUDE.md`／`CLAUDE.local.md`／`AGENTS.md` 是否有 `## Agent skills`。沒有就把「先跑一次 `setup-matt-pocock-skills`」列入提醒。
 5. **選工具與審查方式**：依 §1 選 skill、agent 與待問事項，依 §3 判定輕重及 Review 路線，依 §9 檢查所需工具。
 6. **檢查架構影響**：情境 2–7 先查既有契約，再依下表決定是否補規劃。任何改變行為的任務都要檢查，結論寫入確認畫面。
+   <!-- touchpoint: ios-dev-044 kind=gate -->
 7. **確認後開始**：用 §6 的 AskUserQuestion 格式，等使用者選「照這組跑」或「照這組跑，加 Codex 審核」；後者改走 A。需要詢問 body >80 的處理方式時，在這題之後、主流程之前另問一題。
+   <!-- touchpoint: ios-dev-045 kind=command -->
 8. **執行或交棒**：依下表啟動流程。交棒 `phase-workflow` 時印出 §8 的指令，建議開新 session。
 
 **架構影響檢查**（第 6 步）：
@@ -52,6 +56,7 @@
 
 - **流程與載入**：有 PM spec 直接交 `phase-workflow` 入口 B，不載入前置規劃工具。沒有 PM spec 則載入 `office-hours`、grill（§9）、`swift-architecture-skill`（Step 4）、`swiftui-specialist`、`swift-concurrency`，走 §2。
 - **審查**：走重，六個 agent 全上。交 `phase-workflow` 時，確認畫面改寫「依每張 ticket（情境 7）五條件決定」。
+  <!-- touchpoint: none -->
 - **詢問**：不另問；ticket 數在 Step 5 估。
 - **收尾**：留在 `/ios-dev` Step 1–8；交 `phase-workflow` 後，每張 ticket 走情境 7。
 
@@ -60,6 +65,7 @@
 - **流程**：Step 1 → Step 2（有第二大腦才讀）→ Step 3（一輪訪談）→ Step 5 test cases → Step 6 短 plan → Step 7 `/consensus-plan` → `/subagent-driven-development`。留在 `/ios-dev` Step 1–8；架構檢查依 §0。
 - **載入**：功能用專案 framework skill＋`swift-concurrency`；畫面用 `swiftui-specialist`＋`swiftui-ui-patterns`；兩者則全部載入。
 - **審查**：預設輕，風險升級依 §3。畫面先派 `architecture-auditor`；功能符合 §4 concurrency 訊號時先派 `concurrency-auditor`。
+  <!-- touchpoint: none -->
 - **詢問與提醒**：套用下方「畫面共通檢查」。
 
 ### 情境 3：純呈現畫面
@@ -69,8 +75,10 @@
 - **流程**：答架構五問的第 3 問（是否新增第二份真相或互斥旗標）→ Phase 2 → `ios-polish`。
 - **載入**：`swiftui-specialist`＋`swiftui-ui-patterns`。
 - **審查**：預設輕；先派 `ux-critique`＋`architecture-auditor`，其餘依 §3。
+  <!-- touchpoint: none -->
 - **詢問與提醒**：套用下方「畫面共通檢查」。收尾見 `handoff-checklist.md` §3。
 
+<!-- touchpoint: ios-dev-046 kind=engineering -->
 **畫面共通檢查（情境 2、3）**：body >80 行，問「先用 `swiftui-view-refactor` 拆分，還是直接加？」；已有 ≥1 個 `isPresented` 時不問，確認畫面註明「新 modal 併進 `Identifiable` enum＋`.sheet(item:)`，不新增 Bool」。
 
 ### 情境 4：修正
@@ -78,6 +86,7 @@
 - **流程**：有第二大腦時，先由 `/ios-dev` 讀功能 MOC（遵守 Step 2 的 context budget）→ `/ios-investigate` 五階段 → 修正。根因未知或高風險時，回 Step 1「複雜 Bugfix」路徑：repair plan → `/consensus-plan` → 修正 → `/consensus-review`。
 - **載入**：`ios-investigate`；crash／regression／flaky 在假設階段啟動 `bug-hunt-swarm`；符合 §4 concurrency 訊號時加 `swift-concurrency`。
 - **審查**：五條件定輕重，確認畫面先寫「待定（預判 X，理由）」。重時派五個閘門 agent，省略 `ux-critique`；Review 路線依 §3。
+  <!-- touchpoint: none -->
 - **詢問**：不另問。收尾見 `handoff-checklist.md` §4。
 
 ### 情境 5：優化
@@ -85,6 +94,7 @@
 - **流程**：先量測 → 修改 → 用同一方式再量測。改前、改後都派 `perf-auditor`；有疑慮先用 `trace-analyzer` 錄 trace。
 - **載入**：`swiftui-performance-audit`、`swift-concurrency`、`swiftui-expert-skill/references/performance-patterns.md`。
 - **審查**：模組級走重，單畫面可走輕；仍須通過 §3 風險檢查。範圍未確認前寫「待定（預判 X，理由）」。
+  <!-- touchpoint: ios-dev-047 kind=mixed -->
 - **詢問**：驗收數字，以及範圍是單畫面還是模組。收尾見 `handoff-checklist.md` §5。
 
 ### 情境 6：重構
@@ -93,13 +103,16 @@
 - **規劃**：涉及多個 state owner、presentation 流程或 async 生命週期，交 `phase-workflow` 重構規劃模式。
 - **載入**：`swift-architecture-skill`；畫面加 `swiftui-view-refactor`，功能加 `swift-concurrency`，>3 檔使用 `orchestrate-batch-refactor` 前先問是否平行。
 - **審查**：走重；純畫面重構省略 `concurrency-auditor`。
+  <!-- touchpoint: ios-dev-048 kind=engineering -->
 - **詢問**：>3 檔是否平行，以及既有測試是否足以作為行為快照。收尾見 `handoff-checklist.md` §6。
 
 ### 情境 7：接 ticket
 
+  <!-- touchpoint: ios-dev-049 kind=command -->
 - **流程**：讀 ticket、根文件對應段、`CONTEXT.md`／`docs/adr/`、`coordination/implementation-log.md` → `/writing-plans`（只規劃本張，不跑 consensus-plan）→ `/subagent-driven-development` → 審查 → 回寫 ticket 狀態與 implementation-log → 問「接下一張？」。
 - **載入**：依內容軸，與情境 2 相同。
 - **審查**：五條件定輕重，Review 路線依 §3，預設 B。契約已備且涵蓋本次範圍時，不重跑架構規劃，仍執行本張 ticket 的 `/writing-plans`（§0）。
+  <!-- touchpoint: none -->
 - **詢問**：不另問；全部 ticket 完成時提醒 Phase 5 worklog 與 Phase 6 second-brain。完整收尾見 `handoff-checklist.md` §7。
 
 ## 2. 兩軸分流：工作量 × 責任邊界
@@ -122,6 +135,8 @@ ticket 數**只決定 `phase-workflow` 的輸出規模**（中型 4 份檔／大
 **不決定要不要進 phase-workflow**——那由責任邊界決定。只有兩張 ticket 的新模組照樣要中型規劃；
 沿既有清楚契約增加操作的十張 ticket 不必進中型。
 
+<!-- touchpoint: ios-dev-050 kind=command -->
+<!-- touchpoint: ios-dev-051 kind=mixed -->
 ```
 情境 1（新專案／新模組／大功能）
 ├─ 有 PM spec？ → 是：立即交 phase-workflow 入口 B（ios-dev Step 1–5 全跳；它的 grill＝唯一一次）
@@ -163,6 +178,8 @@ ticket 數**只決定 `phase-workflow` 的輸出規模**（中型 4 份檔／大
 
 ### 輕與重各做什麼
 
+<!-- touchpoint: ios-dev-052 kind=code-review -->
+<!-- touchpoint: ios-dev-053 kind=code-review -->
 | 強度 | 流程 |
 |---|---|
 | 輕 | 該情境指定的 auditor（若有）→ 合併 findings → `ios-review`（兩輪 fix-first）→ 所選 Review 路線 → 人工 Code Review |
@@ -186,6 +203,7 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 - **複雜 Bugfix 降級**：只有 Codex 不可用（`ai-review` 回 529、額度用完、context 過大導致輸出退化）才可從 A 降 B，並在 PR 描述註明。
 - **C 不可放寬**：趕時間或使用者要求都不能略過門檻，不提供例外選項。完成後重判；超過 50 行或任一風險條件不符，從 C 升 B。
 - **修復分工**：只有 A 有 `init` 前後的修改權限分界；B、C 全程由主 session 統一修復一次，再驗證。
+  <!-- touchpoint: ios-dev-054 kind=code-review -->
 - **人工審查**：三條路線都要人工 Code Review，A 另有 `approve-code` 硬閘門。B、C 的 PR 描述須標明路線與「未經 Codex 交叉驗證」。
 
 ## 4. 內容軸推斷規則
@@ -193,6 +211,7 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 - 描述或 ticket 的檔案清單含 `Views/`、`Components/`，或出現「畫面、sheet、alert、版面、按鈕、動畫、Liquid Glass」→ 畫面
 - 含 `ViewModels/`、`Services/`、`Networking/`、`Models/`，或出現「API、串接、儲存、同步、連線、背景工作」→ 功能
 - 描述很短、只指到一個 view 時，grep 該 view 裡跟功能名相關的 func：碰 `@AppStorage`／`UserDefaults`／`Service`／`connection`／網路呼叫 → 加上「功能」
+  <!-- touchpoint: ios-dev-055 kind=engineering -->
 - 兩邊都有 → 兩者；都沒有 → 問一題（選項：功能／畫面／兩者）
 - **concurrency 訊號**（決定要不要載 `swift-concurrency`／派 `concurrency-auditor`）：描述提到 task／actor／data race／Sendable，**或**症狀是 crash 加間歇（「有時」「偶爾」「flaky」），**或**範圍在連線／stream／Combine 層
 
@@ -211,8 +230,11 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 | ticket 數 | **只決定 `phase-workflow` 的輸出規模**（1–8 張中型 4 份檔／>8 張大型 7 份檔），**不決定要不要進去**——入場看責任邊界（§2） | phase-workflow Step 4 |
 | production diff 行數 | >50 行 → 不算輕（規模兩條之一，§3） | **只有情境 4 與情境 7**；小功能與純畫面不套 |
 
+<!-- touchpoint: ios-dev-056 kind=gate -->
 ## 6. 確認畫面格式（AskUserQuestion，一題）
 
+<!-- touchpoint: ios-dev-057 kind=command -->
+<!-- touchpoint: ios-dev-058 kind=mixed -->
 ```
 題目：情境＝<情境名>（內容＝<功能／畫面／兩者／不適用>）<既有功能時加：既有 X → 改為 Y>。這次會：
   載入：<skill a>、<skill b>、<skill c>
@@ -237,6 +259,7 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 - Phase 5：結束時問要不要 `work-log-writer`（現行規則不變）
 - 專案層 framework skill（例如 `dpearson2699/swift-ios-skills` 裡對到你專案所用 framework 的那幾個）：靠 description 自動載入，不列入 bundle
 
+<!-- touchpoint: ios-dev-059 kind=command -->
 ## 8. 交棒到 phase-workflow 一律開新 session
 
 phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪 Codex 根文件審查。印出指令並說明「建議開新 session 執行」：
@@ -248,6 +271,7 @@ phase-workflow 自己要做 codebase grounding、產 4–7 份文件、跑一輪
   /phase-workflow 入口 B：<PM spec 來源：GitHub issue URL 或檔案路徑>
 ```
 
+<!-- touchpoint: ios-dev-060 kind=command -->
 之後每張 ticket 各自 `/ios-dev tickets/<T>.md` 開新 session。這是「同 session 交棒」的唯一例外。
 
 ## 9. 本表引用的名字與沒裝時的替代
@@ -268,11 +292,13 @@ agent 查 `~/.claude/agents/<name>.md`。缺的照下表替代，並寫進確認
 - **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
 - **第三方 skill**（`~/.claude/skills`，`npx skills update -g` 更新）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`asc-*`
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
+  <!-- touchpoint: ios-dev-061 kind=command -->
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補
 - **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）
 
 **本 repo 不含、作者自用未公開的 skill**——表裡仍保留名字，沒裝就走替代：
 
+<!-- touchpoint: ios-dev-062 kind=command -->
 | 引用的名字 | 它在流程裡的角色 | 沒裝時的替代 |
 |---|---|---|
 | `second-brain` | Phase 6 維護期知識庫（功能 MOC） | 跳過；「有第二大腦才讀」「有才回寫」本來就是條件式 |
