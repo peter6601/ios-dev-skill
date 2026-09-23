@@ -75,7 +75,7 @@
 
 僅限版面、樣式、動畫。涉及驗證、持久化、連線、ViewModel 狀態、導航或 async，改走小功能或中型路線。
 
-- **流程**：答架構五問的第 3 問（是否新增第二份真相或互斥旗標）→ Phase 2 → `ios-polish`。
+- **流程**：答架構五問的第 3 問（是否新增第二份真相或互斥旗標）→ Phase 2 → `ios-polish`（宣稱完成前用 Xcode MCP `RenderPreview` 附改前改後 Preview 截圖當證據，§11）。
 - **載入**：`swiftui-specialist`＋`swiftui-ui-patterns`。
 - **審查**：預設輕；先派 `ux-critique`＋`architecture-auditor`，其餘依 §3。
   <!-- touchpoint: none -->
@@ -86,7 +86,7 @@
 
 ### 情境 4：修正
 
-- **流程**：有第二大腦時，先由 `/ios-dev` 讀功能 MOC（遵守 Step 2 的 context budget）→ `/ios-investigate` 五階段 → 修正。根因未知或高風險時，回 Step 1「複雜 Bugfix」路徑：repair plan → `/consensus-plan` → 修正 → `/consensus-review`。
+- **流程**：有第二大腦時，先由 `/ios-dev` 讀功能 MOC（遵守 Step 2 的 context budget）→ 使用者裝置上發生、本機重現不了的 crash，先用 Xcode MCP 撈線上 crash log（§11）→ `/ios-investigate` 五階段 → 修正。根因未知或高風險時，回 Step 1「複雜 Bugfix」路徑：repair plan → `/consensus-plan` → 修正 → `/consensus-review`。
 - **載入**：`ios-investigate`；crash／regression／flaky 在假設階段啟動 `bug-hunt-swarm`；符合 §4 concurrency 訊號時加 `swift-concurrency`。
 - **審查**：五條件定輕重，確認畫面先寫「待定（預判 X，理由）」。重時派五個閘門 agent，省略 `ux-critique`；Review 路線依 §3。
   <!-- touchpoint: none -->
@@ -227,7 +227,7 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 |---|---|---|
 | 目標 view body 行數 | >80 → 問先拆或直接加 | 情境 2、3 |
 | 平行重構檔數 | >3 → 問是否 `orchestrate-batch-refactor` | 情境 6 |
-| 優化鐵律 | 改前沒有 `perf-auditor` 或 trace 數字不動 code；改後同一把尺再量寫進 PR | 情境 5 |
+| 優化鐵律 | 改前沒有 `perf-auditor`、trace 或線上效能數字（`GetTopFieldPerformanceIssues`，§11）不動 code；改後同一把尺再量寫進 PR | 情境 5 |
 | 重構護欄 | 目標範圍無測試覆蓋 → 先用 SDD 補行為快照測試再動 | 情境 6 |
 | architecture-auditor 四閘門 | body >80、`@State` >5、`isPresented:` >1、`onChange` 監看 `should*/did*` | 所有派它的情境；腳本是 `ios-dev` skill 目錄下的 `scripts/swiftui-metrics.py` |
 | ticket 數 | **只決定 `phase-workflow` 的輸出規模**（1–8 張中型 4 份檔／>8 張大型 7 份檔），**不決定要不要進去**——入場看責任邊界（§2） | phase-workflow Step 4 |
@@ -316,6 +316,9 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 `ios-investigate`→`superpowers:systematic-debugging`；`ios-review`→派 `swiftui-reviewer`＋`concurrency-auditor`
 （此時 review 路線 C 不可用，最低走 B）。
 
+<!-- touchpoint: ios-dev-063 kind=engineering -->
+MCP 不是 skill，不在本節的安裝檢查範圍（user 範圍，`claude mcp list` 可查；分工見 §11）：`xcode`（`xcrun mcpbridge`，Apple 官方，隨 Xcode 27）、`XcodeBuildMCP`（社群開源，Sentry 維護）。Codex 要另外在 `~/.codex/config.toml` 加 `[mcp_servers.xcode]`（`command = "xcrun"`、`args = ["mcpbridge"]`）。沒裝時：缺 XcodeBuildMCP 改用 Bash 跑 `xcodebuild`／`xcrun simctl`；缺 Xcode MCP 就跳過 §11 那幾項——Preview 證據改用模擬器截圖、線上 crash 請使用者從 Organizer 匯出
+
 ## 10. 輔助 skill 的介入時機（輸入 → 產出）
 
 | skill／agent | 什麼時候進場 | 輸入 | 產出 |
@@ -333,3 +336,19 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 
 - **專案已確認的架構契約優先於各 skill 的預設風格。** 衝突時以 §0／`docs/adr/` 為準，並在報告裡明講衝突的是哪一條——不要讓兩個 skill 各套一套架構。
 - **不要每個任務都無差別載入全部 skill 或派全部 agent。** 載入清單照 §1 對應情境，agent 照 §3 的輕／重與情境裁法。
+
+## 11. MCP 工具分工（Xcode 27+）
+
+兩個 MCP 同時存在，依能力分工，不依「官方優先」：
+
+| 用途 | 用哪個 | 工具 |
+|---|---|---|
+| 模擬器 build／run／UI 自動化（點擊、截圖、讀 UI 樹）、跑測試、覆蓋率 | XcodeBuildMCP | `build_run_sim`、`test_sim`、`snapshot_ui` 等 |
+| SwiftUI Preview 截圖 | Xcode MCP | `RenderPreview` |
+| 線上 crash／效能資料（Apple 後台） | Xcode MCP | `GetTopCrashIssues`、`GetCrashIssueLogs`、`GetTopFieldPerformanceIssues` |
+| 單檔編譯錯誤／警告（不整包 build） | Xcode MCP | `XcodeRefreshCodeIssuesInFile` |
+| String Catalog 讀寫 | Xcode MCP（要先載入 Xcode 的 `xcode-integration` plugin，見 `localize-strings`） | `StringCatalogRead`／`StringCatalogEdit`／`LocalizationPlanner` |
+
+- **同一台模擬器同時只給一個 MCP 用**：兩邊都會 build 並裝到模擬器，一起跑會互搶，跑出的結果不能信。
+- Xcode MCP 要先 `XcodeOpenWorkspace` 開專案才能用；只為了 build／run 不要開它。
+- 前提：`xcode-select -p` 指向 Xcode 27；指向 Command Line Tools 時兩個 MCP 都會 build 失敗。

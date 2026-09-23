@@ -10,7 +10,9 @@ argument-hint: "[要處理的檔案或功能區域]"
 
 - 掃描指定檔案中所有硬編碼的中文/英文字串
 - 將字串替換為 LocalizedStringKey 或 String(localized:)
-- 生成對應的 Localizable.xcstrings 條目（JSON 格式）
+- 生成對應的 Localizable.xcstrings 條目：
+  - 有 Xcode MCP（Xcode 27+）**而且**已載入 Xcode 附帶的 `xcode-integration` plugin 時，譯文用 MCP 寫：換完呼叫點先 build 一次讓 Xcode 把新 key 抽進 catalog；新增語言先呼叫 `LocalizationPlanner` → `StringCatalogRead` 看哪些 key 待翻 → 每個 key 先 `StringCatalogContext` 取原文、再 `StringCatalogEdit` 寫入。這組工具規定先載入 plugin 裡的 `translation`／`translation-coordinator` skill；plugin 路徑用 `xcrun agent plugin path --plugin-format claude` 取得，以 `claude --plugin-dir <路徑>` 啟動
+  - 兩者缺一就直接編輯 `.xcstrings` 的 JSON
 - Key 的命名規則：模組名.畫面名.元素描述，例如 "settings.profile.title"
   <!-- touchpoint: localize-strings-001 kind=product -->
 - 預設提供繁體中文（zh-Hant）與英文（en）翻譯

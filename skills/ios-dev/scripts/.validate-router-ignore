@@ -1,0 +1,3 @@
+# 這個 repo 的文件會提到、但既不是 skill 也不是 agent 的名字（一行一個）
+# Xcode 27 附帶的 plugin 名（xcrun agent plugin path），不是本機 skill
+xcode-integration

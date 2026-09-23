@@ -45,6 +45,8 @@ Multipeer Connectivity 等 iOS 技術棧深度客製。
 - **Crash Report**：Exception Type、Exception Codes、Triggered by Thread
 - **Console Log**：`[error]`、`[fault]` 級別的 os_log 輸出
 - **Xcode Issue Navigator**：Runtime warnings（紫色標記）
+<!-- touchpoint: ios-investigate-010 kind=engineering -->
+- **線上 crash／效能問題**（使用者裝置上發生、本機重現不了）：有 Xcode MCP（Xcode 27+）時先撈 Apple 後台資料——`GetTopCrashIssues`（近 14 天、依受影響裝置數排序）→ 挑簽名用 `GetCrashIssueLogs` 取 crash log 與 Apple 的分析建議；hang、耗電等用 `GetTopFieldPerformanceIssues`／`GetFieldPerformanceIssueLogs`。`is_beta` 可分開 TestFlight 與 App Store。沒有 Xcode MCP 時請使用者從 Xcode Organizer 匯出 `.crash` 貼上
 
 ### 1.2 讀取相關程式碼
 

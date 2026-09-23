@@ -94,6 +94,8 @@
 - 收尾走輕。純呈現不派 `concurrency-auditor`。
 - 改動很小（範圍單一、production diff ≤50 行）時 review 走 C；純視覺調整沒有自動化測試可寫，
   風險第三條以「Preview 或截圖可前後對照」算數。超過規模走預設的 B。
+- 宣稱完成前用 Xcode MCP 的 `RenderPreview` 產改前、改後兩張 Preview 截圖附在回報裡當證據
+  （要先 `XcodeOpenWorkspace`；分工見 `skill-router.md` §11）。
 - **一旦碰到驗證、持久化、連線、ViewModel 狀態、導航或 async**：它不是純呈現——回 `/ios-dev`
   當小功能或中功能重認，並補 presentation 轉移表。
 
