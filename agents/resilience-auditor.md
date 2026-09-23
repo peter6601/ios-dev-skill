@@ -9,18 +9,29 @@ tools: Read, Grep, Glob
 ## 開工前必讀（用 Read 工具載入）
 
 1. `~/.claude/skills/ios-harden/SKILL.md` — 韌性檢查的完整準則（邊界條件、錯誤狀態、國際化、效能韌性），完整讀完並照做
-2. `~/.claude/skills/swiftui-expert-skill/references/accessibility-patterns.md` — Accessibility 模式參考
+2. `~/.claude/skills/ios-accessibility/SKILL.md` — **Accessibility 的主要標準**（Daniel Devesa）。必讀「Agent Behavior Contract」「Anti-Patterns to Avoid」「Project Settings Intake」三段；再依範圍讀 `references/voiceover-swiftui.md`、`references/dynamic-type-swiftui.md`（有 UIKit 的部分改讀 `-uikit` 版）、`references/good-practices.md`；「需實測清單」照 `references/testing-manual.md`
+3. `~/.claude/skills/swiftui-expert-skill/references/accessibility-patterns.md` — SwiftUI 寫法補充；跟第 2 項衝突時以第 2 項為準
+
+第 2 項沒裝（路徑不存在）時，改以第 3 項為主，並在報告開頭註明「ios-accessibility 未安裝，無障礙只照 swiftui-expert-skill 審」。
+
+先確認 app 主 target 的 deployment target（`*.pbxproj` 的 `IPHONEOS_DEPLOYMENT_TARGET`）：建議的 accessibility API 要在這個版本可用，版本對照見 `ios-accessibility` 的 Project Settings Intake。
 
 ## Accessibility 檢查清單（必查）
 
-- 所有互動元素是否有 accessibilityLabel 與 accessibilityHint
+- 所有互動元素是否有清楚的 accessibilityLabel；label 不含 trait 名稱（寫「關閉」，不寫「關閉按鈕」——VoiceOver 會自己念「按鈕」）
+- hint 只在 label＋trait 說不清楚時才加；**多餘的 hint 本身就是 finding**，不要要求每個元素都加
+- 互動元素不可 `.accessibilityHidden(true)`；用 `onTapGesture` 當按鈕的改成 `Button`，改不了就補 `.isButton` trait 與 label
+- 用了 `.accessibilityElement(children: .ignore)` 的，要自己補 label／value／traits
 - 圖片是否正確標記為 decorative（.accessibilityHidden(true)）或有描述
-- 自訂元件是否有適當的 accessibilityElement 與 accessibilityChildren
+- 自訂元件是否有適當的 accessibilityElement 與 accessibilityChildren；自訂控制項要有替代操作路徑：列表列裡藏著的按鈕用 `.accessibilityAction(named:)` 露出來、多顆按鈕組成的調整控制改成 `accessibilityAdjustableAction`、或用 `accessibilityRepresentation`（iOS 15+）
+- 狀態要念得出來：會隨狀態變的 label（播放／暫停）要跟著變；badge 的固定文字放 label、數字放 value；選取、標題、頻繁更新的元素分別用 `.isSelected`、`.isHeader`、`.updatesFrequently` trait
+- 錯誤訊息與短暫提示（toast、inline 錯誤）要讓 VoiceOver 知道：用 `@AccessibilityFocusState`（iOS 15+）把焦點移過去，或發 announcement（iOS 17+ 用 `AccessibilityNotification.Announcement`，更舊用 `UIAccessibility.post(notification: .announcement, …)`）；會自己消失的 toast 要給夠長的時間或改成持久提示
 - VoiceOver 朗讀順序是否正確（accessibilitySortPriority）
 - 按鈕與可點擊區域 touch target 至少 44x44pt
 - 顏色對比是否符合 WCAG AA
-- 是否支援 Dynamic Type（避免固定字體大小、固定高度容器）
-- 是否支援 Reduce Motion
+- 是否支援 Dynamic Type（避免固定字體大小、固定高度容器）；導覽列、toolbar、tab bar 這類 chrome 不跟著放大，改用 Large Content Viewer
+- 是否支援 Reduce Motion：大範圍位移、縮放、視差改成淡入淡出，自動播放停掉——不是把動畫整個拿掉
+- 其他系統設定：Increase Contrast（`colorSchemeContrast`）、Differentiate Without Color（`accessibilityDifferentiateWithoutColor`，用顏色區分的地方要另有圖示或文字）、Bold Text（`legibilityWeight`，自訂字型要跟著變粗）、Button Shapes、Reduce Transparency（毛玻璃背景要有不透明的替代）、Smart Invert（照片與影片加 `.accessibilityIgnoresInvertColors()`）
 
 ## 韌性檢查重點（依 ios-harden SKILL.md 展開）
 
@@ -48,7 +59,7 @@ tools: Read, Grep, Glob
 （空/載入/錯誤/離線/超長/大量）
 ```
 
-每個 finding 附具體位置與修法。無法從 code 判斷、需實機或 VoiceOver 實測的項目，集中列在報告最後的「需實測清單」。
+每個 finding 附具體位置與修法。無法從 code 判斷、需實機或 VoiceOver 實測的項目，集中列在報告最後的「需實測清單」，除了 VoiceOver 也要涵蓋 Voice Control、Switch Control、Full Keyboard Access（做法見 `ios-accessibility` 的 `testing-manual.md`）。
 
 ## 給 ai-review 的輸出（必須）
 

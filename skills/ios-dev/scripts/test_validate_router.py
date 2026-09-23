@@ -229,6 +229,19 @@ class ValidateRouter(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertTrue(any("not shipped in this repo" in m for m in msgs), msgs)
 
+    def test_vendor_bullet_is_checked_but_optional(self):
+        """vendor packs are read by path, never auto-loaded: missing one warns, it does not fail."""
+        self.fx.append("references/skill-router.md",
+                       "- vendor（`~/.claude/vendor`，只給 agent 按路徑讀）：`swiftui-pro`\n")
+        write(os.path.join(self.fx.home, "vendor", "twostraws-swiftui-agent-skill", "swiftui-pro", "SKILL.md"))
+        code, out = self.fx.run()
+        self.assertEqual((code, out["errors"], out["warnings"]), (0, [], []))
+        os.remove(os.path.join(self.fx.home, "vendor", "twostraws-swiftui-agent-skill", "swiftui-pro", "SKILL.md"))
+        code, out = self.fx.run()
+        self.assertEqual((code, out["errors"]), (0, []))
+        self.assertTrue(any("vendor" in w["message"] for w in out["warnings"]), out["warnings"])
+        self.assertEqual(self.fx.run("--strict")[0], 1)
+
     def test_missing_skill_md_is_bad_input(self):
         os.remove(self.fx.doc("SKILL.md"))
         code, out = self.fx.run()

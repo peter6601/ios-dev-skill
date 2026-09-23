@@ -121,6 +121,14 @@ class ScreenParsing(unittest.TestCase):
         self.assertEqual(f["內容"], "兩者")
         self.assertEqual(run_evals.screen_fields("情境＝2（內容＝功能＋畫面）")["內容"], "兩者")
 
+    def test_label_with_a_note_before_the_colon(self):
+        screen = "情境＝1 新專案\n- **載入**：無\n- **Phase 3 派**：依每張 ticket\n- **Review 路線**：預設 B\n- **交棒**（建議開新 session 執行）：\n  /phase-workflow 入口 B：<issue>\n"
+        self.assertIn("入口 B", run_evals.screen_fields(screen)["交棒"])
+
+    def test_answer_inside_the_label_note(self):
+        screen = "情境＝7 接 ticket\n- **載入**：x\n- **Phase 3 派（重）：** `concurrency-auditor`，判重的理由是 actor\n- **Review 路線**：B\n"
+        self.assertEqual(run_evals.gate_of(run_evals.screen_fields(screen)["Phase 3 派"]), "重")
+
     def test_wrong_scenario_fails(self):
         self.assertFalse(verdicts(dict(scenario="2"), REAL_SCREEN)["scenario"])
 

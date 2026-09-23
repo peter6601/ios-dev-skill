@@ -106,7 +106,7 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 
 - **Data Race**：非 `Sendable` 型別跨越 actor boundary；mutable state 在多個 `Task` 中被存取但未用 actor 保護
 - **Actor Isolation 違規**：non-isolated method 存取 actor-isolated property；`nonisolated` function 內意外存取 isolated state
-- **`@MainActor` 漏標**：更新 UI 的 method / closure 未標記 `@MainActor`；`Task { }` 內假設繼承了 actor context 但實際沒有
+- **`@MainActor` 漏標**：更新 UI 的 method / closure 未標記 `@MainActor`；`Task { }` 內假設繼承了 actor context 但實際沒有。**報之前先查專案的預設 isolation**：build setting `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`（Xcode 26 新專案的預設）或 Package.swift 的 `.defaultIsolation(MainActor.self)`——預設就是 MainActor 的 target 不要報漏標
 - **`Task.detached` 危險使用**：`Task.detached` 內存取 self 或 actor-isolated state 而沒有 await
 - **Structured Concurrency 洩漏**：`Task { }` 啟動後無人持有 reference 也無人 cancel（fire-and-forget without cleanup）
 
@@ -127,7 +127,7 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 
 - **Receipt 處理**：StoreKit 1 receipt 沒有考慮跨 Apple ID 持久化問題；購買後未驗證 receipt
 - **Transaction 歸戶**：`originalTransactionId` 與 `transactionId` 混淆；subscription 歸戶邏輯沒有處理帳號切換
-- **Entitlement 檢查**：只用 StoreKit 2 的 `Transaction.currentEntitlements`，沒有考慮 StoreKit 1 遷移用戶
+- **Entitlement 檢查**：用一次性的購買結果或本地快取判斷權限，而不是 `Transaction.currentEntitlements`＋監聽 `Transaction.updates`；退款（`revocationDate`）、訂閱過期沒反映到權限。註：用 StoreKit 1 舊 API 買的項目在 StoreKit 2 的 `Transaction` API 查得到，不必另外處理「StoreKit 1 遷移用戶」
 - **Sandbox 差異**：有 sandbox-only 的邏輯 hardcode 在 production path 中
 
 #### 1.5 Security
@@ -143,17 +143,20 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 
 #### 2.1 SwiftUI State 管理
 
-- **`@State` 放錯位置**：`@State` 放在 child view 中但其值由 parent 控制（會在 parent 重繪時重置）
-- **`@Observable` Computed Property**：computed property 不會觸發 view update，需要改成 stored property + 手動更新
+- **`@State` 放錯位置**：`@State` 用 parent 傳進來的值初始化——之後 parent 再傳新值，child 會**忽略、一直停在初始值**（不是重置）。由 parent 控制的值改用 `let` 或 `@Binding`；`@State` 只在 view identity 改變（`.id()` 變了、換到另一個分支）時才重建
+- **`@Observable` 的追蹤邊界**：computed property **會**透過它讀到的 stored property 被追蹤，不需要改成 stored property。真正會漏更新的是：`@ObservationIgnored` 的屬性、放在裡面但本身不是 `@Observable` 的 reference type、只在 body 外讀一次就存進 local 變數的值
+- **`@AppStorage` 放在 `@Observable` class 裡**：加了 `@ObservationIgnored` 也**不會**觸發 view 更新（`@AppStorage` 的通知只在 View 或 `ObservableObject` 裡有效）。改成在 View 裡直接用 `@AppStorage`，或 model 用 stored property＋自己讀寫 `UserDefaults`。註：AvdLee `swiftui-expert-skill` 的 state-management.md 這點寫錯，以這條為準
 - **不必要的 `@StateObject`**：在 iOS 17+ 用了 `@StateObject` + `ObservableObject` 而可以簡化為 `@State` + `@Observable`
 - **`.id()` Modifier 濫用**：用 `.id()` 強制 view recreation，但實際應修正 state flow
+- **導覽寫法混用**：同一個導覽層級同時用 `navigationDestination(for:)` 與 `NavigationLink(destination:)`，或同一個型別註冊了兩次 `navigationDestination(for:)`——執行期會出錯（iOS 16+ 的 `NavigationStack`）
 - **`@EnvironmentObject` 遺失**：子 view 使用 `@EnvironmentObject` 但 preview / parent chain 中沒有 inject
 
 #### 2.2 API / Networking
 
-- **Error 未處理**：`try?` 吞掉 error 沒有 logging 或 fallback；`catch { }` 空 block
+- **Error 未處理**：`try?` 吞掉 error 沒有 logging 或 fallback；`catch { }` 空 block；**使用者操作觸發的錯誤只 `print`／log 也算吞掉**——要在 UI 上讓使用者知道（alert、inline 訊息）
+- **搜尋比對不對**：使用者輸入的搜尋篩選用 `contains()` 或 `localizedCaseInsensitiveContains()`，應改用 `localizedStandardContains()`（不分大小寫與重音，並照使用者的語系比對）
 - **Missing Timeout**：`URLSession` request 沒有設定 `timeoutInterval`
-- **Codable Fragility**：Codable struct 沒有 `CodingKeys` 或 custom `init(from:)` 處理 optional field；API response 新增欄位會 decode 失敗
+- **Codable Fragility**：API 可能缺欄位或回 `null` 的屬性宣告成非 optional（整筆 decode 失敗）；對應 server 字串的 enum 沒有 unknown fallback（server 多一個值就整筆失敗）。註：JSON 多出來的未知欄位 `JSONDecoder` 預設會忽略，**不是**問題
 - **Retry 無上限**：自動重試機制沒有 max retry count 或 exponential backoff
 
 #### 2.3 Dead Code & Consistency
@@ -174,7 +177,7 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 
 #### 2.5 Accessibility
 
-- **缺少 Accessibility Label**：互動元素（按鈕、輸入框）沒有 `.accessibilityLabel`
+- **只有圖示的互動元素沒有文字**：`Button { } label: { Image(systemName:) }` 這類，修法是改成 `Button("關閉", systemImage: "xmark") { }`，只要顯示圖示再加 `.labelStyle(.iconOnly)`。**有文字的元件，文字本身就是 label，不要再疊 `.accessibilityLabel`**——會跟畫面文字不一致，Voice Control 使用者喊不到。細節以 `ios-accessibility` skill 為準
 - **Image 缺少描述**：`.accessibilityElement()` 沒有 label 或 image 沒標 `.accessibilityHidden(true)`
 - **Touch Target 過小**：互動區域小於 44x44 pt
 - **Dynamic Type 未支援**：hardcoded font size 而非使用 `.font(.body)` 等 Dynamic Type 支援的方式
@@ -189,7 +192,7 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 #### 2.7 Naming & Swift Style
 
 - **命名不一致**：同概念在不同地方用不同名稱（如 `userId` vs `userID` vs `user_id`）
-- **Force Unwrap**：`!` 出現在非 `@IBOutlet` / `fatalError` 的 context；production code 不應 force unwrap
+- **Force Unwrap**：`!` 用在真的可能是 nil 的值（使用者輸入、網路或檔案資料）。常數字串建 URL 這類不可能失敗的，改成 `guard let … else { fatalError("原因") }` 讓 crash 有可讀的原因；**不要一律改 optional chain**——那會把 crash 變成默默不做事，bug 反而藏起來
 - **Magic Number**：裸數字散落在多處，應該用 named constant
 - **Overlong Function**：單一 function 超過 50 行，應該拆分
 - **Nested Closure Hell**：超過 3 層 closure 嵌套，考慮用 async/await 或拆成 method
@@ -207,11 +210,12 @@ AUTO-FIX（直接修，不問）:           ASK（需要人類判斷）:
 ├─ Unused import                   ├─ Concurrency safety（actor boundary 變更）
 ├─ Unreachable code                ├─ StoreKit 歸戶邏輯
 ├─ 注解過時                         ├─ Security（Keychain、ATS）
-├─ Force unwrap → optional chain   ├─ 架構 / 設計決策
-├─ Missing `[weak self]`           ├─ 大型修改（>20 行）
-│  （在明確的 escaping closure 中）  ├─ 移除功能
-├─ Missing accessibility label     ├─ 影響使用者可見行為的變更
-│  （當 label 可從 context 推斷）    └─ Enum completeness
+├─ Missing `[weak self]`           ├─ 架構 / 設計決策
+│  （在明確的 escaping closure 中）  ├─ 大型修改（>20 行）
+├─ 只有圖示的按鈕補上文字             ├─ 移除功能
+│  （改 `Button("…", systemImage:)`  ├─ 影響使用者可見行為的變更
+│   ＋`.labelStyle(.iconOnly)`，     ├─ Force unwrap（改法會改變失敗時的行為）
+│   文字可從 context 推斷時）         └─ Enum completeness
 ├─ TODO/FIXME cleanup
 └─ Naming inconsistency（純 rename）
 ```
@@ -321,7 +325,9 @@ Scope: [CLEAN / DRIFT DETECTED]
 |-----------|-------|--------|
 | `@MainActor class` + `Task { }` 內存取 self | ✅ 繼承 isolation | 不需修改 |
 | `@MainActor class` + `Task.detached { }` 內存取 self | ❌ 不繼承 | 需要 `await MainActor.run {}` |
-| `nonisolated func` 存取 stored property | ❌ Swift 6 error | 標為 CRITICAL |
+| `nonisolated func` 讀 `let`、而且是 `Sendable` 的 stored property | ✅ 合法 | 不需修改 |
+| `nonisolated func` 存取 `var` 或非 `Sendable` 的 isolated state | ❌ Swift 6 error | 標為 CRITICAL |
+| 要報「漏標 `@MainActor`」之前 | — | 先查 `SWIFT_DEFAULT_ACTOR_ISOLATION`／`.defaultIsolation(MainActor.self)`；預設就是 MainActor 的 target 不報 |
 | `Sendable` closure 捕獲 mutable var | ❌ Data race | 標為 CRITICAL |
 | `actor` 的 method 被 `nonisolated` caller 呼叫 | ✅ 自動 await | 確認有 await |
 
@@ -340,7 +346,8 @@ publisher.sink { [weak self] value in
 }
 .store(in: &cancellables)
 
-// ❌ BAD — Task retains self beyond view lifecycle
+// ⚠️ 不是 retain cycle：self 只會活到 Task 結束。短工作可以接受；
+//    長時間或無限迴圈（例如 `for await`）的 Task 會讓 self 一直不釋放，才是問題
 class MyViewModel {
     func load() {
         Task {
@@ -350,7 +357,8 @@ class MyViewModel {
     }
 }
 
-// ✅ GOOD — Task stored & cancelled in deinit
+// ✅ 長時間工作：存起來、用 [weak self]、在離開時 cancel
+//    （Task 強持有 self 時 deinit 不會被呼叫，所以強捕獲的 Task 只靠 deinit cancel 是無效的）
 class MyViewModel {
     private var loadTask: Task<Void, Never>?
     

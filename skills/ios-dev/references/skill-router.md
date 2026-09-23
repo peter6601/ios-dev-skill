@@ -174,7 +174,7 @@ ticket 數**只決定 `phase-workflow` 的輸出規模**（中型 4 份檔／大
 - **任一風險條件不符合 → 重**，所有情境皆同。例如小功能改到持久化，也要走重。
 - **風險三條全符合**：小功能、純畫面走輕；單畫面優化可走輕；修正與 ticket 還要符合規模兩條，才走輕。
 - **固定走重**：情境 1、模組級優化、重構；交 `phase-workflow` 後，每張 ticket 另依情境 7 判斷。
-- **資訊不足 → 待定**：確認畫面寫「待定（預判 X，理由）」，釐清範圍與風險後再定。
+- **資訊不足 → 待定**：確認畫面寫「待定（預判 X，理由）」，釐清範圍與風險後再定。**自我檢查**：「會問你」裡只要有一題的答案會影響風險三條（例如新頁面要放什麼、會不會存資料、資料送去哪），輕重就必須是待定。
 - **完成後重判**：所有情境重查風險三條；情境 4、7 另查規模兩條。不再符合輕量條件時升重，補派該情境的 agent。
 
 情境決定要做的工作；五條件只調整審查強度，不改變任務分類。
@@ -244,6 +244,7 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
   Phase 3 派：<agent d>、<agent e>（<輕／重／待定（預判 X，理由）>）
   Review 路線：<B 純 agent（預設）／C 輕量（很小且風險三條全綠）／A 共識（複雜 Bugfix 強制）>（<一句理由>）
   架構結論：<契約已備（來源：根文件／ticket）直接實作／直接擴充／局部整理（範圍）／模組邊界（命中哪條觸發條件）>；<要不要產轉移表／async 契約>
+  已讀：<只有情境 7 必填，出確認畫面前讀完：ticket、根文件對應段（寫出 §）、`CONTEXT.md`、`docs/adr/`、`coordination/implementation-log.md`；沒有的寫「無」，不要省略>
   交棒：<第一個 skill 或指令；情境 1 無 PM spec 與情境 2 寫「留在 /ios-dev Step 1」；交棒 phase-workflow 寫指令＋「建議新 session」>
   會問你：<該情境的詢問事項，或「不問」>
   提醒：<§0 前置檢查或硬規則，沒有就省略此行>
@@ -296,7 +297,8 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
 - **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
-- **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`asc-*`
+- **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`ios-accessibility`（dadederk）、`asc-*`
+- **vendor**（`~/.claude/vendor`，**不要**放進 skills 目錄，只給 agent 按路徑讀、不會自動觸發；`git clone https://github.com/twostraws/swiftui-agent-skill ~/.claude/vendor/twostraws-swiftui-agent-skill` 安裝、`git pull` 更新）：`swiftui-pro`（twostraws，app 主 target ≥ iOS 17 時由 `swiftui-reviewer` 讀，每條建議先過 agent 裡的版本表；放 skills 會在任何專案自動觸發，而它預設新專案是 iOS 26；沒裝就跳過）
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
   <!-- touchpoint: ios-dev-061 kind=command -->
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
@@ -324,6 +326,8 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 | `swiftui-view-refactor` | 拆 View 時 | 責任地圖、目標邊界 | 子 View 接必要的資料與操作，不接整個 ViewModel |
 | `architecture-auditor` | **第一段有意義的實作完成時**＋最終收尾 | §0／PR checklist、上一次基線 | 契約有沒有被守住（數字只是線索）|
 | `concurrency-auditor` | 同上，有 async 工作時 | ownership 契約六格 | 實作有沒有破壞契約 |
+| `swiftui-reviewer` 的第二套標準 `swiftui-pro` | Phase 3，**app 主 target ≥ iOS 17**，建議先過版本表 | 要審的 View 檔 | 依檔案分組、附行號與改前改後的 finding；專案結構類主張不當 finding |
+| `ios-accessibility` | `resilience-auditor`、`ios-harden` 處理無障礙時 | 畫面檔、deployment target | 無障礙 finding 與「需實測清單」（VoiceOver 以外也涵蓋 Voice Control、Switch Control、Full Keyboard Access）|
 
 兩條規則：
 

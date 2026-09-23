@@ -137,10 +137,12 @@ cd ios-dev-skill
 |---|---|---|
 | 建議 | [xcode27-skills](https://github.com/superagents-lab/xcode27-skills)：`swiftui-specialist`、`swiftui-whats-new-27` | SwiftUI 實作指引 |
 | 建議 | [Dimillian/Skills](https://github.com/Dimillian/Skills)：`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`review-swarm`、`bug-hunt-swarm`、`orchestrate-batch-refactor` | 畫面設計、重構、效能與審查 |
+| 建議 | [iOS-Accessibility-Agent-Skill](https://github.com/dadederk/iOS-Accessibility-Agent-Skill)：`ios-accessibility` | 無障礙審查標準（`resilience-auditor`、`ios-harden` 讀）；未安裝時只照 `swiftui-expert-skill` 審 |
 | 建議 | [mattpocock/skills](https://github.com/mattpocock/skills)：`mattpocock-skills` plugin | 需求訪談；未安裝時改用 Superpowers |
 | 建議 | [ai-review](https://github.com/peter6601/ai-review)：`consensus-plan`、`consensus-review` | Codex 文件與程式碼交叉審查 |
 | 選配 | [app-store-preflight-skills](https://github.com/truongduy2611/app-store-preflight-skills)：`app-store-preflight-skills` | App Store 送審前檢查 |
 | 選配 | [Xcode-Build-Optimization-Agent-Skill](https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill)：`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer` | 建置分析與修正；只分析可不裝 fixer |
+| 選配 | [swiftui-agent-skill](https://github.com/twostraws/swiftui-agent-skill)：`swiftui-pro` | `swiftui-reviewer` 的第二套標準，app 主 target ≥ iOS 17 才用；放 `~/.claude/vendor`，**不要**放進 skills 目錄（會在每個專案自動觸發）|
 | 選配 | [app-store-connect-cli-skills](https://github.com/rorkai/app-store-connect-cli-skills)：`asc-*` | App Store Connect 發佈流程 |
 
 常用套件安裝指令：
@@ -148,6 +150,8 @@ cd ios-dev-skill
 ```bash
 npx skills add superagents-lab/xcode27-skills --skill swiftui-specialist --skill swiftui-whats-new-27 -a claude-code -g -y
 npx skills add https://github.com/Dimillian/Skills --skill swiftui-ui-patterns --skill swiftui-view-refactor --skill swiftui-performance-audit --skill bug-hunt-swarm --skill review-swarm --skill orchestrate-batch-refactor -a claude-code -g -y
+npx skills add https://github.com/dadederk/iOS-Accessibility-Agent-Skill --skill ios-accessibility -a claude-code -g -y
+git clone https://github.com/twostraws/swiftui-agent-skill ~/.claude/vendor/twostraws-swiftui-agent-skill
 ```
 
 Claude Code 內安裝訪談工具：

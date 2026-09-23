@@ -126,19 +126,21 @@ def screen_fields(screen):
     """The §6 confirmation screen as {label: text}; a value runs until the next label."""
     hits = []
     for lab, pat in LABELS.items():
-        m = re.search(rf"(?m)^[\s>*\-]*\**{pat}\**\s*[:：]|^\|\s*\**{pat}\**\s*\|", screen)
+        # a label may carry a note before its colon: 「**交棒**（建議開新 session 執行）：」
+        # …and the note can hold the answer itself: 「**Phase 3 派（重）：**」, so it is kept as part of the value
+        m = re.search(rf"(?m)^[\s>*\-]*\**{pat}\**\s*(?P<note>[（(][^）)\n]*[）)])?\s*[:：]|^\|\s*\**{pat}\**\s*\|", screen)
         if m:
-            hits.append((m.start(), m.end(), lab, m.group(0).lstrip().startswith("|")))
+            hits.append((m.start(), m.end(), lab, m.group(0).lstrip().startswith("|"), m.group("note") or ""))
     hits.sort()
     out = {}
-    for i, (_, end, lab, in_table) in enumerate(hits):
+    for i, (_, end, lab, in_table, note) in enumerate(hits):
         stop = hits[i + 1][0] if i + 1 < len(hits) else len(screen)
         value = screen[end:stop]
         if in_table:  # a table cell is one line
             value = value.split("\n", 1)[0].rstrip().rstrip("|")
         elif i + 1 == len(hits):  # the last field ends at a blank line or the closing fence
             value = re.split(r"\n\s*\n|```", value, maxsplit=1)[0]
-        out[lab] = value.strip()
+        out[lab] = (note + " " + value.strip()).strip() if note else value.strip()
     out["_labels"] = len(hits)
     out["情境"] = scenario_of(screen)
     m = AXIS_RE.search(screen)
@@ -260,8 +262,9 @@ def ordered_events(path):
 
 def claude(args, cwd, out_path, stdin=None, timeout=900):
     with open(out_path, "w", encoding="utf-8") as fh:
+        # stdin is always explicit: an inherited stdin (e.g. a heredoc) gets appended to the prompt by `claude -p`
         p = subprocess.run(["claude", *args], cwd=cwd, stdout=fh, stderr=subprocess.PIPE,
-                           input=stdin, text=True, timeout=timeout)
+                           input=stdin if stdin is not None else "", text=True, timeout=timeout)
     return p.returncode, p.stderr
 
 
@@ -347,7 +350,7 @@ def probe_sandbox(model="haiku"):
         subprocess.run(["git", "init", "-q", repo], check=True)
         p = subprocess.run(["claude", "-p", prompt, "--model", model, "--settings", json.dumps(SANDBOX),
                             "--allowedTools", "Bash", f"Write(/{outside_dir}/**)", "--no-session-persistence",
-                            "--max-budget-usd", "0.3"], cwd=repo, capture_output=True, text=True, timeout=300)
+                            "--max-budget-usd", "0.3"], cwd=repo, capture_output=True, text=True, input="", timeout=300)
         inside = os.path.exists(os.path.join(repo, "inside-probe.txt"))
     leaked = [x for x in (outside_bash, outside_dir) if os.path.exists(x)]
     for x in leaked:

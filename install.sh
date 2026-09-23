@@ -132,6 +132,7 @@ DEPS='
 建議|skill|swiftui-ui-patterns|畫面情境的 pattern 參考
 建議|skill|swiftui-view-refactor|body >80 行要先拆時用
 建議|skill|swiftui-performance-audit|perf-auditor 的稽核流程
+建議|skill|ios-accessibility|resilience-auditor 與 ios-harden 的無障礙主要標準；缺了只照 swiftui-expert-skill 審
 建議|skill|review-swarm|重閘門的第四把（regression／安全／測試缺口）
 建議|skill|bug-hunt-swarm|crash／regression／flaky 的假設階段
 建議|skill|orchestrate-batch-refactor|重構 >3 檔要平行時
@@ -218,6 +219,7 @@ VIBE_NPX_GROUPS='
 swift-architecture-skill|skills	add	https://github.com/efremidze/swift-architecture-skill	-a	claude-code	-g	-y
 swift-concurrency|skills	add	https://github.com/AvdLee/Swift-Concurrency-Agent-Skill	-a	claude-code	-g	-y
 swiftui-expert-skill|skills@latest	add	https://github.com/AvdLee/SwiftUI-Agent-Skill	--skill	swiftui-expert-skill	-a	claude-code	-g	-y
+ios-accessibility|skills	add	https://github.com/dadederk/iOS-Accessibility-Agent-Skill	--skill	ios-accessibility	-a	claude-code	-g	-y
 swiftui-specialist swiftui-whats-new-27|skills	add	superagents-lab/xcode27-skills	--skill	swiftui-specialist	--skill	swiftui-whats-new-27	-a	claude-code	-g	-y
 swiftui-ui-patterns swiftui-view-refactor swiftui-performance-audit bug-hunt-swarm review-swarm orchestrate-batch-refactor|skills	add	https://github.com/Dimillian/Skills	--skill	swiftui-ui-patterns	--skill	swiftui-view-refactor	--skill	swiftui-performance-audit	--skill	bug-hunt-swarm	--skill	review-swarm	--skill	orchestrate-batch-refactor	-a	claude-code	-g	-y
 '
@@ -227,6 +229,7 @@ VIBE_NPX_GROUPS_CODEX='
 swift-architecture-skill|skills	add	https://github.com/efremidze/swift-architecture-skill	-a	codex	-g	-y
 swift-concurrency|skills	add	https://github.com/AvdLee/Swift-Concurrency-Agent-Skill	-a	codex	-g	-y
 swiftui-expert-skill|skills@latest	add	https://github.com/AvdLee/SwiftUI-Agent-Skill	--skill	swiftui-expert-skill	-a	codex	-g	-y
+ios-accessibility|skills	add	https://github.com/dadederk/iOS-Accessibility-Agent-Skill	--skill	ios-accessibility	-a	codex	-g	-y
 swiftui-specialist swiftui-whats-new-27|skills	add	superagents-lab/xcode27-skills	--skill	swiftui-specialist	--skill	swiftui-whats-new-27	-a	codex	-g	-y
 bug-hunt-swarm review-swarm orchestrate-batch-refactor|skills	add	https://github.com/Dimillian/Skills	--skill	bug-hunt-swarm	--skill	review-swarm	--skill	orchestrate-batch-refactor	-a	codex	-g	-y
 '

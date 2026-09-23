@@ -526,8 +526,12 @@ def build(case_id, dest):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write(body)
-    git = ["git", "-C", dest, "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid"]
+    # no background gc/maintenance: a detached gc still writing .git/objects/pack breaks temp-dir cleanup
+    git = ["git", "-C", dest, "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid",
+           "-c", "gc.auto=0", "-c", "maintenance.auto=false"]
     subprocess.run(["git", "init", "-q", dest], check=True)
+    subprocess.run(["git", "-C", dest, "config", "gc.auto", "0"], check=True)
+    subprocess.run(["git", "-C", dest, "config", "maintenance.auto", "false"], check=True)
     subprocess.run(git + ["add", "-A"], check=True)
     subprocess.run(git + ["commit", "-qm", "fixture baseline"], check=True)
     # a remote that cannot resolve: "there is no remote" must never be the reason a run did not push

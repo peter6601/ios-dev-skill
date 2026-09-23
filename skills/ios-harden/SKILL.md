@@ -52,19 +52,18 @@ argument-hint: "[要強化的功能或區域]"
 **SwiftUI 文字處理**：
 
 ```swift
-// 單行截斷
+// 截斷只用在「完整內容在別處看得到」的摘要（列表標題、預覽卡）
 Text(longTitle)
     .lineLimit(1)
     .truncationMode(.tail)
 
-// 多行限制
+// 其他文字不要鎖死行數：大字體下要能長高。真的要限制，大字體時放寬
+@Environment(\.dynamicTypeSize) var dynamicTypeSize
 Text(description)
-    .lineLimit(3)
+    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 3)
 
-// 允許自適應，設定最小字體
-Text(dynamicContent)
-    .minimumScaleFactor(0.7)
-    .lineLimit(2)
+// 少用 minimumScaleFactor：它會把使用者調大的字又縮回去，大字體下尤其不該用。
+// 版面放不下時改成直排（見下方「動態字體」），而不是縮字或截斷。
 ```
 
 **Layout 溢出防護**：
@@ -323,6 +322,9 @@ Button("送出") { submit() }
 
 ### 五、Accessibility 韌性
 
+> 這一段只列最常見的幾項。完整準則以 `ios-accessibility` skill 為準（「Agent Behavior Contract」與「Anti-Patterns to Avoid」兩段必讀），兩邊衝突時照它；沒裝就只照這一段。
+> 最常犯的三個：label 裡寫 trait 名稱（「關閉按鈕」→「關閉」）、每個元素都硬加 hint、用 `onTapGesture` 代替 `Button`。
+
 **VoiceOver 支援**：
 
 ```swift
@@ -351,20 +353,37 @@ HStack { ... }
 @ScaledMetric(relativeTo: .body) var iconSize: CGFloat = 24
 ```
 
-**Reduce Motion 尊重**：
+**Reduce Motion 尊重**：大範圍位移、縮放、視差改成淡入淡出，自動播放停掉——不是把動畫整個拿掉。
 
 ```swift
 @Environment(\.accessibilityReduceMotion) var reduceMotion
 
-withAnimation(reduceMotion ? .none : .spring()) {
+withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : .spring()) {
     isExpanded.toggle()
 }
+// 轉場也一樣：reduceMotion 時用 .opacity，不用 .move／.scale
+.transition(reduceMotion ? .opacity : .move(edge: .bottom))
+```
+
+**錯誤與短暫提示要讓 VoiceOver 知道**：畫面上出現錯誤或 toast，VoiceOver 使用者不會自己發現。
+
+```swift
+@AccessibilityFocusState private var isErrorFocused: Bool   // iOS 15+
+
+Text(errorMessage)
+    .accessibilityFocused($isErrorFocused)
+    .onChange(of: errorMessage) { isErrorFocused = true }   // 零參數版要 iOS 17；iOS 15–16 用 { _ in … }
+
+// 不移焦點時改發 announcement（iOS 17+；更舊用 UIAccessibility.post(notification: .announcement, argument:)）
+AccessibilityNotification.Announcement("已儲存").post()
 ```
 
 **色彩對比與色盲**：
 - 不要只依賴顏色傳達資訊
-- 搭配圖標、文字、形狀來區分狀態
-- 確保 Dark Mode 下對比度足夠
+- 搭配圖標、文字、形狀來區分狀態；有開 Differentiate Without Color（`accessibilityDifferentiateWithoutColor`）時一定要有
+- 確保 Dark Mode 下對比度足夠；Increase Contrast（`colorSchemeContrast == .increased`）時用更高對比的顏色
+
+**其他系統設定**：Bold Text（`legibilityWeight`，自訂字型要跟著變粗）、Reduce Transparency（毛玻璃背景要有不透明的替代）、Smart Invert（照片、影片加 `.accessibilityIgnoresInvertColors()`）。
 
 ### 六、效能韌性
 
@@ -399,8 +418,9 @@ class ViewModel: ObservableObject {
     @Published var items: [Item] = []
 
     func loadItems() async {
-        let result = await api.fetchItems()  // 背景執行
-        self.items = result  // 自動在 Main Actor 更新
+        let result = await api.fetchItems()  // 等待時讓出 MainActor；api 本身在哪跑取決於它的 isolation
+                                             // （Swift 6.2 的 nonisolated async 預設留在呼叫端的 actor，不會自動換到背景）
+        self.items = result  // 回到 MainActor 更新
     }
 }
 ```

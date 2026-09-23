@@ -94,7 +94,9 @@ def has_skill(d):
 
 def build_inventory(workspace, claude_home):
     """Where every skill and agent on this machine actually lives."""
-    inv = dict(workspace=set(), commands=set(), home=set(), agents=set(), plugins={}, broken=[], repo=workspace)
+    inv = dict(workspace=set(), commands=set(), home=set(), agents=set(), plugins={}, broken=[], repo=workspace,
+               vendor={os.path.basename(os.path.dirname(f))
+                       for f in glob.glob(os.path.join(claude_home, "vendor", "*", "*", "SKILL.md"))})
 
     for d in glob.glob(os.path.join(workspace, "skills", "*")):
         if has_skill(d) and not os.path.basename(d).startswith("_"):
@@ -158,6 +160,9 @@ def resolves(name, prefix, kind, inv):
         return None if name in inv["workspace"] | linked | inv["agents"] else "not shipped in this repo and not installed"
     if kind == "external":  # lives in another repo (the consensus CLI); nothing local to check
         return None
+    if kind == "vendor":  # read by path from ~/.claude/vendor/<repo>/<name>/, deliberately not auto-loaded
+        # optional like a third-party pack: the agent that reads it skips it when absent
+        return None if name in inv["vendor"] else "warn: not in ~/.claude/vendor/*/<name>/SKILL.md"
     if name in inv["workspace"] | linked | inv["agents"] | plugin_names:
         return None
     return "not installed anywhere"
@@ -167,7 +172,7 @@ def resolves(name, prefix, kind, inv):
 # and the published copy ("本 repo 附的 …").  A bullet may list skills and agents together, so the
 # kind is tracked per token from the nearest preceding keyword, not guessed once per bullet.
 HEAD_KINDS = (("workspace", ("自家 skill",)), ("repo", ("本 repo 附的",)),
-              ("home", ("第三方 skill", "自寫但")), ("plugin", ("plugin",)), ("agent", ("agent",)),
+              ("home", ("第三方 skill", "自寫但")), ("vendor", ("vendor",)), ("plugin", ("plugin",)), ("agent", ("agent",)),
               ("external", ("共識審查",)))
 KIND_WORDS = (("agent", "agent"), ("skill", None))  # None = keep the bullet's own kind
 
@@ -183,7 +188,9 @@ def bullet_kind(text):
 def token_kinds(line, bullet):
     """[(token, kind)] for one §9 bullet; `skill …；agent …` switches kind mid-line."""
     out, kind = [], bullet
-    for m in re.finditer(r"`([^`\n]+)`|\b(agents?|skills?)\b", line):
+    # a kind keyword only counts as a list label when a `name` follows it ("；agent `x`"),
+    # not in prose such as 「只給 agent 按路徑讀」
+    for m in re.finditer(r"`([^`\n]+)`|\b(agents?|skills?)\b(?=\s*`)", line):
         if m.group(2):
             word = m.group(2).rstrip("s")
             kind = "agent" if word == "agent" else bullet
