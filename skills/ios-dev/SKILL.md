@@ -109,7 +109,8 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 <!-- touchpoint: ios-dev-011 kind=mixed -->
 請使用者輸入 `/grill-with-docs`（repo 內；尚無 repo 用 `/grill-me`）——這兩個是 mattpocock plugin 的 user-invoked skill，模型呼叫不到；使用者不在時用 `mattpocock-skills:grilling` 頂替，但要自己補 `CONTEXT.md`／`docs/adr/`。它做審訊式訪談：
 它把設計畫成決策樹，分輪問出目前能問的所有決策、每題附建議答案；
-事實自己派 sub-agent 查，只把**決策**交給使用者。涵蓋面要包含：問題與使用情境、
+事實自己派 sub-agent 查，只把**決策**交給使用者。涵蓋面要包含：**題目本身**（大功能必問、小功能可略：
+「如果這個需求問錯了，對的問題是什麼？」——先確認題目對了，再往下問細節）、問題與使用情境、
 現有與預期行為、scope/out-of-scope、可接受取捨、架構限制、邊界與錯誤狀態、
 適用的 UX/i18n/accessibility、驗收條件、測試方式與裝置限制。
 
@@ -279,6 +280,14 @@ B 與 C 沒有外部模型交叉驗證，PR 描述要註明。三條路線的終
 **B 與 C 不建立 ai-review run**，所以沒有 `approve-code` 可跑，也不會出現
 `AWAITING_HUMAN_CODE_REVIEW`：改成使用者讀完 diff 口頭確認，確認前一樣不得 commit、
 push、merge 或建立 PR。這條規則綁的是「人看過」，不是綁那一道指令。
+
+**三條路線都要在 PR 描述留裁決紀錄**：人確認前 Claude 列逐條裁決草稿（採納／駁回／延後＋理由），
+使用者改正後寫進 PR 描述。格式、放哪、沒有 PR 怎麼辦見 `references/handoff-checklist.md`
+共通收尾第 4 步——沒寫裁決紀錄，review 不算完成。
+
+**非同步審核模式**（Step 0 確認畫面選項 4）：A 路線跑到 `AWAITING_HUMAN_CODE_REVIEW` 就排隊，AI 接著做下一個
+獨立功能，使用者用 `ai-review queue` 看所有 repo 的待審、有空再審。條件、流程與已知限制見
+`references/handoff-checklist.md`「非同步審核模式」。
 
 ---
 

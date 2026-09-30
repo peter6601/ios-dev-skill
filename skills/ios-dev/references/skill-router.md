@@ -252,9 +252,17 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
   1. 照這組跑（Recommended）
   2. 照這組跑，加 Codex 審核（review 改走 A 共識）
   3. 我要調整（用 Other 說明要加減什麼）
+  4. 照這組跑，非同步審核（走 A＋獨立 worktree，做完排隊，你之後再審）
 
 複雜 Bugfix 已強制走 A，省略選項 2。
+選項 4 只在符合 `handoff-checklist.md`「非同步審核模式」的條件時出現（不依賴沒審過的分支、
+`ai-review queue` 待審 < 3）；不符合就省略，不要列出來再拒絕。
 ```
+
+<!-- touchpoint: none -->
+**用編號回答時先複述**：使用者用編號或縮寫回答（例如「1 為主、混入 2, 3」），先用一句全文複述
+採用了什麼再往下走——「採用：<選項 1 全文>，混入 <2 的哪部分>、<3 的哪部分>」。這句會跟著進交棒訊息與
+plan，是事後唯一讀得懂的紀錄。這條適用於本流程所有選項式提問，不只確認畫面。
 
 ## 7. 不進表、永遠生效
 
@@ -262,6 +270,9 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 - `verification-before-completion`：任何「完成」宣稱前
 - Phase 5：結束時問要不要 `work-log-writer`（現行規則不變）
 - 專案層 framework skill（例如 `dpearson2699/swift-ios-skills` 裡對到你專案所用 framework 的那幾個）：靠 description 自動載入，不列入 bundle
+<!-- touchpoint: none -->
+- **會停下來等使用者裁決的 session 同時不超過 3 個**（有 review 關卡、grill、確認畫面的都算）：使用者是唯一的裁決者，開太多條線，送審後沒回應的就會變多。已經開了 3 個時，新的工作先記下來，等其中一個關卡收完再開。非同步審核模式的待審 run 另外數（上限也是 3，見 `handoff-checklist.md`）。
+- **非 ticket 路徑的長 session，在一個交付物完成時切開**：先把裁決與下一步寫進 implementation-log 或 PR 描述，新 session 從那裡接，不靠自動摘要（摘要可能把前面的決定壓掉）。情境 7 本來就每張 ticket 一個 session（§8）。例外：`consensus-review` 的 run 要一次跑完（執行檔指紋在 `init` 綁定），切點放在 run 與 run 之間。
 
 <!-- touchpoint: ios-dev-059 kind=command -->
 ## 8. 交棒到 phase-workflow 一律開新 session
@@ -301,7 +312,7 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 - **vendor**（`~/.claude/vendor`，**不要**放進 skills 目錄，只給 agent 按路徑讀、不會自動觸發；`git clone https://github.com/twostraws/swiftui-agent-skill ~/.claude/vendor/twostraws-swiftui-agent-skill` 安裝、`git pull` 更新）：`swiftui-pro`（twostraws，app 主 target ≥ iOS 17 時由 `swiftui-reviewer` 讀，每條建議先過 agent 裡的版本表；放 skills 會在任何專案自動觸發，而它預設新專案是 iOS 26；沒裝就跳過）
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
   <!-- touchpoint: ios-dev-061 kind=command -->
-- **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
+- **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`、`superpowers:using-git-worktrees`（非同步審核模式開 worktree）；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
 - **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）
 
 **本 repo 不含、作者自用未公開的 skill**——表裡仍保留名字，沒裝就走替代：

@@ -81,11 +81,58 @@
    走 A 停在 `AWAITING_HUMAN_CODE_REVIEW`，**人工 `approve-code` 前不得 commit、push、
    merge 或建立 PR**；走 B、C 沒有 run、也沒有 `approve-code` 這道指令，改成使用者讀完
    diff 口頭確認，確認前一樣不得 commit、push、merge 或建立 PR。
+   **三條路線都要留裁決紀錄，寫在 PR 描述**（PR 模板是給非工程師讀的 repo，放進末尾的
+   `<details>` 折疊段）：人確認前，Claude 依這輪 findings 列出逐條裁決草稿——
+   `採納（已修）／駁回／延後＋一句理由`——使用者只改錯的；確認後加上一行總結：
+   `人工 Code Review：通過（YYYY-MM-DD）｜路線 A/B/C`。A 路線的草稿從 run 的 summary 取。
+   沒有 PR 的 repo 寫進 implementation-log。**沒寫裁決紀錄，review 不算完成**——
+   簽章或口頭「OK」只證明人看過，裁決紀錄才說得出人判了什麼。
 5. **回寫**（有才寫，沒有就跳過，不要為此建檔）：
    ticket 的 `status` → 功能資料夾的 `coordination/implementation-log.md` →
    第二大腦該功能 MOC 的「近期變更與教訓」。
    <!-- touchpoint: ios-dev-039 kind=engineering -->
-6. **收工**：問使用者要不要跑 Phase 5 `/work-log-writer`。
+6. **收尾卡**（每次都寫，一行）：追加到你選定的 plan 效益紀錄表（例如 iOS repo 的 docs/plan-log.md；
+   你另外有跨 repo 的 workspace 時放在那裡，一份記所有專案）——
+   `日期｜專案｜情境｜有無 plan｜review 路線｜未解決錯誤數｜交付物與位置`。
+   「有無 plan」＝這次動 code 前有沒有 plan 檔／plan mode／前一兩個 session 寫好的 plan；
+   「未解決錯誤數」＝收工時還沒過的 test＋還開著的 finding＋已知沒修的問題，加總成一個數字；
+   「交付物與位置」＝PR 連結、分支、上線 URL 或檔案路徑。這張表用來比「先寫 plan 到底有沒有少出錯」，
+   只拿同一情境比，不要跨情境比。
+   <!-- touchpoint: ios-dev-064 kind=command -->
+7. **收工**：問使用者要不要跑 Phase 5 `/work-log-writer`。
+
+## 非同步審核模式（可選；Step 0 確認畫面選項 4）
+
+<!-- touchpoint: ios-dev-065 kind=code-review -->
+AI 做完一個功能、自我審查完就排隊等人審，接著做下一個；人有空再審。全在本地。
+
+**能進這個模式的條件**（任一不符就走一般收尾）：
+- review 路線是 A（`consensus-review --auto`）——B、C 沒有 run，沒有東西能停著等。
+- 這個功能不依賴任何還沒審過的分支；phase-workflow 有 `deps` 的 ticket，deps 全部 merge 了才行。
+- `ai-review queue --format json` 的 `pending_count` < 3。滿了就停手，告訴使用者「待審已滿，先審一個」。
+
+**流程**：
+1. 從 base 開 **獨立 git worktree**（`superpowers:using-git-worktrees`）——`approve-code` 會重抓 patch，
+   同一個資料夾一改，前一個功能的核准就作廢。新功能一律從 base 開，不疊在沒審過的分支上。
+2. 在 worktree 裡照一般流程實作與跑閘門，然後三個 specialist → `ai-review init review --preflight`
+   → `approve-review --auto` → `run`（背景）→ 停在 `AWAITING_HUMAN_CODE_REVIEW`。
+3. 依 run 的 summary 寫好**逐條裁決草稿**（共通收尾第 4 步的格式），放在 run 資料夾 summary 旁邊，
+   **不能放進 worktree**（放進去等於改了 patch）。
+4. 寫收尾卡，交付物欄填 worktree 路徑與 run ID，狀態註「待審」。
+5. 回到第 1 步做下一個（仍受上限 3 個約束）。**已停著的 run 不再 `resume` 或修改**；
+   使用者審完要求改，就在同一個 worktree 修好後重建 run，不改原 run。
+
+**使用者審核時**：`ai-review queue` 看所有 repo 的待審（依 repo 分組；`cannot approve` 的項目見下）
+→ 進 worktree 看 diff（終端機或任何 git GUI；改動都在未 commit 變更裡，**不要在 GUI 裡 stage 或 commit**）
+＋審查單 → 改正裁決草稿 → `approve-code` → commit＋merge（一次一個；後 merge 的若衝突，解完要重跑驗證）
+→ 裁決紀錄貼進 PR 描述 → 刪 worktree。
+
+<!-- touchpoint: ios-dev-066 kind=code-review -->
+**已知限制（2026-09-30 實測）**：run 停著的期間只要 `claude`、`codex` 或驗證指令用的執行檔（例如 Xcode）
+更新過，`approve-code` 就載不進這個 run——ai-review 載入 run 時會重驗執行檔指紋。`queue` 會把這種 run
+標成 `cannot approve`。在工具修好之前：待審期間暫停 Claude Code 自動更新（`DISABLE_AUTOUPDATER=1`），
+並且盡量在一兩天內審完；已經 `cannot approve` 的 run，人工看 diff 與審查單後照 B/C 路線口頭確認，
+PR 描述註明「ai-review run 因執行檔更新無法核准，改人工確認」。
 
 ## §3 純呈現畫面
 
