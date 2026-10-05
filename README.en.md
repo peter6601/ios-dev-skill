@@ -6,6 +6,8 @@ An iOS and SwiftUI development workflow for **Claude Code and Codex**, covering 
 
 Describe your task in a sentence. `ios-dev` selects the relevant work instructions (skills) and review assistants (agents), presents the workflow, and proceeds after confirmation. This repository includes **12 skills and 9 review agents**. Third-party dependencies are installed separately.
 
+For a quick overview, browse the [slide deck](https://ios-dev-skill-deck.vercel.app/) (32 slides, Traditional Chinese): the seven scenarios, the pre-build architecture impact check, and the review routes.
+
 | How you work | Where to start |
 |---|---|
 | I develop iOS apps and review code | Follow the setup below, then use `/ios-dev` or `$ios-dev` |
