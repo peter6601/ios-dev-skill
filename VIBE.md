@@ -1,6 +1,6 @@
 # 不寫 code，也能做出自己的 iPhone app
 
-**iOS Vibe 使用指南** · [回到工具總覽](README.md) · [English developer guide](README.en.md)
+**iOS Vibe 使用指南** · [回到工具總覽](README.md) · [English developer guide](README.en.md) · [簡報版](https://ios-dev-skill-deck.vercel.app/vibe/)
 
 你用白話說想做什麼，AI 負責規劃、寫程式、測試與檢查。做出可以試用的功能後，它會給你一張「試用卡」，請你在 iPhone 或電腦上的模擬器操作幾個步驟，再決定是否接受這次改動。
 
