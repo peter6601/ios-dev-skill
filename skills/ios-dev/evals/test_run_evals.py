@@ -105,6 +105,7 @@ class ScreenParsing(unittest.TestCase):
         # forms seen in real headless runs
         self.assertEqual(run_evals.gate_of("perf-auditor 必跑\n（輕重＝待定，預判「輕」，理由：單一畫面）"), "待定")
         self.assertEqual(run_evals.gate_of("`resilience-auditor`（輕閘門）"), "輕")
+        self.assertEqual(run_evals.gate_of("review-swarm（重——碰 concurrency 與網路重連時序）"), "重")
         self.assertEqual(run_evals.gate_of("改後再量一次 —— **輕重待定（預判輕，理由：單畫面）**"), "待定")
         self.assertEqual(run_evals.gate_of("resilience-auditor（輕；實作完成後依風險三條重判一次）"), "輕")
         self.assertEqual(run_evals.gate_of("ux-critique（會不會重繪）、review（輕量）"), "")

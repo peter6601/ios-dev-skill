@@ -74,7 +74,7 @@ SCENARIO_TIERS = [
 AXIS_RE = re.compile(r"內容(?:軸)?\s*[＝=：:|]\s*\**\s*([^）)\n]+)")
 # a gate word standing alone: `→ 輕（`, `（重）`, `輕重＝待定`, `（輕；…`, `輕閘門`, `預判「輕」`
 # — not the 重 in 重繪／重判 or the 輕 in 輕量
-GATE_RE = re.compile(r"(?:^|[\s（(→、：:*|＝=「])(待定|輕|重)(?=$|[\s（(）)，,、。*|；;」閘])", re.M)
+GATE_RE = re.compile(r"(?:^|[\s（(→、：:*|＝=「])(待定|輕|重)(?=$|[\s（(）)，,、。*|；;」閘—－:：])", re.M)
 # the route is the first thing in the field (§6: `Review 路線：<B 純 agent（預設）／…>`), never a letter found later
 ROUTE_RE = re.compile(r"^[\s*<`]*([ABC])(?![A-Za-z])")
 

@@ -30,6 +30,7 @@
 |---|---|
 | ticket／根文件／計畫已有架構約束，且涵蓋本次範圍所需的 owner、注入點、async 生命週期與不變條件 | 留在實作路徑，註明「契約已備（來源：<根文件／ticket>），直接實作」。已規劃的新增模組不需再次規劃 |
 | 沒有契約、有缺漏，或超出既有範圍 | 依 `architecture-impact-check.md` 五問，判定「直接擴充／局部整理／模組邊界」。命中中型條件就走 §2；回流只補缺漏，不重跑整套規劃 |
+| 情境 4 且 root cause 尚未確認（含複雜 Bugfix） | 架構結論寫「待 root cause 確認」。確認畫面只放假設、驗證方法與診斷問題；修法方向、寫入路徑、async 契約等 root cause 確認後寫進 repair plan，不放進確認畫面 |
 
 **執行或交棒**（第 8 步）：
 
@@ -235,6 +236,8 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
 
 <!-- touchpoint: ios-dev-056 kind=gate -->
 ## 6. 確認畫面格式（選項式提問，一題）
+
+欄位名（載入、Phase 3 派、Review 路線、架構結論、已讀、交棒、會問你、提醒）照下面原文、一欄一行，不改寫成句子；輸出風格只管欄位內容怎麼寫。
 
 <!-- touchpoint: ios-dev-057 kind=command -->
 <!-- touchpoint: ios-dev-058 kind=mixed -->

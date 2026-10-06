@@ -107,9 +107,9 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 <!-- touchpoint: ios-dev-010 kind=command -->
 <!-- touchpoint: ios-dev-011 kind=mixed -->
-請使用者輸入 `/grill-with-docs`（repo 內；尚無 repo 用 `/grill-me`）——這兩個是 mattpocock plugin 的 user-invoked skill，模型呼叫不到；使用者不在時用 `mattpocock-skills:grilling` 頂替，但要自己補 `CONTEXT.md`／`docs/adr/`。它做審訊式訪談：
-它把設計畫成決策樹，分輪問出目前能問的所有決策、每題附建議答案；
-事實自己派 sub-agent 查，只把**決策**交給使用者。涵蓋面要包含：**題目本身**（大功能必問、小功能可略：
+請使用者輸入 `/grill-with-docs`（repo 內；尚無 repo 用 `/grill-me`）——這兩個是 mattpocock plugin 的 user-invoked skill，模型呼叫不到；使用者不在時用 `mattpocock-skills:grilling` 頂替，但要自己補 `CONTEXT.md`／`docs/adr/`。
+
+涵蓋面要包含：**題目本身**（大功能必問、小功能可略：
 「如果這個需求問錯了，對的問題是什麼？」——先確認題目對了，再往下問細節）、問題與使用情境、
 現有與預期行為、scope/out-of-scope、可接受取捨、架構限制、邊界與錯誤狀態、
 適用的 UX/i18n/accessibility、驗收條件、測試方式與裝置限制。
@@ -117,9 +117,7 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 每個回答記錄為：
 問題 → 使用者回答 → 最終決策 → 對 Plan 的影響
 
-grill 同時長出 repo 的 `CONTEXT.md`（純術語 glossary）與 `docs/adr/`
-（只記難逆轉＋沒脈絡看不懂＋真有取捨的決策）——這兩份是術語與「為什麼」的真相來源，
-Claude/Codex 共識閘門兩邊都讀；Phase 6 第二大腦 MOC 只連結不複製。
+grill 長出的 `CONTEXT.md`（術語）與 `docs/adr/`（決策理由）是真相來源；第二大腦 MOC 只連結不複製。
 
 <!-- touchpoint: ios-dev-012 kind=engineering -->
 <!-- touchpoint: ios-dev-013 kind=command -->
@@ -142,7 +140,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 ```
 
 <!-- touchpoint: ios-dev-015 kind=mixed -->
-如果答案不清楚，**必須停下來詢問用戶**，不要假設。
+答案不清楚就停下來問使用者，不要假設。
 
 ---
 
@@ -175,28 +173,7 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 根據 Design Doc 和架構，列出 Test Cases。**先列 test cases，讓用戶審核後才進入實作。**
 列完順便估 ticket 數（一個 ticket ≈ 一組可獨立驗收的 test cases）。**ticket 數不決定要不要進 phase-workflow**（那是 Step 4 的責任邊界結論），它只決定進去之後產幾份檔：1–8 張中型 4 份、>8 張大型 7 份。
 
-格式：
-
-### ViewModel Tests
-```swift
-// MARK: - Happy Path
-@Test func fetchData_success_updatesItems() async { }
-@Test func submitForm_validInput_transitionsToSuccess() async { }
-
-// MARK: - Edge Cases
-@Test func fetchData_emptyResponse_showsEmptyState() async { }
-@Test func submitForm_networkError_showsError() async { }
-
-// MARK: - Error States
-@Test func fetchData_unauthorized_redirectsToLogin() async { }
-@Test func fetchData_timeout_showsRetryOption() async { }
-```
-
-### Service Tests（如果有）
-```swift
-@Test func fetchData_apiReturns200_parsesCorrectly() async { }
-@Test func fetchData_apiReturns404_throwsNotFoundError() async { }
-```
+格式：Swift Testing 的 `@Test`，命名 `方法_情境_預期`（例：`fetchData_emptyResponse_showsEmptyState`），依 ViewModel／Service 分組，每組分 Happy Path／Edge Cases／Error States。
 
 <!-- touchpoint: ios-dev-018 kind=mixed -->
 **列出後暫停，詢問用戶：**
