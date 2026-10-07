@@ -91,6 +91,7 @@ exit 0＝沒有 🔴（🟡 不擋，加 `--strict` 才擋）；exit 1＝有 �
 - [ ] 拆分訊號：production 檔 >5（測試檔不算）、estimate >0.5 人天、Acceptance Criteria >4 條、Behavior 標題並列兩件以上的事
       （看語意：「和／及／與／＋」、頓號、逗號、分號都算；Foundation 不適用這條，只看檔數）、
       跨兩個不相依模組（＝根文件技術模組清單裡彼此沒有依賴的兩個）→ 考慮再拆；使用者可註記理由放行
+- [ ] `level: 審查級` 的 ticket production 檔 >3 → 「風險核心沒切乾淨」：只把踩風險三條的那一段留在這張，其餘移到實作級的 ticket
 - [ ] 出現「全部 Service」「所有 Model」這類一整層一張的 ticket → 按層切了，回頭照 SKILL.md「Ticket 切法」重切
 - [ ] Foundation 的 `## Files` 裡有**新建**的 production 檔只被**一張** Behavior 引用（其他 ticket 的 Files／Tasks 都沒提到它）→
       「只有一條行為用到的東西進了地基」，移回那張 Behavior。標「編輯」的既有檔不算（那是注入點／composition root）；

@@ -37,25 +37,37 @@
 ## Phase 2 實作任務
 
 > 依實際變更裁，不要照抄五層：沒有外部依賴就不生 Service，沒有狀態就不生 ViewModel。
-> 每個 Task 都要寫出**動到哪些檔案**與**可貼上去跑的驗證指令**。下面是滿編版的例子。
+> 每個 Task 都要寫出**動到哪些檔案**、**可貼上去跑的驗證指令**與**模型級別**。下面是滿編版的例子。
+>
+> **模型級別**（分派判準的單一來源）：
+> - **實作級**：規格完整、動 1–2 個檔案，且 `skill-router.md` §3 的風險三條全綠。
+> - **審查級**：踩到任一風險條件、跨多檔整合、需要設計判斷，或實作級補足 context 後仍卡住。
+> - SDD 的 spec／code-quality reviewer、Phase 3 稽核與統一修復一律審查級；這條優先於 SDD 的模型選擇預設，不以主 session 的模型代替判定。
+> - 寫 plan 前讀同目錄 `platform-models.md`；每個 Task 的「模型」填級別與解析後的模型 ID，並在 plan 前置條件記下審查級模型 ID，讓下游不必再找對應表。
+> - 分派時明確指定模型。主 session 要做統一修復，它本身也得是審查級；不是的話在確認畫面提醒使用者手動切換（目前沒有工具能替他切）。
 
 ### Task 1: Model 層
+- **模型**：實作級（<模型 ID>）
 - 建立資料結構（純資料，無 UI 依賴）
 - **驗證**：xcodebuild 能編譯
 
 ### Task 2: Service Protocol
+- **模型**：實作級（<模型 ID>）
 - 建立 Protocol 與 Mock（測試用）
 - **驗證**：test target 能編譯
 
 ### Task 3: ViewModel（TDD）
+- **模型**：實作級（<模型 ID>）；踩風險條件改審查級（<模型 ID>）
 - 先寫 tests（Red）→ 實作（Green）→ Refactor
 - **驗證**：所有 tests pass
 
 ### Task 4: View 層
+- **模型**：實作級（<模型 ID>）
 - 實作主要 View、拆分子元件、各 state 都有 Preview
 - **驗證**：Preview 能渲染，各 state 正常
 
 ### Task 5: 整合
+- **模型**：審查級（<模型 ID>；跨多檔整合）
 - 接上真實 Service、加入 Navigation
 - **驗證**：在 Simulator 上 E2E 測試
 

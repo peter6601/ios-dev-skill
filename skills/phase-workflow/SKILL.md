@@ -309,12 +309,13 @@ Step 6B. 收尾（同入口 A Step 6）
 
 ### 檔案格式
 
-**一個 ticket = 一個 .md 檔**（用 `references/template-ticket-single.md`）：frontmatter＋固定段落（Refs／Files／架構約束／Tasks／Acceptance Criteria／Verification／實作筆記；純技術、無 user-visible 行為的 ticket 可標 `<skip ...>` 跳特定段）。frontmatter 必含 `ticket / stage / type / layers / status / estimate / covers / deps` + `tags: [phase-ticket]`，驅動 `board.base` 看板與 lint。
+**一個 ticket = 一個 .md 檔**（用 `references/template-ticket-single.md`）：frontmatter＋固定段落（Refs／Files／架構約束／Tasks／Acceptance Criteria／Verification／實作筆記；純技術、無 user-visible 行為的 ticket 可標 `<skip ...>` 跳特定段）。frontmatter 必含 `ticket / stage / type / layers / status / estimate / covers / deps` + `tags: [phase-ticket]`，驅動 `board.base` 看板與 lint；新 ticket 另填 `level`（見下）。
 
 - `covers`：這張涵蓋根文件的哪幾條需求（`[FR1, FR3]`）。只有 Foundation／Prefactor 可以是空的。
 - `deps`：YAML list（`["1-F1", "2-B1"]`）。只能指向同資料夾真的存在、且不在更後面 Stage 的 ticket。**只放「不先 merge 就無法開工」的**：程式碼依賴、同檔排序。只是 demo 時需要資料的前置（清單頁要先有辦法收藏才看得到東西）**不進 `deps`**，寫在 Demo 行（「需 2-B1 已 merge，或用 debug seed」）——否則檔案上可以平行的 ticket 會被白白串起來。
   <!-- touchpoint: phase-workflow-034 kind=engineering -->
-- **拆分訊號**（命中任一條就考慮再拆；Step 4／5 回報給使用者，可註記理由放行；**都是警告，不是硬上限**）：production 檔 >5、estimate >0.5 人天、驗收條件 >4、Behavior 標題並列兩件以上的事（看語意——用頓號、逗號繞過字面比對不算過；Foundation 不適用這條）、跨兩個不相依模組（＝技術模組清單裡彼此沒有依賴的兩個）。
+- `level`：`實作級` 或 `審查級`，定義照 `ios-dev` skill 的 `references/plan-template.md`「Phase 2 實作任務」（實作級＝每個 Task 規格完整、動 1–2 檔、風險三條全綠）。`/ios-dev` 接這張 ticket 寫 plan 時直接沿用，不重判。**切的目標是讓大多數 ticket 落在實作級**：實作級模型（Claude `sonnet`、Codex `gpt-6-luna`）做得完，review 再交審查級。舊 ticket 沒有這欄，lint 照收。
+- **拆分訊號**（命中任一條就考慮再拆；Step 4／5 回報給使用者，可註記理由放行；**都是警告，不是硬上限**）：production 檔 >5、estimate >0.5 人天、驗收條件 >4、Behavior 標題並列兩件以上的事（看語意——用頓號、逗號繞過字面比對不算過；Foundation 不適用這條）、跨兩個不相依模組（＝技術模組清單裡彼此沒有依賴的兩個）、Task 無法全部判成實作級（踩到風險三條的核心——concurrency／state machine／持久化／網路協定／migration——切成自己的小 ticket 標 `審查級`，其餘照常標 `實作級`；不要讓一小段風險工作把整張 ticket 拉成審查級）。
 
 ---
 

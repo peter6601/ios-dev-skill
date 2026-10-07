@@ -11,6 +11,7 @@ type: "{Foundation|Prefactor|Behavior}"
 layers: {LAYERS_LIST}            # 例 [Service, UI, Integration]；Service／UI／Delta／Integration 中這張穿過的，用來組 handoff prompt（ai-prompts.md § 3）
 status: backlog                  # backlog / in-progress / review / done / blocked
 estimate: {ESTIMATE_FLOAT}       # 例 0.5
+level: "{實作級|審查級}"          # 實作級＝每個 Task 規格完整、動 1–2 檔、風險三條全綠（sonnet／gpt-6-luna 做得完）；踩風險核心才是審查級，且這張要切小
 covers: {COVERS_LIST}            # 例 [FR1, FR3]；根文件的需求編號。只有 Foundation／Prefactor 可以是 []
 deps: {DEPS_LIST}                # 例 ["1-F1", "2-B1"]；沒有就 []。只放不先 merge 就無法開工的（程式碼依賴、同檔排序）；demo 前置寫在 Demo 行
 owner:

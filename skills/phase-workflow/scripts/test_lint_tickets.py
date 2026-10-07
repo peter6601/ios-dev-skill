@@ -60,7 +60,7 @@ doc: tickets-index
 
 
 def ticket(tid, kind, title, *, stage=2, layers="[Service, UI]", covers="[]", deps="[]",
-           estimate=0.5, files=(), demo="開 app → 點愛心 → 愛心變實心", criteria=2, extra=""):
+           estimate=0.5, files=(), demo="開 app → 點愛心 → 愛心變實心", criteria=2, extra="", level=None):
     demo_line = f"> **Demo**: {demo}\n" if demo is not None else ""
     file_lines = "\n".join(f"- `{name}`（{mode}）" for name, mode in files) or "- `New.swift`（新建）"
     checks = "\n".join(f"- [ ] 條件 {n}" for n in range(1, criteria + 1))
@@ -73,7 +73,7 @@ type: "{kind}"
 layers: {layers}
 status: backlog
 estimate: {estimate}
-covers: {covers}
+{f'level: "{level}"' + chr(10) if level else ""}covers: {covers}
 deps: {deps}
 owner:
 pr:
@@ -343,6 +343,16 @@ class LintTickets(unittest.TestCase):
         text = self.messages(self.run_lint(files)[1], "warnings")
         for expected in ("production 檔 6 個", "estimate 0.75 >0.5", "Acceptance Criteria 5 條", "可能並列兩件事"):
             self.assertIn(expected, text)
+
+    def test_review_level_ticket_with_many_production_files(self):
+        files = baseline()
+        four = [(f"File{n}.swift", "新建") for n in range(4)]
+        files["tickets/2-B1.md"] = ticket("2-B1", "Behavior", "讀者能加入收藏", covers="[FR1]",
+                                          deps='["1-F1"]', files=four, level="審查級")
+        self.assertIn("風險核心沒切乾淨", self.messages(self.run_lint(files)[1], "warnings"))
+        files["tickets/2-B1.md"] = ticket("2-B1", "Behavior", "讀者能加入收藏", covers="[FR1]",
+                                          deps='["1-F1"]', files=four, level="實作級")
+        self.assertNotIn("風險核心沒切乾淨", self.messages(self.run_lint(files)[1], "warnings"))
 
     def test_foundation_title_is_exempt_from_conjunction_check(self):
         text = self.messages(self.run_lint(baseline())[1], "warnings")

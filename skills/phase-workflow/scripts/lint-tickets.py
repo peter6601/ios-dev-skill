@@ -380,6 +380,8 @@ def check_overlap_and_size(tickets, closure, report):
         production = [name for name, _, is_production in files if is_production]
         if len(production) > 5:
             report.warn("H", where, f"production 檔 {len(production)} 個（>5）")
+        if str(fm.get("level") or "") == "審查級" and len(production) > 3:
+            report.warn("H", where, f"審查級 ticket 有 {len(production)} 個 production 檔（>3），風險核心沒切乾淨：只留踩風險三條的那段，其餘移到實作級 ticket")
         if number(fm.get("estimate")) > 0.5:
             report.warn("H", where, f"estimate {fm.get('estimate')} >0.5 人天")
         criteria = len(re.findall(r"^\s*- \[[ xX]\]", section(ticket["body"], "Acceptance Criteria") or "", re.M))
