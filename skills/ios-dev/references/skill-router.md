@@ -30,7 +30,7 @@
 |---|---|
 | ticket／根文件／計畫已有架構約束，且涵蓋本次範圍所需的 owner、注入點、async 生命週期與不變條件 | 留在實作路徑，註明「契約已備（來源：<根文件／ticket>），直接實作」。已規劃的新增模組不需再次規劃 |
 | 沒有契約、有缺漏，或超出既有範圍 | 依 `architecture-impact-check.md` 五問，判定「直接擴充／局部整理／模組邊界」。命中中型條件就走 §2；回流只補缺漏，不重跑整套規劃 |
-| 情境 4 且 root cause 尚未確認（含複雜 Bugfix） | 架構結論寫「待 root cause 確認」。確認畫面只放假設、驗證方法與診斷問題；修法方向、寫入路徑、async 契約等 root cause 確認後寫進 repair plan，不放進確認畫面 |
+| 情境 4 且 root cause 尚未確認（含複雜 Bugfix） | 診斷階段例外優先：照 `handoff-checklist.md`「開發前」段開頭的「先判診斷階段」，不先套上面兩列；修法方向、寫入路徑、async 契約不放進確認畫面 |
 
 **執行或交棒**（第 8 步）：
 
@@ -246,7 +246,7 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
   載入：<skill a>、<skill b>、<skill c>
   Phase 3 派：<agent d>、<agent e>（<輕／重／待定（預判 X，理由）>）
   Review 路線：<B 純 agent（預設）／C 輕量（很小且風險三條全綠）／A 共識（複雜 Bugfix 強制）>（<一句理由>）
-  架構結論：<契約已備（來源：根文件／ticket）直接實作／直接擴充／局部整理（範圍）／模組邊界（命中哪條觸發條件）>；<要不要產轉移表／async 契約>
+  架構結論：<契約已備（來源：根文件／ticket）直接實作／直接擴充／局部整理（範圍）／模組邊界（命中哪條觸發條件）／待 root cause 確認（情境 4 診斷階段）>；<要不要產轉移表／async 契約；診斷階段寫「確認根因後補」>
   已讀：<只有情境 7 必填，出確認畫面前讀完：ticket、根文件對應段（寫出 §）、`CONTEXT.md`、`docs/adr/`、`coordination/implementation-log.md`；沒有的寫「無」，不要省略>
   交棒：<第一個 skill 或指令；情境 1 無 PM spec 與情境 2 寫「留在 /ios-dev Step 1」；交棒 phase-workflow 寫指令＋「建議新 session」>
   會問你：<該情境的詢問事項，或「不問」>

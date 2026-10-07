@@ -36,7 +36,7 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 
 <!-- touchpoint: none -->
 - **交棒後誰持有收尾**：情境 1（無 PM spec）與情境 2 留在本 skill 往 Step 1；情境 1 有 PM spec 立即交棒 `phase-workflow` 入口 B；情境 3–7 交棒給下游 skill 執行，但交棒訊息**一定要附上 `references/handoff-checklist.md` 的三段拼接：「開發前」全文 ＋「共通收尾」全文 ＋ 該情境那一段**——下游是獨立 context，只貼情境段的話輕／重怎麼判、review 三路線、人工核准前的禁止事項與回寫順序全都讀不到。
-- **開發前一定要有架構結論**：情境 2–7 在確認畫面就要講出這次是「直接擴充／局部整理／模組邊界」，依據是 `references/architecture-impact-check.md` 的五問。命中中型觸發條件就改走 router §2 的中型路線，**與 ticket 數無關**。
+- **開發前一定要有架構結論**：情境 2–7 在確認畫面就要講出這次是「直接擴充／局部整理／模組邊界」，依據是 `references/architecture-impact-check.md` 的五問；情境 4 診斷階段依 `references/handoff-checklist.md`「開發前」例外處理。命中中型觸發條件就改走 router §2 的中型路線，**與 ticket 數無關**。
 - `careful-ios` 與 `verification-before-completion` 不進 bundle、永遠生效。
 - 同名兩份的 skill 一律用無前綴的本機版（router §9）。
 - 引用到的 skill／agent 沒裝時，照 router §9 的替代表走，並在確認畫面的「提醒」行講出來——不要默默略過。
