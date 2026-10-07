@@ -1,14 +1,7 @@
 ---
 name: ios-review
-description: >
-  iOS 專案的 Pre-landing PR Review：**針對一份已經存在的 diff**（feature branch 對 base）分析
-  Swift Concurrency 安全性、Memory Leak / Retain Cycle、Main Thread Violation、StoreKit 正確性、
-  SwiftUI State 管理、Accessibility、以及 App Store 審核風險。兩輪 Review（CRITICAL + INFORMATIONAL）
-  與 Fix-First 流程（能自動修的直接修、需要判斷的批次詢問）。
-  **只在 `/ios-dev` 明確交棒（Phase 3 閘門）、或使用者直接點名本 skill 時使用**；
-  「幫我看一下」「check 一下」這種模糊說法不要當觸發，一般 iOS 任務先走 `/ios-dev`。
-  使用者直接點名的說法：「ios-review」、「review 這個 PR / branch」、「pre-landing 檢查」。
-  前提是已經有 diff；還沒有 code 時不適用。不做 UX 批評（`ios-critique`）、不做細節打磨（`ios-polish`）。
+description: >-
+  iOS 的 pre-landing PR review，針對已存在的 diff（feature branch 對 base）：Swift Concurrency、retain cycle、main thread、StoreKit、SwiftUI state、Accessibility、App Store 審核風險；兩輪 review＋Fix-First。只在 `/ios-dev` Phase 3 交棒或使用者點名（「ios-review」「review 這個 PR／branch」「pre-landing 檢查」）時使用；沒有 diff 不適用。UX 批評用 `ios-critique`，細節打磨用 `ios-polish`。
 ---
 
 # iOS Pre-Landing PR Review

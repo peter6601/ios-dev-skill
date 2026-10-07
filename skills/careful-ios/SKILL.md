@@ -1,15 +1,7 @@
 ---
 name: careful-ios
-description: >
-  iOS 開發專用的破壞性指令防護。攔截 git force-push（特別是 release/main/develop 分支）、
-  刪除 .xcodeproj/.xcworkspace、清除 Provisioning Profiles、Simulator erase all、
-  Keychain 刪除、pod deintegrate、rm -rf 非安全目標等危險操作。
-  安全例外自動放行：DerivedData、Pods、.build、xcuserdata、SourcePackages、node_modules。
-  觸發場景：使用者說「小心一點」、「careful」、「安全模式」、「be careful」、
-  「保護模式」、「prod mode」、「上線前」，或在操作 release branch、production 環境、
-  DevOps workflow 時主動建議使用。
-  即使使用者沒有明確要求，在偵測到即將對 release/** 或 main branch 進行危險操作時，
-  也應主動建議啟用此 skill。
+description: >-
+  iOS 開發的破壞性指令防護：攔截 force-push（尤其 release/main/develop）、刪除 .xcodeproj/.xcworkspace、清 Provisioning Profiles、Simulator erase all、Keychain 刪除、pod deintegrate、rm -rf 非安全目標；DerivedData、Pods、.build、xcuserdata、SourcePackages、node_modules 自動放行。使用者說「小心一點」「careful」「安全模式」「prod mode」「上線前」時啟用；要對 release/** 或 main 做危險操作時建議啟用。
 hooks:
   PreToolUse:
     - matcher: "Bash"

@@ -1,15 +1,7 @@
 ---
 name: ios-investigate
-description: >
-  iOS 專用的系統化除錯流程。嚴格遵守「沒有找到 Root Cause 前禁止修 Code」的鐵律，
-  分五階段進行：收集症狀 → 模式比對 → 假設驗證 → 實作修復 → 驗證回報。
-  內建 iOS 常見 Bug Pattern 對照表（Swift Concurrency data race、UIKit main thread violation、
-  StoreKit receipt 異常、Memory leak / retain cycle、Core Data concurrency、
-  Multipeer Connectivity 斷線、Apple Translation Framework 限制等）。
-  觸發場景：使用者說「debug」、「除錯」、「這個 bug」、「為什麼 crash」、「查一下這個問題」、
-  「investigate」、「root cause」、「崩潰」、「閃退」、「這裡怪怪的」、「行為不對」，
-  或在描述任何 iOS app 異常行為時主動建議使用。
-  即使使用者只是貼了一段 crash log 或 error message，只要上下文涉及 iOS 開發，都應觸發此 skill。
+description: >-
+  iOS 系統化除錯：找到 root cause 前不修 code，分五階段（收集症狀 → 模式比對 → 假設驗證 → 修復 → 驗證回報），內建 iOS 常見 bug pattern（concurrency data race、main thread、StoreKit、retain cycle、Core Data、Multipeer、Translation framework）。用於調查 iOS app 的 bug、crash、閃退、行為異常，或使用者貼出 iOS 的 crash log／錯誤訊息時。
 ---
 
 # iOS 系統化除錯流程

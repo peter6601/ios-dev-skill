@@ -130,11 +130,10 @@ AI 做完一個功能、自我審查完就排隊等人審，接著做下一個�
 → 裁決紀錄貼進 PR 描述 → 刪 worktree。
 
 <!-- touchpoint: ios-dev-066 kind=code-review -->
-**已知限制（2026-09-30 實測）**：run 停著的期間只要 `claude`、`codex` 或驗證指令用的執行檔（例如 Xcode）
-更新過，`approve-code` 就載不進這個 run——ai-review 載入 run 時會重驗執行檔指紋。`queue` 會把這種 run
-標成 `cannot approve`。在工具修好之前：待審期間暫停 Claude Code 自動更新（`DISABLE_AUTOUPDATER=1`），
-並且盡量在一兩天內審完；已經 `cannot approve` 的 run，人工看 diff 與審查單後照 B/C 路線口頭確認，
-PR 描述註明「ai-review run 因執行檔更新無法核准，改人工確認」。
+**執行檔更新不影響核准**（2026-10-01 起）：run 停著的期間 `claude`、`codex` 或 Xcode 更新過，
+`approve-code`、`status`、`queue` 仍然載得進這個 run（它們不執行模型或驗證指令）；`resume`、`answer`
+等會執行的指令照舊拒絕。所以**已停著的 run 不要 `resume`**，要改就照第 5 步重建。
+`queue` 標 `cannot approve` 的只剩 worktree 已被刪掉的 run——那種 run 沒有東西可審，直接放棄、從清單外處理。
 
 ## §3 純呈現畫面
 
