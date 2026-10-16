@@ -4,13 +4,6 @@ description: iOS 開發工作流的唯一入口 skill。任何 iOS 開發需求�
 user-invocable: true
 arguments: [feature]
 argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說明]"
-hooks:
-  PreToolUse:
-    - matcher: "Edit|Write"
-      hooks:
-        - type: command
-          command: "python3 \"${CLAUDE_SKILL_DIR}/scripts/test-file-guard.py\""
-          statusMessage: "檢查是否改到測試檔..."
 ---
 
 > 呼叫方式：`/ios-dev [功能或需求的簡短描述 | ticket 路徑]`。描述是選填的，也可以在對話中再說明。
@@ -47,7 +40,7 @@ hooks:
 - `careful-ios` 與 `verification-before-completion` 不進 bundle、永遠生效。
 - 同名兩份的 skill 一律用無前綴的本機版（router §9）。
 - 引用到的 skill／agent 沒裝時，照 router §9 的替代表走，並在確認畫面的「提醒」行講出來——不要默默略過。
-- **測試檔護欄**：本 skill 的 frontmatter 掛了 PreToolUse hook（`scripts/test-file-guard.py`），之後這個 session 每次 Edit／Write 到 `*Tests.swift` 都會把測試的硬規則注入 context。依官方文件，skill hook 從呼叫那一刻起**到 session 結束都有效**，交棒給下游 skill 不會解除；但它**對 subagent（SDD 的實作者）是否生效文件沒寫**，所以交棒訊息裡「開發前」的測試硬規則仍要原樣帶，不能靠 hook 代替。Codex 不讀 skill frontmatter 的 `hooks:`，在 Codex 上只靠交棒訊息。
+- **測試檔護欄**：測試的硬規則只靠交棒訊息「開發前」那段原樣帶給下游與 subagent，沒有 hook 代勞（frontmatter 原本掛的 PreToolUse hook 已拿掉：`${CLAUDE_SKILL_DIR}` 在部分環境展開成空字串，腳本找不到，之後每次 Edit／Write 都被擋）。
 
 ---
 
