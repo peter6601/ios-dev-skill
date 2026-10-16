@@ -13,6 +13,10 @@ confirmation screen that Step 0 prints (`skill-router.md` §6) two ways:
 plus one hard check: the fixture repo must be untouched when the turn ends — Step 0
 asks before it acts.
 
+A negative case (`expected.scenario` = "no-match", router §0 step 0) passes the other way
+round: there must be no confirmation screen at all, and `expected.referral`, when set, must
+appear somewhere in the reply (the skill it refers the user to).  The repo check is the same.
+
 Headless Claude has no AskUserQuestion, so the screen arrives as plain text and the
 turn ends there (verified 2026-09-19).  A case may carry a `followup`: it is sent as a
 second turn with `--resume`, to see what happens after "照這組跑".  Only those cases
@@ -60,6 +64,7 @@ LABELS = {"載入": "載入", "Phase 3 派": r"Phase\s*3(?:\s*派)?", "Review �
 FIELD_LABEL = dict(gate="Phase 3 派", review_route="Review 路線", architecture="架構結論", handoff="交棒")
 CORE_LABELS = ("載入", "Phase 3 派", "Review 路線", "架構結論", "交棒")
 MIN_LABELS = 3  # fewer than this and there is no §6 screen, whatever the prose says
+NO_MATCH = "no-match"  # router §0 step 0: not a development request, so no §6 screen
 AXES = ("不適用", "兩者", "功能", "畫面", "效能", "行為")
 SCENARIOS = {
     "1": ("新專案", "新模組", "大功能"), "2": ("小功能",), "3": ("純呈現", "純畫面"),
@@ -142,6 +147,7 @@ def screen_fields(screen):
             value = re.split(r"\n\s*\n|```", value, maxsplit=1)[0]
         out[lab] = (note + " " + value.strip()).strip() if note else value.strip()
     out["_labels"] = len(hits)
+    out["_text"] = screen
     out["情境"] = scenario_of(screen)
     m = AXIS_RE.search(screen)
     value = m.group(1).strip() if m else ""
@@ -192,6 +198,11 @@ def check_fields(expected, f):
         if want is not None:
             rows.append((key, want, got, any_of(want, test)))
 
+    if expected.get("scenario") == NO_MATCH:
+        got = NO_MATCH if f["_labels"] < MIN_LABELS else f"§6 screen ({f['_labels']} labels, 情境 {f['情境'] or '?'})"
+        add("scenario", got, lambda w: got == w)
+        add("referral", "", lambda w: squash(w) in squash(f["_text"]))
+        return rows
     add("scenario", f["情境"], lambda w: f["情境"] == w)
     add("content_axis", f["內容"], lambda w: f["內容"] == w or (w == "不適用" and not f["內容"]))
     gate = gate_of(f.get("Phase 3 派", ""))
@@ -214,8 +225,10 @@ def route_of(text):
     return "?" + m.group(1) if NEGATION.match(text[m.end():]) else m.group(1)
 
 
-def screen_problems(f):
-    """Why this is not a §6 confirmation screen at all; empty when it is one."""
+def screen_problems(f, expected=None):
+    """Why this is not a §6 confirmation screen at all; empty when it is one, or when none is wanted."""
+    if (expected or {}).get("scenario") == NO_MATCH:
+        return []  # check_fields judges "no screen" for these
     if f["_labels"] < MIN_LABELS:
         return [f"no §6 confirmation screen: found {f['_labels']} of the labels {'／'.join(CORE_LABELS)}"]
     if not f["情境"]:
@@ -317,7 +330,7 @@ def run_case(case, a, out_dir):
         fields = screen_fields(screen)
         # Fixed fields are checked by string only.  Missing, unparseable or ambiguous is a fail —
         # the grader never gets to reinterpret prose as a field (Codex review 2026-09-19, P0).
-        res["screen_problems"] = screen_problems(fields)
+        res["screen_problems"] = screen_problems(fields, case.get("expected"))
         rows = check_fields(case.get("expected", {}), fields)
         # an expectation about the second turn cannot be judged when that turn was skipped
         expectations = [e for e in case.get("expectations", []) if followup or "第二輪" not in e]
@@ -426,7 +439,7 @@ def current_verdict(run_dir, meta, r, cases):
     trace = os.path.join(run_dir, f"case-{cid:02d}.jsonl")
     fields = screen_fields("\n\n".join(parse_stream(trace)[0]))
     rows = check_fields(cases[cid].get("expected", {}), fields)
-    ok = (not screen_problems(fields) and all(x[3] for x in rows) and not r.get("repo_changes")
+    ok = (not screen_problems(fields, cases[cid].get("expected")) and all(x[3] for x in rows) and not r.get("repo_changes")
           and all(g["pass"] for g in r.get("grades", [])))
     return "pass" if ok else "fail"
 
@@ -506,7 +519,7 @@ def main():
             return 2
         texts, _, _ = parse_stream(a.parse)
         fields = screen_fields("\n\n".join(texts))
-        problems = screen_problems(fields)
+        problems = screen_problems(fields, cases[wanted[0]].get("expected"))
         for p in problems:
             print(f"FAIL {p}")
         rows = check_fields(cases[wanted[0]].get("expected", {}), fields)

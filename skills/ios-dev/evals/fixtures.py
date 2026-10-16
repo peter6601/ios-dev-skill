@@ -515,6 +515,8 @@ struct ChatView: View {
 """,
     },
 }
+# 21: the same ticket as case 7, asked for a different action (action-object contrast)
+CASES[21] = CASES[7]
 
 
 def build(case_id, dest):

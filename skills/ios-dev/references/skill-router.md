@@ -7,11 +7,21 @@
 
 ## 0. Step 0 怎麼跑
 
-依序執行以下八步；`SKILL.md` 以此為準。
+先做第 0 步分流，再依序執行以下八步；`SKILL.md` 以此為準。
 
 <!-- touchpoint: none -->
 **選項式提問**：本檔說「問」或「確認」時，用當下平台的選項式提問工具——Claude 是 `AskUserQuestion`；Codex 在 Plan 模式是 `request_user_input`（一般模式沒有這個工具）。都沒有時，把題目與編號選項直接寫在回覆裡，請使用者回數字。
 
+0. **先判是不是開發需求（no-match 出口）**：七情境只收「要改 app 的程式碼、畫面或專案設定」的需求。下面三種**不出確認畫面、不認情境、不動 repo**，回一段話就結束：
+   - **問觀念、問差異、要解釋**（「@Observable 跟 ObservableObject 差在哪」）→ 直接回答。
+   - **有專門 skill 的 iOS 周邊工作** → 一句話說明為什麼不走七情境，印出該指令請使用者改用：
+     - build 失敗、連結錯誤（`Undefined symbol`）、編譯慢 → `/xcode-build-fixer`
+     - 送審前檢查會不會被拒 → 第三方 `app-store-preflight-skills`，或派本 repo 附的 `store-preflight-auditor` agent
+     - 補語系、抽字串、`Localizable` 加語言 → `/localize-strings`
+     - review 一個已存在的 PR 或 branch（不是自己這次的收尾）→ `/ios-review`
+   - **拿開發文件做非開發的事**（把 ticket 整理成給 PM 的進度說明、寫週記或工作紀錄）→ 直接做那件事或轉介（工作紀錄 → `/work-log-writer`），不實作 ticket，也不因為附了 `tickets/<T>.md` 就算情境 7。
+   - 完全不是 iOS 的需求 → 說明 `/ios-dev` 不處理，照一般對話回應。
+   判不準時（同一句話既要修 code 又要問觀念）照常走七情境，觀念部分在確認畫面前先答。**入口前提**：ios-dev 靠使用者自己打 `/ios-dev` 進來，不依賴 description 自動觸發；沒打 `/ios-dev` 的情況不在這份 router 的範圍。
 1. **查既有功能**：需求有指名檔案或功能時，搜尋目標檔的相關關鍵字。既有功能改呈現方式（如 alert 改 sheet）算情境 2，確認畫面註明「既有 X → 改為 Y」。
    <!-- touchpoint: ios-dev-043 kind=engineering -->
 2. **判斷情境**：依需求、檔案或 ticket 路徑選 §1 的情境。無法判斷才用選項式提問，七種情境分兩題（4＋3）。
@@ -307,7 +317,7 @@ Codex： ~/.agents/skills/<name>/SKILL.md
 ```
 
 agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<name>.toml`（由 `install.sh` 從同名 `.md` 轉出）。缺的照下表替代，並寫進確認畫面的「提醒」行。
-**第三方 skill 沒有替代**：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
+**第三方 skill 沒有替代**（`xcode-build-fixer` 例外，見下表）：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
 - **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
@@ -318,13 +328,14 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`、`superpowers:using-git-worktrees`（非同步審核模式開 worktree）；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
 - **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）
 
-**本 repo 不含、作者自用未公開的 skill**——表裡仍保留名字，沒裝就走替代：
+**本 repo 不含的 skill**（作者自用未公開，或流程會直接轉介的第三方）——表裡仍保留名字，沒裝就走替代：
 
 <!-- touchpoint: ios-dev-062 kind=command -->
 | 引用的名字 | 它在流程裡的角色 | 沒裝時的替代 |
 |---|---|---|
 | `second-brain` | Phase 6 維護期知識庫（功能 MOC） | 跳過；「有第二大腦才讀」「有才回寫」本來就是條件式 |
 | `work-log-writer` | Phase 5 工作紀錄 | 跳過，或請使用者用自己的紀錄方式 |
+| `xcode-build-fixer`（第三方） | §0 no-match 出口把 build 失敗、連結錯誤、編譯慢轉介給它 | 改派本 repo 附的 `build-analyzer` 先診斷，修法由使用者決定；同時指向 README「安裝」 |
 
 本 repo 附的 skill 若被使用者自己移除，退回這些通用替代：`office-hours`→`superpowers:brainstorming`；
 `ios-investigate`→`superpowers:systematic-debugging`；`ios-review`→派 `swiftui-reviewer`＋`concurrency-auditor`

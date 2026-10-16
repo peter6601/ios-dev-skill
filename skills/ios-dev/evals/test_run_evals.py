@@ -142,6 +142,59 @@ class ScreenParsing(unittest.TestCase):
         self.assertEqual(verdicts(dict(scenario=None, gate=None), REAL_SCREEN), {})
 
 
+REFERRAL = """這是 build／連結錯誤，不是要改 app 行為，所以不走七情境。
+
+請改用 `/xcode-build-fixer`，把完整的 `Undefined symbol` 那幾行 log 貼給它。
+"""
+
+
+class NoMatch(unittest.TestCase):
+    """Negative cases (router §0 step 0): passing means no §6 screen at all."""
+
+    def test_referral_without_a_screen_passes(self):
+        f = run_evals.screen_fields(REFERRAL)
+        expected = dict(scenario="no-match", referral="xcode-build-fixer")
+        self.assertEqual(run_evals.screen_problems(f, expected), [])
+        self.assertEqual(verdicts(expected, REFERRAL), dict(scenario=True, referral=True))
+
+    def test_referral_list_is_any_of(self):
+        text = "週記不是開發需求，請用 `/work-weekly-report`。"
+        self.assertEqual(verdicts(dict(scenario="no-match", referral=["work-log-writer", "work-weekly-report"]), text),
+                         dict(scenario=True, referral=True))
+
+    def test_wrong_referral_fails(self):
+        self.assertFalse(verdicts(dict(scenario="no-match", referral="localize-strings"), REFERRAL)["referral"])
+
+    def test_direct_answer_with_no_referral_expected(self):
+        answer = "`@Observable` 追蹤到屬性層級，`ObservableObject` 靠 `@Published` 整個物件一起通知。"
+        self.assertEqual(verdicts(dict(scenario="no-match", referral=None, gate=None), answer), dict(scenario=True))
+
+    def test_a_confirmation_screen_is_a_fail(self):
+        # forced into a scenario anyway: exactly what the no-match exit is meant to stop
+        got = run_evals.check_fields(dict(scenario="no-match"), run_evals.screen_fields(REAL_SCREEN))
+        self.assertEqual(len(got), 1)
+        self.assertFalse(got[0][3])
+        self.assertIn("情境 3", got[0][2])
+
+    def test_mentioning_a_scenario_in_prose_is_not_a_screen(self):
+        text = "這不是情境 4 的修正：build 失敗請用 `/xcode-build-fixer`。"
+        self.assertEqual(verdicts(dict(scenario="no-match", referral="xcode-build-fixer"), text),
+                         dict(scenario=True, referral=True))
+
+    def test_positive_cases_still_require_a_screen(self):
+        self.assertTrue(run_evals.screen_problems(run_evals.screen_fields(REFERRAL), dict(scenario="4")))
+
+    def test_every_negative_case_pins_no_other_field(self):
+        with open(run_evals.CASES_FILE, encoding="utf-8") as fh:
+            cases = json.load(fh)["evals"]
+        negatives = [c for c in cases if c["expected"].get("scenario") == "no-match"]
+        self.assertEqual(len(negatives), 7)
+        for c in negatives:
+            pinned = {k for k, v in c["expected"].items() if v is not None} - {"scenario", "referral"}
+            self.assertEqual(pinned, set(), f"case {c['id']}")
+            self.assertTrue(c.get("coverage_tags"), f"case {c['id']}")
+
+
 class Fixtures(unittest.TestCase):
     def test_every_case_builds_a_clean_repo(self):
         with open(run_evals.CASES_FILE, encoding="utf-8") as fh:
