@@ -4,6 +4,13 @@ description: iOS 開發工作流的唯一入口 skill。任何 iOS 開發需求�
 user-invocable: true
 arguments: [feature]
 argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說明]"
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: command
+          command: "python3 \"${CLAUDE_SKILL_DIR}/scripts/test-file-guard.py\""
+          statusMessage: "檢查是否改到測試檔..."
 ---
 
 > 呼叫方式：`/ios-dev [功能或需求的簡短描述 | ticket 路徑]`。描述是選填的，也可以在對話中再說明。
@@ -40,6 +47,7 @@ argument-hint: "[功能或需求的簡短描述，也可以留空在對話中說
 - `careful-ios` 與 `verification-before-completion` 不進 bundle、永遠生效。
 - 同名兩份的 skill 一律用無前綴的本機版（router §9）。
 - 引用到的 skill／agent 沒裝時，照 router §9 的替代表走，並在確認畫面的「提醒」行講出來——不要默默略過。
+- **測試檔護欄**：本 skill 的 frontmatter 掛了 PreToolUse hook（`scripts/test-file-guard.py`），之後這個 session 每次 Edit／Write 到 `*Tests.swift` 都會把測試的硬規則注入 context。依官方文件，skill hook 從呼叫那一刻起**到 session 結束都有效**，交棒給下游 skill 不會解除；但它**對 subagent（SDD 的實作者）是否生效文件沒寫**，所以交棒訊息裡「開發前」的測試硬規則仍要原樣帶，不能靠 hook 代替。Codex 不讀 skill frontmatter 的 `hooks:`，在 Codex 上只靠交棒訊息。
 
 ---
 
@@ -174,6 +182,16 @@ grill 結束後提醒使用者：「需要再跑一次 `/brainstorming` 發散�
 列完順便估 ticket 數（一個 ticket ≈ 一組可獨立驗收的 test cases）。**ticket 數不決定要不要進 phase-workflow**（那是 Step 4 的責任邊界結論），它只決定進去之後產幾份檔：1–8 張中型 4 份、>8 張大型 7 份。
 
 格式：Swift Testing 的 `@Test`，命名 `方法_情境_預期`（例：`fetchData_emptyResponse_showsEmptyState`），依 ViewModel／Service 分組，每組分 Happy Path／Edge Cases／Error States。
+
+**怎麼挑 case（先列條件，再挑代表）**：
+
+1. **先列條件**：每個要測的行為，列出會影響結果的輸入與狀態（例：登入與否、網路有無、清單空／一筆／滿）。
+2. **等價分割**：同一類輸入只挑一個代表，邊界值另外各挑一個。同一等價類寫三個 case 是廣而淺，不是多測。
+3. **決策表**：條件之間有組合規則（「已授權 且 未過期 才能用」）時畫成決策表，每一欄一個 case。條件多到組合爆炸時用組合縮減（pairwise：每兩個條件的每種取值組合至少出現一次），不要全排列。
+4. **風險加權**：碰到錢（IAP、訂閱、計費）、授權、持久化，或最近出過錯的地方，多測邊界與錯誤路徑；其他地方點到為止。
+5. **至少一個互動案例**：組合（兩個功能同時開）、順序（先 A 後 B 與先 B 後 A）、同時（連點、重入、取消後舊結果回來）至少列一個。
+
+**每個 case 標明來源**：「依規格」（對得到某條 AC 或 Design Doc）或「鎖現況」（照目前行為拍快照）。**只有重構的行為快照可以鎖現況**，命名加 `characterization_` 前綴或在註解寫明；其他情境的 case 都要依規格——照現況寫等於把 bug 鎖成規格。
 
 <!-- touchpoint: ios-dev-018 kind=mixed -->
 **列出後暫停，詢問用戶：**

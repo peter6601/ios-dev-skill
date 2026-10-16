@@ -4,7 +4,7 @@
 
 An iOS and SwiftUI development workflow for **Claude Code and Codex**, covering requirements, architecture, implementation, debugging, review, and delivery.
 
-Describe your task in a sentence. `ios-dev` selects the relevant work instructions (skills) and review assistants (agents), presents the workflow, and proceeds after confirmation. This repository includes **12 skills and 9 review agents**. Third-party dependencies are installed separately.
+Describe your task in a sentence. `ios-dev` selects the relevant work instructions (skills) and review assistants (agents), presents the workflow, and proceeds after confirmation. This repository includes **12 skills and 10 review agents**. Third-party dependencies are installed separately.
 
 For a quick overview, browse the [slide deck](https://ios-dev-skill-deck.vercel.app/) (32 slides, Traditional Chinese): the seven scenarios, the pre-build architecture impact check, and the review routes.
 
@@ -25,7 +25,7 @@ For your first task, read **Quick start → Everyday usage → Development workf
 - [Quick start: installation and your first task](#quick-start)
 - [Everyday usage: requests, plans, and tickets](#usage)
 - [Development workflow: planning, implementation, and review](#workflow)
-- [Included tools: 12 skills and 9 agents](#toolkit)
+- [Included tools: 12 skills and 10 agents](#toolkit)
 - [Configuration and maintenance](#configuration)
 - [Optional integrations](#extensions)
 - [Troubleshooting](#faq)
@@ -418,7 +418,7 @@ Improve the experience, edge cases, and protection around destructive operations
 | [localize-strings](skills/localize-strings/SKILL.md) | Moves hard-coded strings into a String Catalog |
 | [careful-ios](skills/careful-ios/SKILL.md) | Checks destructive operations; platform behavior is described below |
 
-### 9 review agents
+### 10 review agents
 
 #### Interface and user experience
 
@@ -439,6 +439,14 @@ Check ownership boundaries, async lifetimes, and runtime performance.
 | [architecture-auditor](agents/architecture-auditor.md) | View complexity, ownership boundaries, and architectural consistency |
 | [concurrency-auditor](agents/concurrency-auditor.md) | Actor isolation, Task ownership, cancellation, and stale results |
 | [perf-auditor](agents/perf-auditor.md) | View updates, identity, layout, and computational hotspots |
+
+#### Test quality
+
+Runs whenever the diff touches test files, at either review depth.
+
+| Agent | Main focus |
+|---|---|
+| [test-auditor](agents/test-auditor.md) | Rewritten existing tests, tests that mirror the implementation, weak assertions, duplicated equivalence classes, and missing high-risk or interaction cases |
 
 #### Specialized analysis when needed
 
@@ -463,6 +471,7 @@ For a general code review, start with **files or a feature scope**. The followin
 | [architecture-auditor](agents/architecture-auditor.md) | Scope; optionally architecture constraints, a PR checklist, or a baseline report |
 | [concurrency-auditor](agents/concurrency-auditor.md) | Scope and async ownership contracts |
 | [perf-auditor](agents/perf-auditor.md) | Scope; include the baseline report for optimization work |
+| [test-auditor](agents/test-auditor.md) | Changed test files, the matching acceptance criteria, and any existing tests that were modified |
 | [trace-analyzer](agents/trace-analyzer.md) | `.trace` path and symptoms; optionally source code paths |
 | [build-analyzer](agents/build-analyzer.md) | Project and scheme, or an existing build log |
 | [store-preflight-auditor](agents/store-preflight-auditor.md) | Project root; optionally app category and store copy |
@@ -862,7 +871,7 @@ ios-dev-skill/
 ├── install.sh                 # Installation, dependency checks, removal
 ├── skills/                    # 12 skills with references, scripts, templates
 │   └── ios-dev/references/    # Routing, architecture checks, handoffs, plans
-├── agents/                    # 9 review agent sources
+├── agents/                    # 10 review agent sources
 ├── scripts/                   # Codex agent conversion and tests
 ├── docs/
 │   ├── design/                # Design documents for this toolset

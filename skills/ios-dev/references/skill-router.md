@@ -66,6 +66,8 @@
 | 6 重構 | 依 §4 | 基線 → 定邊界 → 分段修改 → 對比 |
 | 7 接 ticket | 從 ticket 檔案清單推斷 | 讀契約 → 實作 → 回寫狀態 |
 
+**`test-auditor` 不看情境、看 diff**：diff 動到測試檔就派，輕重閘門都派（輕時跟該情境的 auditor 一起跑，重時跟閘門 agent 同一批）；沒動測試檔就不派。走 A 時它的 finding 跟其他閘門 agent 一樣在 `init` 前修掉，不進 `--preflight`。下面各情境的「審查」不再逐一重寫這一條。
+
 ### 情境 1：新專案／新模組／大功能
 
 - **流程與載入**：有 PM spec 直接交 `phase-workflow` 入口 B，不載入前置規劃工具。沒有 PM spec 則載入 `office-hours`、grill（§9）、`swift-architecture-skill`（Step 4）、`swiftui-specialist`、`swift-concurrency`，走 §2。
@@ -320,7 +322,7 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 **第三方 skill 沒有替代**（`xcode-build-fixer` 例外，見下表）：缺了就在提醒行列出名字、指向 README「安裝」的第 1 步；其中
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
-- **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`
+- **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`、`test-auditor`
 - **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`ios-accessibility`（dadederk）、`asc-*`
 - **vendor**（`~/.claude/vendor`，**不要**放進 skills 目錄，只給 agent 按路徑讀、不會自動觸發；`git clone https://github.com/twostraws/swiftui-agent-skill ~/.claude/vendor/twostraws-swiftui-agent-skill` 安裝、`git pull` 更新）：`swiftui-pro`（twostraws，app 主 target ≥ iOS 17 時由 `swiftui-reviewer` 讀，每條建議先過 agent 裡的版本表；放 skills 會在任何專案自動觸發，而它預設新專案是 iOS 26；沒裝就跳過）
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)

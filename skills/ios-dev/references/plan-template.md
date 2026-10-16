@@ -10,7 +10,13 @@
 
 ## 前置條件
 - Design Doc 已審核
-- Test cases 已審核
+- Test cases 已審核（每個 case 標了「依規格」或「鎖現況」；鎖現況只用在重構的 `characterization_` 測試）
+- 停損：同一個 Task 驗證失敗 **<N，建議 3>** 輪就停——不再換寫法硬試，把問題記進完成回報的「刻意沒處理」段（問題、為什麼現在不處理、記在哪），然後往主線的下一個 Task 走。一輪＝改一次 code 再跑一次該 Task 的驗證指令
+
+## 測試的硬規則（實作全程適用，不因趕時間放寬）
+
+- **不得為了讓測試通過**而修改既有斷言、刪測試、skip 測試（`.disabled`、`XCTSkip`、註解掉）或降低門檻（放寬容差、加長 timeout、調低覆蓋率要求）。
+- 確實要改時，回報寫明**是哪條 AC 變了**（AC 編號、舊→新、誰決定的）。寫不出是哪條 AC 變了，就是在改測試遷就程式碼——回去修實作。
 
 ## 架構約束（實作時不可違反；收尾時 `architecture-auditor` 拿這一段當尺）
 
@@ -76,7 +82,8 @@
 - 這次判定：**<輕／重>**（理由：<情境，或風險三條／規模兩條裡踩到的那一條>）
 - Review 路線：**<B 純 agent（預設）／A 共識（使用者選了加 Codex，或複雜 Bugfix）／C 輕量（很小且風險三條全綠）>**（理由：<為什麼是這條>）
 - 架構結論：**<直接擴充／局部整理／模組邊界>**（開發前的檢查結論；實作中若改變要回寫）
-- 會派的 agent：<把名字列出來，不要寫「依情境裁」>
+- 會派的 agent：<把名字列出來，不要寫「依情境裁」；diff 會動到測試檔就加 `test-auditor`，輕重都一樣>
+- 變異測試：<踩到風險三條時寫要改反的 1–3 個關鍵判斷（檔案:函式）；沒踩到寫「不做」>
 - 走 A 或 B 時，三個 specialist（`swiftui-reviewer`／`ux-critique`／`resilience-auditor`）
   一定要跑；走 A 時它們的 JSON 是 `--preflight` 的唯一合法內容
 - 完整收尾步驟：交棒訊息裡已展開的「共通收尾」那一段（來源：`ios-dev` skill 的 `references/handoff-checklist.md`）。
@@ -94,10 +101,11 @@
 - `perf-auditor`：效能（`swiftui-performance-audit`；有疑慮升級 `trace-analyzer` 錄 trace 取證）
 - `concurrency-auditor`：Swift 6 合規、**ownership 契約六格**（持有者／生命週期／清理／重入／舊結果失效／isolation）、Combine 邊界
 - `architecture-auditor`：四個量化閘門 ＋ pattern 一致性，對照 §0 架構形狀與 feature PR checklist
+- `test-auditor`：測試品質——上面「測試的硬規則」、Step 5 的挑 case 方法、廣而淺、斷言弱、照錯的程式寫測試、高風險處沒多測、缺互動測試、偷改測試、鏡像實作。**diff 動到測試檔就派，輕重閘門都派**（輕閘門也不省；沒動測試檔就不派）；走 A 時它的 finding 在 `init` 前修掉，不進 `--preflight`
 
 外加 `review-swarm`（skill，不是 agent）當第四把：regression／安全隱私／測試覆蓋缺口。
 
-情境裁法：情境 1 六個全上；修正（重）裁掉 `ux-critique`；純畫面重構省 `concurrency-auditor`；
+情境裁法：情境 1 六個全上（`test-auditor` 不算在六個裡，照上面「動到測試檔就派」另外判）；修正（重）裁掉 `ux-critique`；純畫面重構省 `concurrency-auditor`；
 優化必含 `perf-auditor` 改前改後各一次。
 
 ## 誰能改 code：走路線 A 時以 `init` 為界，切成兩段

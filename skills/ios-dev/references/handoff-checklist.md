@@ -51,6 +51,14 @@
 <!-- touchpoint: ios-dev-035 kind=engineering -->
 判不出來是哪一種就停下來問人，不要預設走第二條。
 
+**測試的硬規則**（實作全程適用；改到 `*Tests.swift` 時 `/ios-dev` 的 hook 也會再提醒一次）：
+
+- **不得為了讓測試通過**而修改既有斷言、刪測試、skip 測試（`.disabled`、`XCTSkip`、註解掉）或降低門檻（放寬容差、加長 timeout、調低覆蓋率要求）。
+- 確實要改時，回報寫明**是哪條 AC 變了**（AC 編號、舊→新、誰決定的）。寫不出是哪條 AC 變了，就是在改測試遷就程式碼——回去修實作。
+- 新寫的 test case 標明「依規格」（對得到某條 AC）或「鎖現況」。**只有重構的行為快照可以鎖現況**，用 `characterization_` 前綴或註解標記；修正、新功能照現況寫等於把 bug 鎖成規格。
+- 挑 case 先列條件，再用等價分割與決策表挑代表；碰到錢、授權、持久化或最近出過錯的地方多測；至少一個組合／順序／同時的互動案例。
+- **停損**：同一個 Task（或同一個修正點）驗證失敗 3 輪就停，記進完成回報的「刻意沒處理」，往主線走；計畫的前置條件另訂了 N 就照 N。
+
 ## 共通收尾（每個情境都跑，順序固定）
 
 1. **定輕重**：照 `skill-router.md` §3——**風險三條**（concurrency／持久化／網路協定／
@@ -61,6 +69,14 @@
 2. **跑閘門**（做多少工）：
    輕＝該情境的單一 auditor → `ios-review`（fix-first）。
    重＝先派閘門 agent ＋ `review-swarm` → 主 session 一次統一修復 → `/ios-polish` → verification。
+   **diff 動到測試檔就加派 `test-auditor`（唯讀），輕重都派**：輕時跟該情境的 auditor 一起跑、findings 併入
+   `ios-review` 前修掉；重時跟閘門 agent 同一批發出、併入統一修復。
+   **變異測試（只在踩到風險三條時做）**：統一修復之後、`/ios-polish` 之前，派一個**可寫的** subagent
+   在**獨立 git worktree** 裡把 1–3 個關鍵判斷改反（`>=` 改 `>`、授權檢查回 `true`、
+   寫入前的驗證拿掉），跑對應測試，確認會變紅。worktree 從目前 HEAD 開，再套上本次未 commit 的 diff
+   （`git diff HEAD --binary` 套進去，新檔另外複製）；**不要用 `git stash`**——stash 跟其他 worktree 共用，
+   會撿到別人的變更。改反的 code 只活在那個 worktree，跑完就刪。沒變紅＝測試抓不到這個判斷，
+   補測試（只加測試、不動 production code）後重跑。每個改反點的結果寫進完成回報。
 
 3. **選 review 路線**（誰當第二雙眼睛）：照 `skill-router.md` §3 的三選一，**預設 B**。A 只在使用者於 Step 0 確認畫面選了
    「加 Codex 審核」、或複雜 Bugfix（強制）時走。
@@ -68,7 +84,7 @@
      時才降 B，降級要寫進 PR 描述。**最後**派三個 specialist 各回一段 fenced JSON → `/consensus-review --profile ios --preflight`
      （Codex 首輪 → 合併 → 單一 Claude 統一修復 → re-review，中途不停）。
      `--preflight` 對 `--profile ios` **必填**，且只認 `swiftui`／`ux`／`resilience` 三個 category——
-     `ios-review`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`review-swarm`
+     `ios-review`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`test-auditor`、`review-swarm`
      的 findings 一律在 `init` 前就修掉，餵進去會被拒、連 run 都不會建立。
    - **B 純 agent**：三個 specialist 唯讀跑完 → 主 session 一次統一修復 → `/ios-polish` →
      `/verification-before-completion`。不呼叫 `ai-review`。
@@ -79,7 +95,7 @@
    <!-- touchpoint: ios-dev-036 kind=code-review -->
    <!-- touchpoint: ios-dev-037 kind=gate -->
    <!-- touchpoint: ios-dev-038 kind=gate -->
-4. **人工 Code Review**：三條路線都要，不可省。
+4. **人工 Code Review**：三條路線都要，不可省。請使用者審之前先交下面的**完成回報**。
    走 A 停在 `AWAITING_HUMAN_CODE_REVIEW`，**人工 `approve-code` 前不得 commit、push、
    merge 或建立 PR**；走 B、C 沒有 run、也沒有 `approve-code` 這道指令，改成使用者讀完
    diff 口頭確認，確認前一樣不得 commit、push、merge 或建立 PR。
@@ -102,6 +118,30 @@
    只拿同一情境比，不要跨情境比。
    <!-- touchpoint: ios-dev-064 kind=command -->
 7. **收工**：問使用者要不要跑 Phase 5 `/work-log-writer`。
+
+### 完成回報（宣稱完成時交這一份，人工 Code Review 讀它）
+
+每條 AC 一行，證據強度四選一，不要寫「應該沒問題」：
+
+```
+## 完成回報：<功能／ticket>
+
+### AC 對照
+- AC1 <一句話> → <證據位置：測試名稱／檔案:行／截圖路徑／指令輸出> → 已實測｜已讀取｜推論｜未查
+- AC2 …
+
+### 變異測試（踩到風險三條才有；沒做寫「未踩風險三條，不做」）
+- <檔案:函式> 改反 <哪個判斷> → <哪個測試變紅｜沒變紅，已補 <測試名稱>>
+
+### 測試改動
+- 改了既有斷言／刪除／skip 的測試：<無｜測試名稱 → 變了的 AC（舊→新，誰決定）>
+
+### 刻意沒處理
+- <問題> → <為什麼現在不處理：停損、超出範圍、等 PO…> → <記在哪：issue／ticket／implementation-log>
+```
+
+- **已實測**＝這次跑過且看到結果；**已讀取**＝讀了 code 或文件確認，沒跑；**推論**＝從別處推得，沒直接看；**未查**＝沒碰。
+- 「刻意沒處理」沒有就寫「無」，不要整段刪掉——停損觸發、範圍外的 bug、延後的 finding 都進這裡。
 
 ## 非同步審核模式（可選；Step 0 確認畫面選項 4）
 
