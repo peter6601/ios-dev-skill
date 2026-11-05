@@ -309,6 +309,24 @@ class LintTickets(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("FR3：需求對照表的「T 卡／處置」是空的", self.messages(result))
 
+    def test_rd_spec_entry_reads_scale_from_rd_spec(self):
+        files = baseline()
+        del files["overview.md"]
+        rd_spec = ("---\ntype: phase-doc\ndoc: rd-spec\nscale: large\n---\n# spec\n\n## 需求對照（PM spec 條目 → T 卡）\n\n"
+                   "| # | 條目 | T 卡／處置 |\n|---|---|---|\n| FR1 | 加入 | T1 |\n| FR2 | 清單 | T2 |\n"
+                   "| FR3 | 同步 | Out of Scope——下一版 |\n\n## 現況總覽\n")
+        files["rd-spec.md"] = rd_spec
+        files["coordination/open-questions.md"] = "# Q\n"
+        files["context.md"] += "\n[開放問題](./coordination/open-questions.md)\n"
+        for name in ("1-F1", "2-B1", "2-B2"):
+            files[f"tickets/{name}.md"] = files[f"tickets/{name}.md"].replace("../overview.md", "../rd-spec.md")
+        code, result = self.run_lint(files)
+        self.assertEqual((code, result["scale"]), (0, "large"), self.messages(result))
+        files["rd-spec.md"] = rd_spec.replace("scale: large\n", "")
+        code, result = self.run_lint(files)
+        self.assertEqual((code, result["scale"]), (1, "medium"))
+        self.assertIn("中型連到大型專屬檔", self.messages(result))
+
     # ── § G ──
     def test_deps_missing_forward_cycle_and_string(self):
         files = baseline()

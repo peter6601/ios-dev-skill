@@ -44,9 +44,9 @@ git diff origin/<base> --stat
 
 ---
 
-## Step 2：Scope Drift 偵測
+## Step 2：Scope Drift 與隱性決策偵測
 
-在 review code 品質之前，先確認：**有沒有做超過或少做？**
+在 review code 品質之前，先確認：**有沒有做超過或少做？替使用者做了哪些沒說出口的決定？**
 
 1. 讀取 commit messages：`git log origin/<base>..HEAD --oneline`
 2. 讀取 PR description 與 ticket／已知問題清單（repo 裡有才讀，不要假設檔名）
@@ -55,6 +55,7 @@ git diff origin/<base> --stat
 偵測：
 - **Scope Creep**：改了與目的無關的檔案、順手重構
 - **Missing Requirements**：宣稱要做但 diff 裡沒有的項目
+- **Implicit Decisions**：需求沒寫、但會改變行為的選擇。agent 在長 session 裡會替人做很多這種小決定，摘要裡看不到：預設值、兩個需求衝突時選了哪邊、決定不處理的情境（離線、帳號切換、權限被拒）、對需求的重新詮釋。完成回報已經列了「替你做的決定」就拿來對照，diff 裡有、清單裡沒有的補上
 
 輸出：
 ```
@@ -63,6 +64,8 @@ Intent: <一行描述預期做什麼>
 Delivered: <一行描述 diff 實際做了什麼>
 [如有 drift: 列出每個超出範圍的變更]
 [如有 missing: 列出每個未完成的需求]
+Implicit Decisions:
+- [file:line] 決定了什麼 — 需求裡有沒有依據
 ```
 
 這是 INFORMATIONAL — 不阻擋 review，繼續下一步。
@@ -129,6 +132,19 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 - **HTTP 明文**：使用 `http://` 而非 `https://`（ATS 例外未經必要）
 - **Keychain 存取**：敏感資料存在 `UserDefaults` 而非 Keychain
 - **Log 洩漏**：`print()` 或 `os_log` 輸出 token / password / PII
+
+#### 1.6 行為語意變更 Behavior Change
+
+結構和命名看起來都對、測試也過，但行為悄悄變了。快速掃過時最容易漏掉這一類，要逐段讀：
+
+- **預設值翻轉**：Bool flag、enum 的 default case、optional 的 fallback 值（`?? false` → `?? true`）
+- **邊界條件**：`<` ↔ `<=`、`isEmpty` 判斷、`guard` 條件改了以後 early return 的範圍跟著變
+- **錯誤語意**：原本 `throw` 的地方改成 `try?`、`return nil` 或空 `catch`，呼叫端原本會處理的錯誤被吞掉
+- **`await` 前後的狀態（actor reentrancy）**：`await` 之前讀到的 state，`await` 回來後直接拿來用，沒有重新檢查
+- **副作用順序**：寫本地和呼叫 API 的先後對調；StoreKit 的 `transaction.finish()` 在交付內容之前就呼叫
+- **被刪掉的分支**：刪掉的 `else`、`default`、`case` 原本處理的情境，現在落到哪裡
+
+這一類一律 ASK。
 
 ---
 
@@ -216,7 +232,7 @@ AUTO-FIX（直接修，不問）:           ASK（需要人類判斷）:
 **經驗法則**：如果修改是機械式的、資深工程師會不經討論直接改，就是 AUTO-FIX。
 如果合理的工程師可能有不同意見，就是 ASK。
 
-CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FIX（較機械式）。
+CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FIX（較機械式）。Pass 1 的行為語意變更一律 ASK。
 
 ### 5b：AUTO-FIX
 
@@ -262,6 +278,9 @@ CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FI
 
 **防止合理化**：「這看起來沒問題」不是 finding。要嘛引用證據證明沒問題，要嘛標為未驗證。
 
+<!-- touchpoint: none -->
+**列出這次沒涵蓋的**：綠勾只證明它檢查的那件事。輸出前列出這次沒驗證的部分，例如沒實際執行 app、只在 Simulator、StoreKit 沒在 sandbox 跑、沒跑 Instruments、diff 以外受影響但沒讀的呼叫端。說不出這次 review 會漏掉什麼，就代表需要人工完整 review，不是快速核准。
+
 ---
 
 ## 輸出格式
@@ -278,10 +297,16 @@ Scope: [CLEAN / DRIFT DETECTED]
 - [SEVERITY] [file:line] 問題描述
   修法: 建議修法
 
+**Implicit Decisions:**
+- [file:line] 決定了什麼
+
+**Not Covered:**
+- 這次沒驗證的項目
+
 **Status: DONE | DONE_WITH_CONCERNS | BLOCKED**
 ```
 
-如果沒有問題：`iOS Pre-Landing Review: No issues found. ✅`
+如果沒有問題：`iOS Pre-Landing Review: No issues found. ✅`，但仍要附上 Not Covered。
 
 ---
 
@@ -291,6 +316,7 @@ Scope: [CLEAN / DRIFT DETECTED]
   <!-- touchpoint: ios-review-002 kind=gate -->
 - **Fix-first，不是唯讀 review。** AUTO-FIX 直接改，ASK 經使用者同意才改。絕不 commit / push / 開 PR — 那是 ship 的工作。
 - **精簡。** 一行描述問題，一行寫修法。不要前言、不要摘要、不要「整體看起來不錯」。
+- **Not Covered 不能省略**，即使沒有任何 issue。
 - **只標記真正的問題。** 沒問題的就跳過。
 
 ---
@@ -323,6 +349,7 @@ Scope: [CLEAN / DRIFT DETECTED]
 | 要報「漏標 `@MainActor`」之前 | — | 先查 `SWIFT_DEFAULT_ACTOR_ISOLATION`／`.defaultIsolation(MainActor.self)`；預設就是 MainActor 的 target 不報 |
 | `Sendable` closure 捕獲 mutable var | ❌ Data race | 標為 CRITICAL |
 | `actor` 的 method 被 `nonisolated` caller 呼叫 | ✅ 自動 await | 確認有 await |
+| actor method 在 `await` 前讀 state、`await` 後直接使用 | ❌ Reentrancy | 標為 CRITICAL，`await` 後重新檢查 |
 
 ### 常見 Retain Cycle 模式
 

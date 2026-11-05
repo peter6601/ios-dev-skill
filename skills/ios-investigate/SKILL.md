@@ -30,6 +30,16 @@ Multipeer Connectivity 等 iOS 技術棧深度客製。
 
 在形成任何假設之前，先完整收集證據。
 
+<!-- touchpoint: ios-investigate-011 kind=engineering -->
+### 1.0 先問使用者的猜測
+
+使用者在場時，在你說出自己的 Root Cause 假設之前，先問一句：
+
+> 你自己覺得可能是什麼原因？猜錯或不知道都沒關係。
+
+<!-- touchpoint: none -->
+可以一邊收集證據一邊等回答，但要拿到回答後才公開你的假設。原文記下來，放進最後的 Debug Report。看過條理分明的分析之後，就很難再想到別的可能，所以要先讓使用者形成自己的判斷。使用者不在場或明確說「直接查」就跳過，Report 寫「未提供」。
+
 ### 1.1 讀取錯誤訊息
 
 仔細閱讀完整的 error message、crash log、stack trace。特別注意：
@@ -83,6 +93,7 @@ git log --oneline --since="1 week ago" -- <affected-directory>
 | Pattern | 典型症狀 | 去哪裡找 |
 |---------|---------|---------|
 | **Swift Concurrency Data Race** | `EXC_BAD_ACCESS`、間歇性 crash、Thread Sanitizer 警告 | 多個 Task 同時存取 non-isolated mutable state；Actor 邊界違規 |
+| **Actor Reentrancy** | 狀態偶爾錯亂、重複執行、只在快速連續操作時出現 | actor method 在 `await` 前讀 state、`await` 後直接使用，沒有重新檢查 |
 | **Main Thread Violation** | 紫色 runtime warning、UI 卡頓或不更新、`[UIView setNeedsLayout] must be used from main thread` | 在 background thread 操作 UI；`@MainActor` 漏標 |
 | **Retain Cycle / Memory Leak** | 記憶體持續增長、`deinit` 不被呼叫、Instruments Leaks 顯示 leak | Closure 捕獲 `self`、delegate 未用 `weak`、`Task` 在 `deinit` 後仍持有 reference |
 | **StoreKit Receipt 異常** | 購買成功但點數/訂閱沒入帳、跨 Apple ID 資料殘留、sandbox receipt 混 production | StoreKit 1 receipt 跨 Apple ID 持久化、`originalTransactionId` 混淆、Server Notification V2 漏處理 |
@@ -105,9 +116,19 @@ git log --oneline --since="1 week ago" -- <affected-directory>
 
 在寫任何修復之前，先驗證假設。
 
-### 3.1 確認假設
+### 3.1 先寫下判準，再驗證
 
-在懷疑的根因位置加入臨時 log、assertion、或 debug output：
+動手加 log 之前，先寫下：
+
+```
+假設：[...]
+若假設成立，應該看到：[具體的 log 輸出／行為]
+若看到：[...]，假設就被否定
+```
+
+事先定好判準，避免跑完之後把任何結果都解讀成「符合假設」。
+
+然後在懷疑的根因位置加入臨時 log、assertion 或 debug output（統一加 `⚠️ DEBUG` 前綴，方便 4.6 清除）：
 
 ```swift
 // 範例：驗證是否為 main thread violation
@@ -120,7 +141,7 @@ print("⚠️ DEBUG: Task started, self is \(type(of: self)) at \(Unmanaged.pass
 print("⚠️ DEBUG: originalTransactionId=\(tx.originalID), currentId=\(tx.id), productId=\(tx.productID)")
 ```
 
-執行重現步驟。證據是否符合假設？
+執行重現步驟，拿實際輸出對照事先寫下的判準。
 
 ### 3.2 假設錯誤時
 
@@ -146,6 +167,7 @@ C) 加 instrumentation 等待 — 在問題區域埋 log，下次觸發時收集
 - **「先這樣修」** — 沒有「先這樣」。修對或升級，沒有第三選項。
 - **還沒 trace data flow 就提修法** — 你在猜。
 - **每次修完又冒出新問題** — 問題在錯誤的層級，不是錯誤的 code。
+- **跑完才決定什麼結果算符合假設** — 回到 3.1 先寫判準。
 
 ---
 
@@ -163,9 +185,12 @@ Root cause 確認後：
 
 ### 4.3 寫 Regression Test
 
-寫一個測試：
-- **沒有修復時會失敗**（證明測試有意義）
-- **有修復後會通過**（證明修復有效）
+寫一個測試，然後**實際跑給自己看**：
+1. 修復還沒 commit 時，從 HEAD 開一個獨立 git worktree（等於沒有修復的版本），只把新測試檔複製進去，跑這個測試 → 必須**失敗**，貼出輸出。不要用 `git stash`（stash 跟其他 worktree 共用）
+2. 回到原本的工作目錄（有修復）跑同一個測試 → 必須**通過**，貼出輸出
+3. 刪掉那個 worktree
+
+沒有親眼看過它失敗的 regression test，不知道它到底有沒有測到這個 bug。
 
 iOS 測試重點：
 ```swift
@@ -199,6 +224,16 @@ B) 拆分 — 先修 critical path，其餘延後
 C) 重新思考 — 可能有更精準的做法
 ```
 
+### 4.6 清除臨時 Debug Code
+
+移除 Phase 3 加的所有臨時 log：
+
+```bash
+grep -rn "⚠️ DEBUG" --include="*.swift" .
+```
+
+結果必須為空。
+
 ---
 
 ## Phase 5：驗證與回報 Verification & Report
@@ -210,16 +245,26 @@ C) 重新思考 — 可能有更精準的做法
 
 跑測試 suite 並貼出結果。
 
-### 5.2 結構化 Debug Report
+<!-- touchpoint: none -->
+### 5.2 同類問題掃描（我漏了什麼？）
+
+如果 root cause 是一種寫法（例如漏標 `@MainActor`、closure 沒用 `[weak self]`、`transaction.finish()` 太早呼叫），用 Grep 找 codebase 裡其他相同寫法的位置。列出來但**不要順手修**（維持最小 diff），讓使用者決定要不要另開 task。
+
+最後問自己一次：「這次調查有沒有漏掉什麼？」想到的寫進 Report 的「未驗證」。
+
+### 5.3 結構化 Debug Report
 
 ```
 DEBUG REPORT
 ════════════════════════════════════════
 症狀 Symptom:      [使用者觀察到的現象]
+使用者猜測 Initial Guess: [1.0 的原始猜測；沒問就寫「未提供」]
 根因 Root Cause:   [實際出了什麼問題、為什麼]
 修復 Fix:          [改了什麼，附 file:line 參考]
-證據 Evidence:     [測試輸出、重現結果證明修復有效]
+證據 Evidence:     [執行的指令與原始輸出：regression test 修復前失敗、修復後通過；原始重現步驟的結果]
 回歸測試 Regression Test: [新測試的 file:line]
+同類問題 Similar Patterns: [5.2 找到的其他位置，或「無」]
+未驗證 Not Verified: [例如只在 Simulator 驗證、沒在 production StoreKit 環境確認]
 相關 Related:      [已知問題清單的對應項、同區域歷史 bug、架構筆記]
 狀態 Status:       DONE | DONE_WITH_CONCERNS | BLOCKED
 ════════════════════════════════════════
@@ -242,7 +287,7 @@ DEBUG REPORT
 <!-- touchpoint: ios-investigate-009 kind=mixed -->
 | 狀態 | 定義 |
 |------|------|
-| **DONE** | Root cause 找到、修復完成、regression test 已寫、所有測試通過 |
+| **DONE** | Root cause 找到、修復完成、regression test 已證明修復前會失敗、所有測試通過、臨時 debug code 已清除 |
 | **DONE_WITH_CONCERNS** | 已修復但無法完全驗證（如：間歇性 bug、需要 staging 環境） |
 | **BLOCKED** | 調查後 root cause 不明確，已升級 |
 | **NEEDS_CONTEXT** | 缺少繼續所需的資訊，已說明需要什麼 |
@@ -273,6 +318,7 @@ DEBUG REPORT
 - `@MainActor` 標記的 class 中，non-isolated method 仍可能在 background 執行
 - `Task { }` 繼承 actor context，`Task.detached { }` 不繼承
 - `nonisolated` function 中存取 actor-isolated property 會在 Swift 6 報錯
+- actor 在每個 `await` 都可能被其他呼叫插隊，`await` 前讀到的 state 回來後不一定還成立
 
 ### StoreKit 陷阱
 - StoreKit 1 的 receipt 會跨 Apple ID 持久化在裝置上

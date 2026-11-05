@@ -419,8 +419,14 @@ def lint(folder):
     report = Report()
     tickets = load_tickets(folder, report)
     legacy = bool(tickets) and not any(t["fm"].get("type") in NEW_TYPES for t in tickets.values())
-    overview = os.path.join(folder, "overview.md")
-    declared = (front_matter(read(overview))[0] or {}).get("scale") if os.path.exists(overview) else None
+    # The root doc declares the scale: overview.md (entry A) or rd-spec.md (entry B, which never
+    # produces overview.md or sprint-roadmap.md, so without this a large entry-B folder reads as medium).
+    declared = None
+    for root_doc in ("overview.md", "rd-spec.md"):
+        path = os.path.join(folder, root_doc)
+        if os.path.exists(path):
+            declared = (front_matter(read(path))[0] or {}).get("scale")
+            break
     scale = declared if declared in {"medium", "large"} else (
         "large" if os.path.exists(os.path.join(folder, "sprint-roadmap.md")) else "medium")
 
