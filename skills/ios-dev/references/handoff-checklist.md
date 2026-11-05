@@ -104,13 +104,14 @@
    diff 口頭確認，確認前一樣不得 commit、push、merge 或建立 PR。
    **三條路線都要留裁決紀錄，寫在 PR 描述**（PR 模板是給非工程師讀的 repo，放進末尾的
    `<details>` 折疊段）：人確認前，Claude 依這輪 findings 列出逐條裁決草稿——
-   `採納（已修）／駁回／延後＋一句理由`——使用者只改錯的；確認後加上一行總結：
+   `[類別] 採納（已修）／駁回／延後＋一句理由`（類別＝`ios-review` 的 checklist 編號，或發現它的 agent 名稱；第 5 步與 Reviewer 校準要用）——使用者只改錯的；確認後加上一行總結：
    `人工 Code Review：通過（YYYY-MM-DD）｜路線 A/B/C`。A 路線的草稿從 run 的 summary 取。
    沒有 PR 的 repo 寫進 implementation-log。**沒寫裁決紀錄，review 不算完成**——
    簽章或口頭「OK」只證明人看過，裁決紀錄才說得出人判了什麼。
 5. **回寫**（有才寫，沒有就跳過，不要為此建檔）：
    ticket 的 `status` → 功能資料夾的 `coordination/implementation-log.md` →
    第二大腦該功能 MOC 的「近期變更與教訓」。
+   **重複出現的 finding 往下沉**：這次採納的 finding，同一類在這個 repo 的裁決紀錄裡出現過，就不要只修這一次。依序選第一個做得到的：①改架構或型別，讓這種寫法寫不出來 ②加 SwiftLint 自訂規則或 CI 檢查 ③寫進 `ios-review` 的 checklist 或 repo 的 `CLAUDE.md`。做不到就記進完成回報的「刻意沒處理」。同一個問題要靠人 review 第二次，代表該有的檢查還沒建起來。
    <!-- touchpoint: ios-dev-039 kind=engineering -->
 6. **收尾卡**（每次都寫，一行）：追加到你選定的 plan 效益紀錄表（例如 iOS repo 的 docs/plan-log.md；
    你另外有跨 repo 的 workspace 時放在那裡，一份記所有專案）——
@@ -122,6 +123,17 @@
    <!-- touchpoint: ios-dev-064 kind=command -->
 7. **收工**：問使用者要不要跑 Phase 5 `/work-log-writer`。
 
+### Reviewer 校準（每月一次，或累積 10 份裁決紀錄時）
+
+裁決紀錄就是 reviewer 準不準的資料。定期把各 repo 的裁決紀錄依類別統計一次：
+
+- **常被駁回的類別**＝雜訊：修 `ios-review` 那一條的描述，或加進它的 Suppressions
+- **常被採納的類別**：檢查第 5 步有沒有真的往下沉。一直被採納，代表它該變成 lint 或型別，不該靠 review 抓
+- **延後一直累積的類別**：排進 ticket，不要無限延後
+
+改了什麼寫進那個 skill 的 commit message，不另外建檔。
+
+<!-- touchpoint: none -->
 ### 完成回報（宣稱完成時交這一份，人工 Code Review 讀它）
 
 每條 AC 一行，證據強度四選一，不要寫「應該沒問題」：

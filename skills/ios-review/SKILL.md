@@ -44,6 +44,18 @@ git diff origin/<base> --stat
 
 ---
 
+## Step 1.5：這是第幾輪？（收斂規則）
+
+每次修完都會多出新 code，判斷類的 finding 每次跑也不一樣；不設規則，review 永遠不會收斂。同一個 branch 已經 review 過時（對話、PR 描述或 implementation-log 裡有上一輪的輸出，看 `Reviewed:` 那行的 SHA）：
+
+- **第 2 輪起只審新的 diff**：`git diff <上一輪的 SHA>`。上一輪之前就在的 code 不重新挑，除非新改動碰到它
+- **不重複報**：上一輪已經駁回或延後的 finding 不再提；已採納的只確認有沒有修好
+<!-- touchpoint: ios-review-003 kind=engineering -->
+- **第 3 輪之後還有新的 CRITICAL 就停**：不跑第 4 輪，告訴使用者「三輪都還在冒 CRITICAL，問題可能在做法本身」，由使用者決定要不要換做法
+- 找不到上一輪紀錄就當第 1 輪
+
+---
+
 ## Step 2：Scope Drift 與隱性決策偵測
 
 在 review code 品質之前，先確認：**有沒有做超過或少做？替使用者做了哪些沒說出口的決定？**
@@ -89,6 +101,11 @@ git diff origin/<base>
 
 Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具體到 `file:line`，建議修法。
 沒問題的就跳過。只標記真正的問題。
+
+每條 finding 另外標三件事：
+- **類別**：checklist 編號（例如 `1.6`、`2.4`），裁決紀錄之後才統計得出哪一類常被駁回
+- **PRE-EXISTING**：問題所在的 code 在 base 就已經存在，這次 diff 沒有改到它 → 標 `PRE-EXISTING` 另列一區，不擋這次 merge，也不 AUTO-FIX（維持最小 diff），建議另開 task
+- **同類全部列出**：發現一處就用 Grep 找同類寫法，在同一條 finding 列出所有位置，讓作者一次修完，不要一輪抓一個
 
 **兩輪掃描：**
 - **Pass 1 (CRITICAL)：** 最高嚴重度，優先處理
@@ -232,7 +249,7 @@ AUTO-FIX（直接修，不問）:           ASK（需要人類判斷）:
 **經驗法則**：如果修改是機械式的、資深工程師會不經討論直接改，就是 AUTO-FIX。
 如果合理的工程師可能有不同意見，就是 ASK。
 
-CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FIX（較機械式）。Pass 1 的行為語意變更一律 ASK。
+CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FIX（較機械式）。Pass 1 的行為語意變更一律 ASK。PRE-EXISTING 不 AUTO-FIX。
 
 ### 5b：AUTO-FIX
 
@@ -289,13 +306,17 @@ CRITICAL 發現傾向 ASK（風險較高）。INFORMATIONAL 發現傾向 AUTO-FI
 iOS Pre-Landing Review: N issues (X critical, Y informational)
 Branch: <branch-name> → <base-branch>
 Scope: [CLEAN / DRIFT DETECTED]
+Round: <N>｜Reviewed: <HEAD 的 SHA>
 
 **AUTO-FIXED:**
 - [file:line] 問題 → 修法
 
 **NEEDS INPUT:**
-- [SEVERITY] [file:line] 問題描述
+- [SEVERITY][類別] [file:line] 問題描述（同類的其他位置：…）
   修法: 建議修法
+
+**Pre-existing（不擋這次 merge）:**
+- [類別] [file:line] 問題 → 建議另開 task
 
 **Implicit Decisions:**
 - [file:line] 決定了什麼
