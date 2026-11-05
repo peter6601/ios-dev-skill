@@ -82,7 +82,7 @@
 - 這次判定：**<輕／重>**（理由：<情境，或風險三條／規模兩條裡踩到的那一條>）
 - Review 路線：**<B 純 agent（預設）／A 共識（使用者選了加 Codex，或複雜 Bugfix）／C 輕量（很小且風險三條全綠）>**（理由：<為什麼是這條>）
 - 架構結論：**<直接擴充／局部整理／模組邊界>**（開發前的檢查結論；實作中若改變要回寫）
-- 會派的 agent：<把名字列出來，不要寫「依情境裁」；diff 會動到測試檔就加 `test-auditor`，輕重都一樣>
+- 會派的 agent：<把名字列出來，不要寫「依情境裁」；diff 會動到測試檔就加 `test-auditor`，輕重都一樣；有 AC 就加 `spec-auditor`，輕重與三條路線都一樣>
 - 變異測試：<踩到風險三條時寫要改反的 1–3 個關鍵判斷（檔案:函式）；沒踩到寫「不做」>
 - 走 A 或 B 時，三個 specialist（`swiftui-reviewer`／`ux-critique`／`resilience-auditor`）
   一定要跑；走 A 時它們的 JSON 是 `--preflight` 的唯一合法內容
@@ -102,10 +102,11 @@
 - `concurrency-auditor`：Swift 6 合規、**ownership 契約六格**（持有者／生命週期／清理／重入／舊結果失效／isolation）、Combine 邊界
 - `architecture-auditor`：四個量化閘門 ＋ pattern 一致性，對照 §0 架構形狀與 feature PR checklist
 - `test-auditor`：測試品質——上面「測試的硬規則」、Step 5 的挑 case 方法、廣而淺、斷言弱、照錯的程式寫測試、高風險處沒多測、缺互動測試、偷改測試、鏡像實作。**diff 動到測試檔就派，輕重閘門都派**（輕閘門也不省；沒動測試檔就不派）；走 A 時它的 finding 在 `init` 前修掉，不進 `--preflight`
+- `spec-auditor`：需求對照——只拿 AC 與 diff，報漏做、多做、做錯，以及完成回報的 AC 對照對不上的地方，每條引用 AC 原文。**有 AC 就派，輕重閘門、三條路線都派**；報告跟其他 agent 分開列；走 A 時 finding 在 `init` 前修掉，不進 `--preflight`
 
 外加 `review-swarm`（skill，不是 agent）當第四把：regression／安全隱私／測試覆蓋缺口。
 
-情境裁法：情境 1 六個全上（`test-auditor` 不算在六個裡，照上面「動到測試檔就派」另外判）；修正（重）裁掉 `ux-critique`；純畫面重構省 `concurrency-auditor`；
+情境裁法：情境 1 六個全上（`test-auditor`、`spec-auditor` 不算在六個裡，各照上面的條件另外判）；修正（重）裁掉 `ux-critique`；純畫面重構省 `concurrency-auditor`；
 優化必含 `perf-auditor` 改前改後各一次。
 
 ## 誰能改 code：走路線 A 時以 `init` 為界，切成兩段

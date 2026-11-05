@@ -4,7 +4,7 @@
 
 An iOS and SwiftUI development workflow for **Claude Code and Codex**, covering requirements, architecture, implementation, debugging, review, and delivery.
 
-Describe your task in a sentence. `ios-dev` selects the relevant work instructions (skills) and review assistants (agents), presents the workflow, and proceeds after confirmation. This repository includes **12 skills and 10 review agents**. Third-party dependencies are installed separately.
+Describe your task in a sentence. `ios-dev` selects the relevant work instructions (skills) and review assistants (agents), presents the workflow, and proceeds after confirmation. This repository includes **12 skills and 11 review agents**. Third-party dependencies are installed separately.
 
 For a quick overview, browse the [slide deck](https://ios-dev-skill-deck.vercel.app/) (32 slides, Traditional Chinese): the seven scenarios, the pre-build architecture impact check, and the review routes.
 
@@ -25,7 +25,7 @@ For your first task, read **Quick start → Everyday usage → Development workf
 - [Quick start: installation and your first task](#quick-start)
 - [Everyday usage: requests, plans, and tickets](#usage)
 - [Development workflow: planning, implementation, and review](#workflow)
-- [Included tools: 12 skills and 10 agents](#toolkit)
+- [Included tools: 12 skills and 11 agents](#toolkit)
 - [Configuration and maintenance](#configuration)
 - [Optional integrations](#extensions)
 - [Troubleshooting](#faq)
@@ -418,7 +418,7 @@ Improve the experience, edge cases, and protection around destructive operations
 | [localize-strings](skills/localize-strings/SKILL.md) | Moves hard-coded strings into a String Catalog |
 | [careful-ios](skills/careful-ios/SKILL.md) | Checks destructive operations; platform behavior is described below |
 
-### 10 review agents
+### 11 review agents
 
 #### Interface and user experience
 
@@ -448,6 +448,14 @@ Runs whenever the diff touches test files, at either review depth.
 |---|---|
 | [test-auditor](agents/test-auditor.md) | Rewritten existing tests, tests that mirror the implementation, weak assertions, duplicated equivalence classes, and missing high-risk or interaction cases |
 
+#### Spec fidelity
+
+Runs whenever acceptance criteria exist, at either review depth and on every review route. Its report stays separate from the other agents.
+
+| Agent | Main focus |
+|---|---|
+| [spec-auditor](agents/spec-auditor.md) | Missing or partial requirements, unrequested behavior (including Out of Scope), requirements implemented wrongly, and completion-report claims that do not match; every finding quotes the acceptance criteria |
+
 #### Specialized analysis when needed
 
 Provide the relevant evidence when investigating traces, builds, or submission readiness.
@@ -472,6 +480,7 @@ For a general code review, start with **files or a feature scope**. The followin
 | [concurrency-auditor](agents/concurrency-auditor.md) | Scope and async ownership contracts |
 | [perf-auditor](agents/perf-auditor.md) | Scope; include the baseline report for optimization work |
 | [test-auditor](agents/test-auditor.md) | Changed test files, the matching acceptance criteria, and any existing tests that were modified |
+| [spec-auditor](agents/spec-auditor.md) | The acceptance-criteria source (ticket, plan, design doc, or RD spec section), the diff range, and ticket IDs; optionally the completion report |
 | [trace-analyzer](agents/trace-analyzer.md) | `.trace` path and symptoms; optionally source code paths |
 | [build-analyzer](agents/build-analyzer.md) | Project and scheme, or an existing build log |
 | [store-preflight-auditor](agents/store-preflight-auditor.md) | Project root; optionally app category and store copy |
@@ -871,7 +880,7 @@ ios-dev-skill/
 ├── install.sh                 # Installation, dependency checks, removal
 ├── skills/                    # 12 skills with references, scripts, templates
 │   └── ios-dev/references/    # Routing, architecture checks, handoffs, plans
-├── agents/                    # 10 review agent sources
+├── agents/                    # 11 review agent sources
 ├── scripts/                   # Codex agent conversion and tests
 ├── docs/
 │   ├── design/                # Design documents for this toolset

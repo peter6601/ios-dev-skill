@@ -4,7 +4,7 @@
 
 給 **Claude Code 與 Codex** 的 iOS／SwiftUI 開發工作流：從需求釐清、架構規劃，到實作、除錯、審查與交付。
 
-用一句話描述需求，`ios-dev` 會依任務挑選工作指引（skill）與審查助手（agent），先列出流程，再依確認結果執行。本專案內含 **12 個 skill、10 個審查 agent**；第三方相依工具需另外安裝。
+用一句話描述需求，`ios-dev` 會依任務挑選工作指引（skill）與審查助手（agent），先列出流程，再依確認結果執行。本專案內含 **12 個 skill、11 個審查 agent**；第三方相依工具需另外安裝。
 
 想先看整體概念，可以翻[簡報版介紹](https://ios-dev-skill-deck.vercel.app/)：32 頁走完七種情境、開工前的架構影響檢查與審查路線，瀏覽器直接開。
 
@@ -23,7 +23,7 @@
 - [快速開始：安裝與第一個任務](#quick-start)
 - [日常使用：怎麼描述需求與接續工作](#usage)
 - [使用流程：規劃、實作與審查](#workflow)
-- [內含工具：12 個 skill、10 個 agent](#toolkit)
+- [內含工具：12 個 skill、11 個 agent](#toolkit)
 - [設定與維護：平台差異、更新與移除](#configuration)
 - [擴充套件](#extensions)
 - [常見問題](#faq)
@@ -409,7 +409,7 @@ A 路線使用 `approve-code`；B、C 由使用者閱讀 diff 後確認。依本
 | [localize-strings](skills/localize-strings/SKILL.md) | 將寫死的字串整理到 String Catalog |
 | [careful-ios](skills/careful-ios/SKILL.md) | 檢查破壞性操作；平台差異見下方設定 |
 
-### 10 個審查 agent
+### 11 個審查 agent
 
 #### 介面與使用體驗
 
@@ -439,6 +439,14 @@ A 路線使用 `approve-code`；B、C 由使用者閱讀 diff 後確認。依本
 |---|---|
 | [test-auditor](agents/test-auditor.md) | 偷改既有測試、鏡像實作、斷言弱、同一等價類重複、高風險處與互動案例沒測 |
 
+#### 需求對照
+
+有 AC 就啟動，不分輕重、不分 review 路線。報告跟其他 agent 分開列。
+
+| Agent | 主要檢查 |
+|---|---|
+| [spec-auditor](agents/spec-auditor.md) | 漏做或只做一半、多做（含 Out of Scope）、做了但做錯，以及完成回報的 AC 對照對不上的地方；每條引用 AC 原文 |
+
 #### 需要時啟動的專項分析
 
 有 trace、build 問題或送審需求時，再提供對應資料進行分析。
@@ -463,6 +471,7 @@ A 路線使用 `approve-code`；B、C 由使用者閱讀 diff 後確認。依本
 | [concurrency-auditor](agents/concurrency-auditor.md) | 範圍與非同步契約 |
 | [perf-auditor](agents/perf-auditor.md) | 範圍；優化時附改前報告 |
 | [test-auditor](agents/test-auditor.md) | 這次動到的測試檔、對應的 AC、被改動的既有測試 |
+| [spec-auditor](agents/spec-auditor.md) | AC 來源（ticket、計畫、Design Doc 或 rd-spec 段落）、diff 範圍、ticket 編號；可附完成回報 |
 | [trace-analyzer](agents/trace-analyzer.md) | `.trace` 路徑、症狀；可附原始碼路徑 |
 | [build-analyzer](agents/build-analyzer.md) | 專案與 scheme，或現有 build log |
 | [store-preflight-auditor](agents/store-preflight-auditor.md) | 專案根目錄；可附 app 類型與商店文案 |
@@ -860,7 +869,7 @@ ios-dev-skill/
 ├── install.sh                 # 安裝、相依檢查與移除
 ├── skills/                    # 12 個 skill 及 references／scripts／templates
 │   └── ios-dev/references/    # 路由、架構檢查、交棒清單與計畫格式
-├── agents/                    # 10 個審查 agent 原稿
+├── agents/                    # 11 個審查 agent 原稿
 ├── scripts/                   # Codex agent 轉換與測試
 ├── docs/
 │   ├── design/                # 工具組本身的設計文件

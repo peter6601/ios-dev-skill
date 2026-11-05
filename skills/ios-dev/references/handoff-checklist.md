@@ -73,6 +73,7 @@
    重＝先派閘門 agent ＋ `review-swarm` → 主 session 一次統一修復 → `/ios-polish` → verification。
    **diff 動到測試檔就加派 `test-auditor`（唯讀），輕重都派**：輕時跟該情境的 auditor 一起跑、findings 併入
    `ios-review` 前修掉；重時跟閘門 agent 同一批發出、併入統一修復。
+   **有 AC 就加派 `spec-auditor`（唯讀），輕重、三條路線都派**：只給它 AC 來源、diff 範圍與 ticket 編號，不給實作過程的對話。派之前實作者先填好完成回報的 AC 對照，路徑一起給它（它會自己判完才讀）。它的 findings 跟其他 agent 分開列，裁決紀錄的類別寫 `spec-auditor`；輕時併入 `ios-review` 前修掉，重時併入統一修復。
    **變異測試（只在踩到風險三條時做）**：統一修復之後、`/ios-polish` 之前，派一個**可寫的** subagent
    在**獨立 git worktree** 裡把 1–3 個關鍵判斷改反（`>=` 改 `>`、授權檢查回 `true`、
    寫入前的驗證拿掉），跑對應測試，確認會變紅。worktree 從目前 HEAD 開，再套上本次未 commit 的 diff
@@ -86,7 +87,7 @@
      時才降 B，降級要寫進 PR 描述。**最後**派三個 specialist 各回一段 fenced JSON → `/consensus-review --profile ios --preflight`
      （Codex 首輪 → 合併 → 單一 Claude 統一修復 → re-review，中途不停）。
      `--preflight` 對 `--profile ios` **必填**，且只認 `swiftui`／`ux`／`resilience` 三個 category——
-     `ios-review`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`test-auditor`、`review-swarm`
+     `ios-review`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`test-auditor`、`spec-auditor`、`review-swarm`
      的 findings 一律在 `init` 前就修掉，餵進去會被拒、連 run 都不會建立。
    - **B 純 agent**：三個 specialist 唯讀跑完 → 主 session 一次統一修復 → `/ios-polish` →
      `/verification-before-completion`。不呼叫 `ai-review`。
@@ -144,6 +145,7 @@
 ### AC 對照
 - AC1 <一句話> → <證據位置：測試名稱／檔案:行／截圖路徑／指令輸出> → 已實測｜已讀取｜推論｜未查
 - AC2 …
+- spec-auditor 交叉檢查：<無 finding｜漏做 n／多做 n／做錯 n／回報對不上 n，見裁決紀錄>
 
 ### 替你做的決定（需求沒寫、實作時自己選的）
 - <決定了什麼> → <理由> → <檔案:行；有行內註解就註明>
