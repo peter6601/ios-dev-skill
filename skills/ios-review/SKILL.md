@@ -180,6 +180,7 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 #### 2.2 API / Networking
 
 - **Error 未處理**：`try?` 吞掉 error 沒有 logging 或 fallback；`catch { }` 空 block；**使用者操作觸發的錯誤只 `print`／log 也算吞掉**——要在 UI 上讓使用者知道（alert、inline 訊息）
+  <!-- touchpoint: none -->
 - **搜尋比對不對**：使用者輸入的搜尋篩選用 `contains()` 或 `localizedCaseInsensitiveContains()`，應改用 `localizedStandardContains()`（不分大小寫與重音，並照使用者的語系比對）
 - **Missing Timeout**：`URLSession` request 沒有設定 `timeoutInterval`
 - **Codable Fragility**：API 可能缺欄位或回 `null` 的屬性宣告成非 optional（整筆 decode 失敗）；對應 server 字串的 enum 沒有 unknown fallback（server 多一個值就整筆失敗）。註：JSON 多出來的未知欄位 `JSONDecoder` 預設會忽略，**不是**問題
@@ -218,6 +219,7 @@ Review `git diff origin/<base>` 的內容，依照以下 checklist 檢查。具�
 #### 2.7 Naming & Swift Style
 
 - **命名不一致**：同概念在不同地方用不同名稱（如 `userId` vs `userID` vs `user_id`）
+  <!-- touchpoint: none -->
 - **Force Unwrap**：`!` 用在真的可能是 nil 的值（使用者輸入、網路或檔案資料）。常數字串建 URL 這類不可能失敗的，改成 `guard let … else { fatalError("原因") }` 讓 crash 有可讀的原因；**不要一律改 optional chain**——那會把 crash 變成默默不做事，bug 反而藏起來
 - **Magic Number**：裸數字散落在多處，應該用 named constant
 - **Overlong Function**：單一 function 超過 50 行，應該拆分

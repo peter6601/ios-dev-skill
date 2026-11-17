@@ -14,6 +14,7 @@
 
 0. **先判是不是開發需求（no-match 出口）**：七情境只收「要改 app 的程式碼、畫面或專案設定」的需求。下面三種**不出確認畫面、不認情境、不動 repo**，回一段話就結束：
    - **問觀念、問差異、要解釋**（「@Observable 跟 ObservableObject 差在哪」）→ 直接回答。
+     <!-- touchpoint: ios-dev-067 kind=command -->
    - **有專門 skill 的 iOS 周邊工作** → 一句話說明為什麼不走七情境，印出該指令請使用者改用：
      - build 失敗、連結錯誤（`Undefined symbol`）、編譯慢 → `/xcode-build-fixer`
      - 送審前檢查會不會被拒 → 第三方 `app-store-preflight-skills`，或派本 repo 附的 `store-preflight-auditor` agent
@@ -334,6 +335,7 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 **本 repo 不含的 skill**（作者自用未公開，或流程會直接轉介的第三方）——表裡仍保留名字，沒裝就走替代：
 
 <!-- touchpoint: ios-dev-062 kind=command -->
+<!-- touchpoint: ios-dev-068 kind=engineering -->
 | 引用的名字 | 它在流程裡的角色 | 沒裝時的替代 |
 |---|---|---|
 | `second-brain` | Phase 6 維護期知識庫（功能 MOC） | 跳過；「有第二大腦才讀」「有才回寫」本來就是條件式 |
