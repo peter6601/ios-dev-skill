@@ -319,6 +319,8 @@ This describes the developer-facing `ios-dev` workflow. For Vibe's product quest
 
 **Planning produces documents; implementation changes code.** Module planning is triggered by ownership boundaries, not ticket count. UI work involving state, navigation, persistence, or async behavior is not presentation-only work.
 
+Requests that are not development work skip the seven task types. Conceptual questions get a direct answer; adjacent work such as build failures, App Store preflight checks, string extraction, or reviewing an existing PR is pointed to the matching skill or agent, without a confirmation screen.
+
 ### Before implementation: assess architecture impact
 
 Identify who owns the current behavior, where the new requirement belongs, whether state is duplicated, and who owns async work. The conclusion is **extend directly**, **refactor locally**, or **define module boundaries**.

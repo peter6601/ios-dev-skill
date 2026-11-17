@@ -39,7 +39,7 @@ exit 0＝沒有 🔴（🟡 不擋，加 `--strict` 才擋）；exit 1＝有 �
 
 ### A. Ticket frontmatter 完整性
 - [ ] 每個 `tags: [phase-ticket]` 檔必有 `ticket` / `stage` / `type` / `status` / `estimate`
-- [ ] `status` ∈ {backlog, in-progress, review, done, blocked}
+- [ ] `status` ∈ {backlog, in-progress, review, done, blocked, wontfix}（wontfix＝作廢：檔案保留，檔頭註明原因）
 - [ ] `type` ∈ {Foundation, Prefactor, Behavior}；**舊值 {Service, UI, Delta, Integration} 照收**
       （2026-09-20 前產出的功能資料夾不遷移）
 - [ ] `type` 是新值的 ticket 另外必有 `layers`（⊆ {Service, UI, Delta, Integration}）、`covers`、`deps`；

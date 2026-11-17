@@ -226,7 +226,7 @@ AI 做完一個功能、自我審查完就排隊等人審，接著做下一個�
   Codex 不可用＝`ai-review` 回 529、額度用完，或 context 過大導致輸出退化時才降 B，PR 描述註明降級）。
 - crash／regression／flaky 在假設階段起 `bug-hunt-swarm`。
 - 風險三條＋規模兩條定輕重（§3）；重時派 5 個 agent（裁掉 `ux-critique`）。
-- 修完回寫：issue／ticket 狀態、第二大腦「近期變更與教訓」（這是維護期最容易漏的一步）。
+- 修完回寫：在 issue 留言修正摘要與 QA 驗證步驟，由 QA 關（開發端不 close issue）；ticket 狀態；第二大腦「近期變更與教訓」（這是維護期最容易漏的一步）。
 
 ## §5 優化
 

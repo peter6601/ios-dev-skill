@@ -42,7 +42,7 @@ from urllib.parse import unquote
 NEW_TYPES = {"Foundation": "F", "Prefactor": "P", "Behavior": "B"}
 LEGACY_TYPES = {"Service", "UI", "Delta", "Integration"}
 LAYERS = {"Service", "UI", "Delta", "Integration"}
-STATUSES = {"backlog", "in-progress", "review", "done", "blocked"}
+STATUSES = {"backlog", "in-progress", "review", "done", "blocked", "wontfix"}  # wontfix = 作廢（檔案保留，檔頭註明原因）
 REQUIRED = ("ticket", "stage", "type", "status", "estimate")
 REQUIRED_NEW = ("layers", "covers", "deps")
 SECTIONS = ("Refs", "Files", "架構約束", "Tasks", "Acceptance Criteria", "Verification")
