@@ -84,7 +84,7 @@
 - **載入**：功能用專案 framework skill＋`swift-concurrency`；畫面用 `swiftui-specialist`＋`swiftui-ui-patterns`；兩者則全部載入。
 - **審查**：預設輕，風險升級依 §3。畫面先派 `architecture-auditor`；功能符合 §4 concurrency 訊號時先派 `concurrency-auditor`。
   <!-- touchpoint: none -->
-- **詢問與提醒**：套用下方「畫面共通檢查」。
+- **詢問與提醒**：套用下方「畫面共通檢查」。內容軸含畫面時，完成時提醒跑 `/duo-verify`（§10）。
 
 ### 情境 3：純呈現畫面
 
@@ -94,7 +94,7 @@
 - **載入**：`swiftui-specialist`＋`swiftui-ui-patterns`。
 - **審查**：預設輕；先派 `ux-critique`＋`architecture-auditor`，其餘依 §3。
   <!-- touchpoint: none -->
-- **詢問與提醒**：套用下方「畫面共通檢查」。收尾見 `handoff-checklist.md` §3。
+- **詢問與提醒**：套用下方「畫面共通檢查」。完成時提醒跑 `/duo-verify`（§10）。收尾見 `handoff-checklist.md` §3。
 
 <!-- touchpoint: ios-dev-046 kind=engineering -->
 **畫面共通檢查（情境 2、3）**：body >80 行，問「先用 `swiftui-view-refactor` 拆分，還是直接加？」；已有 ≥1 個 `isPresented` 時不問，確認畫面註明「新 modal 併進 `Identifiable` enum＋`.sheet(item:)`，不新增 Bool」。
@@ -328,6 +328,7 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 - **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`ios-accessibility`（dadederk）、`asc-*`
 - **vendor**（`~/.claude/vendor`，**不要**放進 skills 目錄，只給 agent 按路徑讀、不會自動觸發；`git clone https://github.com/twostraws/swiftui-agent-skill ~/.claude/vendor/twostraws-swiftui-agent-skill` 安裝、`git pull` 更新）：`swiftui-pro`（twostraws，app 主 target ≥ iOS 17 時由 `swiftui-reviewer` 讀，每條建議先過 agent 裡的版本表；放 skills 會在任何專案自動觸發，而它預設新專案是 iOS 26；沒裝就跳過）
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
+- **iPhone Duo 驗證**（選配）：`duo-verify`，[peter6601/duo-verify-skill](https://github.com/peter6601/duo-verify-skill)
   <!-- touchpoint: ios-dev-061 kind=command -->
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`、`superpowers:using-git-worktrees`（非同步審核模式開 worktree）；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
 - **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）
@@ -360,6 +361,7 @@ MCP 不是 skill，不在本節的安裝檢查範圍（user 範圍，`claude mcp
 | `architecture-auditor` | **第一段有意義的實作完成時**＋最終收尾 | §0／PR checklist、上一次基線 | 契約有沒有被守住（數字只是線索）|
 | `concurrency-auditor` | 同上，有 async 工作時 | ownership 契約六格 | 實作有沒有破壞契約 |
 | `swiftui-reviewer` 的第二套標準 `swiftui-pro` | Phase 3，**app 主 target ≥ iOS 17**，建議先過版本表 | 要審的 View 檔 | 依檔案分組、附行號與改前改後的 finding；專案結構類主張不當 finding |
+| `duo-verify` | **情境 3 純畫面、情境 2 內容軸含畫面**：Phase 3 跑完、宣稱完成前，**提醒使用者跑，不自動跑**（要開著 iPhone Duo 模擬器、登入測試帳號）。動到 safe area、`ignoresSafeArea`、全螢幕、置中按鈕或底部固定列時，提醒要講明為什麼這次特別需要 | 預擬好的三句描述：畫面怎麼走到、應該長怎樣、主要按鈕與點了的預期 | 姿態 × 旋轉矩陣報告與 FAIL 截圖；附進完成回報與 PR 描述。有 FAIL 就修完再跑；使用者決定不跑時，完成回報寫「Duo 未驗證」 |
 | `ios-accessibility` | `resilience-auditor`、`ios-harden` 處理無障礙時 | 畫面檔、deployment target | 無障礙 finding 與「需實測清單」（VoiceOver 以外也涵蓋 Voice Control、Switch Control、Full Keyboard Access）|
 
 兩條規則：

@@ -43,6 +43,8 @@ TITLE_REF_RE = re.compile(rf"`(?:references/)?({NAME}\.md)`\s*的?\s*「([^」]+
 BARE_MD_RE = re.compile(rf"^{NAME}\.md$")
 ASC_COUNT_RE = re.compile(r"`asc-\*`\s*(\d+)\s*個")
 
+# Optional notes workspace (the one ai-review writes knowledge back to); `AI-Skills/` paths may live there.
+VAULT = os.path.expanduser(os.environ.get("AI_REVIEW_WORKSPACE", "")) or None
 PATH_PREFIXES = ("references/", "scripts/", "skills/", "agents/", "AI-Skills/")
 PLACEHOLDER = re.compile(r"[<*\[]|YYYY|路徑")
 # a slash command written bare inside a fenced block (router §8's examples live there)
@@ -98,7 +100,13 @@ def build_inventory(workspace, claude_home):
                vendor={os.path.basename(os.path.dirname(f))
                        for f in glob.glob(os.path.join(claude_home, "vendor", "*", "*", "SKILL.md"))})
 
-    for d in glob.glob(os.path.join(workspace, "skills", "*")):
+    # flat `skills/<name>` (this repo), or `<category>/<name>` and `published/<repo>/skills/<name>`
+    # (a skills folder that groups skills by category and keeps cloned repos under published/)
+    owned = (glob.glob(os.path.join(workspace, "skills", "*")) + glob.glob(os.path.join(workspace, "*", "*"))
+             + glob.glob(os.path.join(workspace, "published", "*", "skills", "*")))
+    for d in owned:
+        if os.path.basename(os.path.dirname(d)) == "vendor":
+            continue
         if has_skill(d) and not os.path.basename(d).startswith("_"):
             inv["workspace"].add(os.path.basename(d))
 
@@ -381,7 +389,8 @@ def check_paths(docs, skill_dir, workspace, claude_home, inv, rep):
                 continue
             head = tok.split("/", 1)[0]
             if tok.startswith(PATH_PREFIXES):
-                bases = [skill_dir, workspace]
+                # `AI-Skills/` notes may live in the notes workspace, outside the skills folder
+                bases = [b for b in (skill_dir, workspace, VAULT) if b]
             elif "/" in tok and head in inv["home"]:
                 bases = [os.path.join(claude_home, "skills")]
             else:
