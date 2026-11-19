@@ -608,6 +608,8 @@ Required dependencies are listed in [Quick start](#quick-start). Add the tools b
 
 Provides `swiftui-specialist` and `swiftui-whats-new-27` for SwiftUI implementation guidance.
 
+These two are mirrors of skills Apple wrote. With Claude Code and Xcode 27, Xcode exports the `xcode-integration` plugin, which ships the latest version of both plus skills for App Intents, multi-window and iPhone Duo layouts, document-based apps, Swift Testing migration, and three Accessibility Nutrition Label audits. When that plugin is present `/ios-dev` uses it first (see `skills/ios-dev/references/skill-router.md` §9); the mirror below is only a fallback for Codex or Xcode versions before 27.
+
 ```bash
 npx skills add superagents-lab/xcode27-skills \
   --skill swiftui-specialist \

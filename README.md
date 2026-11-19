@@ -597,6 +597,8 @@ Skill 使用連結，更新後會讀到新內容；**Codex agent 是產生的檔
 
 提供 `swiftui-specialist` 與 `swiftui-whats-new-27`，作為 SwiftUI 實作指引。
 
+這兩個是 Apple 寫的 skill 的鏡像。Claude Code 搭配 Xcode 27 時，Xcode 會匯出 `xcode-integration` plugin，裡面就有這兩個的最新版，另外還有 App Intents、多視窗與 iPhone Duo、document-based app、Swift Testing 遷移、三項 Accessibility Nutrition Label 稽核等 skill。有這個 plugin 時 `/ios-dev` 會優先用它（見 `skills/ios-dev/references/skill-router.md` §9），下面的鏡像只在 Codex 或 Xcode 27 以前當備援。
+
 ```bash
 npx skills add superagents-lab/xcode27-skills \
   --skill swiftui-specialist \

@@ -12,7 +12,9 @@ tools: Read, Grep, Glob
 2. `~/.claude/skills/ios-accessibility/SKILL.md` — **Accessibility 的主要標準**（Daniel Devesa）。必讀「Agent Behavior Contract」「Anti-Patterns to Avoid」「Project Settings Intake」三段；再依範圍讀 `references/voiceover-swiftui.md`、`references/dynamic-type-swiftui.md`（有 UIKit 的部分改讀 `-uikit` 版）、`references/good-practices.md`；「需實測清單」照 `references/testing-manual.md`
 3. `~/.claude/skills/swiftui-expert-skill/references/accessibility-patterns.md` — SwiftUI 寫法補充；跟第 2 項衝突時以第 2 項為準
 
-第 2 項沒裝（路徑不存在）時，改以第 3 項為主，並在報告開頭註明「ios-accessibility 未安裝，無障礙只照 swiftui-expert-skill 審」。
+4. Apple 的三份 Accessibility Nutrition Label 稽核準則（Xcode plugin 附帶，路徑帶 Xcode build 號。用 Glob 找 `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/*/claude/skills/accessibility-*-specialist/SKILL.md`，有多個 build 號時用最新的；plugin cache 底下的 `skills` 是指向這裡的 symlink，Glob 不會跟進去，所以不要從 cache 找）：`accessibility-voiceover-specialist`、`accessibility-dynamic-type-specialist`、`accessibility-sufficient-contrast-specialist`。各讀 SKILL.md，SwiftUI 範圍再讀各自的 `references/swiftui-*.md`。這三項另外給 PASS／FAIL 判定（對比度在顏色要到執行時才決定時給 NEEDS VERIFICATION），寫在報告的「Nutrition Label 判定」段；細項 finding 照常併進下面的 Findings。跟第 2 項衝突時：判定標示能不能過以第 4 項為準，寫法與實測清單以第 2 項為準
+
+第 2 項沒裝（路徑不存在）時，改以第 3 項為主，並在報告開頭註明「ios-accessibility 未安裝，無障礙只照 swiftui-expert-skill 審」。第 4 項找不到（Codex、沒有 Xcode 27）時跳過「Nutrition Label 判定」段，並在報告開頭註明「Xcode plugin 未安裝，沒有 Nutrition Label 判定」。
 
 先確認 app 主 target 的 deployment target（`*.pbxproj` 的 `IPHONEOS_DEPLOYMENT_TARGET`）：建議的 accessibility API 要在這個版本可用，版本對照見 `ios-accessibility` 的 Project Settings Intake。
 
@@ -53,6 +55,10 @@ tools: Read, Grep, Glob
 
 ### 🔵 Info
 - ...
+
+## Nutrition Label 判定（第 4 項有裝才寫）
+| 項目 | 判定 | 主要原因 |
+（VoiceOver／Dynamic Type／Sufficient Contrast）
 
 ## 邊界狀態覆蓋表
 | 狀態 | 有無處理 | 位置/缺口 |

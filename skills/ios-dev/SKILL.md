@@ -287,7 +287,7 @@ push、merge 或建立 PR。這條規則綁的是「人看過」，不是綁那�
 > - 先執行 `/consensus-plan` 對這份文件做唯讀審查（lens 照 Step 7 的表綁），等 findings 出來。
 > - 由使用者讀 findings、自己改文件；需要再跑一輪就用 `ai-review re-review`。
 > - 文件收斂後，才執行 `/subagent-driven-development` 開始實作（每個 Task 一個 agent）。
-> - 實作 SwiftUI 時：寫用 `swiftui-specialist`（Apple）、審用 `swiftui-expert-skill`（先查 latest-apis.md 避免過時 API）；架構層以 Step 4 產出的 §0 為準
+> - 實作 SwiftUI 時：寫用 `swiftui-specialist`（Apple，Xcode plugin 版優先，見 router §9）、審用 `swiftui-expert-skill`（先查 latest-apis.md 避免過時 API）；架構層以 Step 4 產出的 §0 為準
 > - 遇到 bug 時呼叫 `/ios-investigate`；效能問題先 `perf-auditor`，需要證據再用 `trace-analyzer` 錄 trace
 > - **不要等所有 Task 做完才驗架構**：照計畫的「中途架構檢查點」，在每一段完整行為走通時就對照架構約束段驗一次。發現偏離先判是哪一種——**實作違約就修實作**並重驗（不准改契約遷就程式碼）；**契約確實不適用**才寫下理由、更新設計決策與測試後繼續。
 > - 所有 Task 完成後，執行 Phase 3 品質閘門（輕／重照 router §3，收尾照 handoff-checklist）。

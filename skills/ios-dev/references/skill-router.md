@@ -81,7 +81,7 @@
 ### 情境 2：小功能
 
 - **流程**：Step 1 → Step 2（有第二大腦才讀）→ Step 3（一輪訪談）→ Step 5 test cases → Step 6 短 plan → Step 7 `/consensus-plan` → `/subagent-driven-development`。留在 `/ios-dev` Step 1–8；架構檢查依 §0。
-- **載入**：功能用專案 framework skill＋`swift-concurrency`；畫面用 `swiftui-specialist`＋`swiftui-ui-patterns`；兩者則全部載入。
+- **載入**：功能用專案 framework skill＋`swift-concurrency`；畫面用 `swiftui-specialist`＋`swiftui-ui-patterns`；兩者則全部載入。命中 §4 Apple framework 訊號時另加對應 skill。
 - **審查**：預設輕，風險升級依 §3。畫面先派 `architecture-auditor`；功能符合 §4 concurrency 訊號時先派 `concurrency-auditor`。
   <!-- touchpoint: none -->
 - **詢問與提醒**：套用下方「畫面共通檢查」。內容軸含畫面時，完成時提醒跑 `/duo-verify`（§10）。
@@ -91,7 +91,7 @@
 僅限版面、樣式、動畫。涉及驗證、持久化、連線、ViewModel 狀態、導航或 async，改走小功能或中型路線。
 
 - **流程**：答架構五問的第 3 問（是否新增第二份真相或互斥旗標）→ Phase 2 → `ios-polish`（宣稱完成前用 Xcode MCP `RenderPreview` 附改前改後 Preview 截圖當證據，§11）。
-- **載入**：`swiftui-specialist`＋`swiftui-ui-patterns`。
+- **載入**：`swiftui-specialist`＋`swiftui-ui-patterns`；命中 §4 Apple framework 訊號（多半是 `app-resizability`、`swiftui-whats-new-27`）時另加對應 skill。
 - **審查**：預設輕；先派 `ux-critique`＋`architecture-auditor`，其餘依 §3。
   <!-- touchpoint: none -->
 - **詢問與提醒**：套用下方「畫面共通檢查」。完成時提醒跑 `/duo-verify`（§10）。收尾見 `handoff-checklist.md` §3。
@@ -119,7 +119,7 @@
 
 - **流程**：依 `architecture-impact-check.md` 的「既有功能的架構重構路徑」：`architecture-auditor` 出基線 → 責任地圖／狀態與工作清單／行為不變條件＋補測試／目標邊界與遷移順序 → `swift-architecture-skill` Deep Refactor Mode 定目標並記 ADR → 沿完整行為分段修改 → 測試前後通過 → `architecture-auditor` 對比。
 - **規劃**：涉及多個 state owner、presentation 流程或 async 生命週期，交 `phase-workflow` 重構規劃模式。
-- **載入**：`swift-architecture-skill`；畫面加 `swiftui-view-refactor`，功能加 `swift-concurrency`，>3 檔使用 `orchestrate-batch-refactor` 前先問是否平行。
+- **載入**：`swift-architecture-skill`；畫面加 `swiftui-view-refactor`，功能加 `swift-concurrency`，>3 檔使用 `orchestrate-batch-refactor` 前先問是否平行。重構範圍包含把 XCTest 改成 Swift Testing 時加 `modernize-tests`；這段要跟行為修改分開提交，`test-auditor` 才分得出是斷言被改還是只換了寫法。
 - **審查**：走重；純畫面重構省略 `concurrency-auditor`。
   <!-- touchpoint: ios-dev-048 kind=engineering -->
 - **詢問**：>3 檔是否平行，以及既有測試是否足以作為行為快照。收尾見 `handoff-checklist.md` §6。
@@ -232,6 +232,12 @@ Step 0 先列出路線，再用 §6 選項確認是否加 Codex。
   <!-- touchpoint: ios-dev-055 kind=engineering -->
 - 兩邊都有 → 兩者；都沒有 → 問一題（選項：功能／畫面／兩者）
 - **concurrency 訊號**（決定要不要載 `swift-concurrency`／派 `concurrency-auditor`）：描述提到 task／actor／data race／Sendable，**或**症狀是 crash 加間歇（「有時」「偶爾」「flaky」），**或**範圍在連線／stream／Combine 層
+- **Apple framework 訊號**（情境 1、2、3、6、7 都適用，命中就加載對應的 Xcode plugin skill，見 §9；沒裝就跳過、寫進提醒行）：
+  - 描述提到 Siri、捷徑、Spotlight、Widget 互動，或範圍內有 `AppIntent`、`AppEntity`、`AppShortcutsProvider` → `app-intents-specialist`；要用 iOS 26／27 新增的 App Intents API 時再加 `app-intents-whats-new-27`
+  - 範圍內有 `DocumentGroup`、`FileDocument`、`ReferenceFileDocument`，或描述是「開檔、存檔、編輯文件」→ `building-document-based-swiftui-applications`
+  - 描述提到分割畫面、Stage Manager、多視窗、iPhone Duo、視窗大小改變，或範圍內有 `UIScreen.main`、`UIRequiresFullScreen`、`supportedInterfaceOrientations` → `app-resizability`
+  - deployment target ≥ iOS 27，或描述要用 iOS 27 才有的 SwiftUI API → 加 `swiftui-whats-new-27`
+  - 要把 XCTest 改成 Swift Testing，或新增的測試檔要寫 Swift Testing → `modernize-tests`
 
 ## 5. 門檻（數字寫死，改要改這裡）
 
@@ -325,13 +331,14 @@ agent：Claude 查 `~/.claude/agents/<name>.md`，Codex 查 `~/.codex/agents/<na
 `swiftui-expert-skill` 缺時 6 個 agent 的必讀檔不存在，先裝再跑 Phase 3。
 
 - **本 repo 附的**：skill `ios-dev`、`phase-workflow`、`office-hours`、`ios-investigate`、`ios-review`、`ios-polish`、`ios-distill`、`ios-critique`、`ios-harden`、`careful-ios`、`localize-strings`；agent `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`trace-analyzer`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`、`store-preflight-auditor`、`build-analyzer`、`test-auditor`、`spec-auditor`
-- **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-specialist`、`swiftui-whats-new-27`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`ios-accessibility`（dadederk）、`asc-*`
+- **第三方 skill**（`npx skills add … -g` 安裝：Claude 加 `-a claude-code`，Codex 加 `-a codex`；`npx skills update -g` 更新。Codex 上 `swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit` 改由官方 Build iOS Apps plugin 提供）：`swift-architecture-skill`、`swift-concurrency`、`swiftui-ui-patterns`、`swiftui-view-refactor`、`swiftui-performance-audit`、`bug-hunt-swarm`、`review-swarm`、`orchestrate-batch-refactor`、`swiftui-expert-skill`、`app-store-preflight-skills`、`xcode-project-analyzer`、`xcode-compilation-analyzer`、`spm-build-analysis`、`xcode-build-fixer`（前三個是 `build-analyzer` 讀的，第四個只有真的要修 build 才需要）、`ios-accessibility`（dadederk）、`asc-*`
 - **vendor**（`~/.claude/vendor`，**不要**放進 skills 目錄，只給 agent 按路徑讀、不會自動觸發；`git clone https://github.com/twostraws/swiftui-agent-skill ~/.claude/vendor/twostraws-swiftui-agent-skill` 安裝、`git pull` 更新）：`swiftui-pro`（twostraws，app 主 target ≥ iOS 17 時由 `swiftui-reviewer` 讀，每條建議先過 agent 裡的版本表；放 skills 會在任何專案自動觸發，而它預設新專案是 iOS 26；沒裝就跳過）
 - **共識審查**（`consensus-plan`、`consensus-review` 與 `ai-review` CLI）：[peter6601/ai-review](https://github.com/peter6601/ai-review)
 - **iPhone Duo 驗證**（選配）：`duo-verify`，[peter6601/duo-verify-skill](https://github.com/peter6601/duo-verify-skill)
   <!-- touchpoint: ios-dev-061 kind=command -->
 - **plugin**：`superpowers:subagent-driven-development`、`superpowers:writing-plans`、`superpowers:test-driven-development`、`superpowers:verification-before-completion`、`superpowers:using-git-worktrees`（非同步審核模式開 worktree）；mattpocock 的 `/grill-with-docs`、`/grill-me`、`setup-matt-pocock-skills` 是 **user-invoked**（只能使用者打字觸發，模型呼叫不到），模型端能呼叫的只有 `mattpocock-skills:grilling`。Step 3 要 grill 時：印出「請輸入 `/grill-with-docs`」等使用者；使用者不在時用 `mattpocock-skills:grilling` 頂替，但它不會長出 `CONTEXT.md`／`docs/adr/`，要自己補。**沒裝 mattpocock plugin**（`grilling` 也在同一個 plugin 裡，一樣沒有）：改用 `superpowers:brainstorming` 做需求訪談，同樣自己補 `CONTEXT.md`／`docs/adr/`
-- **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）
+- **Xcode plugin**（xcode-integration，Apple 官方，由 Xcode 27 匯出給 Claude Code、隨 Xcode 升版；`installed_plugins.json` 裡顯示為 `xcode@claude-plugins-official`）：`xcode-integration:swiftui-specialist`、`xcode-integration:swiftui-whats-new-27`、`xcode-integration:app-intents-specialist`、`xcode-integration:app-intents-whats-new-27`、`xcode-integration:app-resizability`、`xcode-integration:building-document-based-swiftui-applications`、`xcode-integration:modernize-tests`、`xcode-integration:accessibility-voiceover-specialist`、`xcode-integration:accessibility-dynamic-type-specialist`、`xcode-integration:accessibility-sufficient-contrast-specialist`。本表其他地方寫不帶前綴的名字（例如 `swiftui-specialist`），指的就是這一份。**沒有 Xcode plugin 時**（Codex、Xcode 27 以前）：`swiftui-specialist`、`swiftui-whats-new-27` 改用第三方鏡像 `superagents-lab/xcode27-skills`（裝法同「第三方 skill」那條的 `npx skills add … -g`；內容落後 Xcode 版，只當備援）；其餘 8 個沒有替代，載入時跳過，並在提醒行列出名字
+- **同名兩份時一律用無前綴的本機版**（例如 plugin 帶了同名的 `verification-before-completion`）。**例外是上一條的 Xcode plugin**：本機另有 npx 裝的同名鏡像時，用 `xcode-integration:` 那份
 
 **本 repo 不含的 skill**（作者自用未公開，或流程會直接轉介的第三方）——表裡仍保留名字，沒裝就走替代：
 
@@ -363,6 +370,8 @@ MCP 不是 skill，不在本節的安裝檢查範圍（user 範圍，`claude mcp
 | `swiftui-reviewer` 的第二套標準 `swiftui-pro` | Phase 3，**app 主 target ≥ iOS 17**，建議先過版本表 | 要審的 View 檔 | 依檔案分組、附行號與改前改後的 finding；專案結構類主張不當 finding |
 | `duo-verify` | **情境 3 純畫面、情境 2 內容軸含畫面**：Phase 3 跑完、宣稱完成前，**提醒使用者跑，不自動跑**（要開著 iPhone Duo 模擬器、登入測試帳號）。動到 safe area、`ignoresSafeArea`、全螢幕、置中按鈕或底部固定列時，提醒要講明為什麼這次特別需要 | 預擬好的三句描述：畫面怎麼走到、應該長怎樣、主要按鈕與點了的預期 | 姿態 × 旋轉矩陣報告與 FAIL 截圖；附進完成回報與 PR 描述。有 FAIL 就修完再跑；使用者決定不跑時，完成回報寫「Duo 未驗證」 |
 | `ios-accessibility` | `resilience-auditor`、`ios-harden` 處理無障礙時 | 畫面檔、deployment target | 無障礙 finding 與「需實測清單」（VoiceOver 以外也涵蓋 Voice Control、Switch Control、Full Keyboard Access）|
+| `accessibility-voiceover-specialist`、`accessibility-dynamic-type-specialist`、`accessibility-sufficient-contrast-specialist`（Xcode plugin）| 同上，由 `resilience-auditor` 讀；跟 `ios-accessibility` 並用 | 畫面檔 | 三項各一個 PASS／FAIL 判定（對比度另有 NEEDS VERIFICATION），對照 App Store Accessibility Nutrition Label。要在 App Store 標示支援這三項時，以這三份為準 |
+| `app-resizability` | **寫畫面時**，§4 命中多視窗／Duo 訊號 | 要調整的 View、scene 設定 | 不依賴固定螢幕尺寸與方向的版面；寫完由 `duo-verify` 驗證 |
 
 兩條規則：
 

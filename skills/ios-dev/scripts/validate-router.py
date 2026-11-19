@@ -131,13 +131,28 @@ def build_inventory(workspace, claude_home):
         with open(manifest, encoding="utf-8") as fh:
             data = json.load(fh)
         for key, entries in data.get("plugins", {}).items():
-            prefix = key.split("@")[0]
             for e in entries if isinstance(entries, list) else [entries]:
-                root = os.path.join(e.get("installPath", ""), "skills")
-                for depth in ("*", "*/*", "*/*/*"):
-                    for f in glob.glob(os.path.join(root, depth, "SKILL.md")):
-                        inv["plugins"].setdefault(prefix, set()).add(os.path.basename(os.path.dirname(f)))
+                install = e.get("installPath", "")
+                root = os.path.join(install, "skills")
+                skills = {os.path.basename(os.path.dirname(f))
+                          for depth in ("*", "*/*", "*/*/*")
+                          for f in glob.glob(os.path.join(root, depth, "SKILL.md"))}
+                for prefix in plugin_prefixes(key, install):
+                    inv["plugins"].setdefault(prefix, set()).update(skills)
     return inv
+
+
+def plugin_prefixes(key, install_path):
+    """Names a plugin's skills can be called by: the marketplace key, plus the manifest's `name`
+    when it differs (Xcode exports `xcode@…` whose skills load as `xcode-integration:`)."""
+    prefixes = {key.split("@")[0]}
+    manifest = os.path.join(install_path, ".claude-plugin", "plugin.json")
+    try:
+        with open(manifest, encoding="utf-8") as fh:
+            prefixes.add(json.load(fh)["name"])
+    except (OSError, ValueError, KeyError, TypeError):
+        pass  # no manifest, or one without a name: the key alone
+    return prefixes
 
 
 def resolves(name, prefix, kind, inv):
