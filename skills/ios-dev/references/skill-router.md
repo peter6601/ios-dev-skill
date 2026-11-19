@@ -110,7 +110,7 @@
 ### 情境 5：優化
 
 - **流程**：先量測 → 修改 → 用同一方式再量測。改前、改後都派 `perf-auditor`；有疑慮先用 `trace-analyzer` 錄 trace。
-- **載入**：`swiftui-performance-audit`、`swift-concurrency`、`swiftui-expert-skill/references/performance-patterns.md`。
+- **載入**：`swiftui-performance-audit`、`swift-concurrency`、`swiftui-expert-skill/references/performance-patterns.md`；要錄 trace 時加 `xctrace`（Xcode plugin），使用者裝置上的 hang、耗電先用 Xcode MCP `GetTopFieldPerformanceIssues` 挑出最嚴重的再量（§11）。
 - **審查**：模組級走重，單畫面可走輕；仍須通過 §3 風險檢查。範圍未確認前寫「待定（預判 X，理由）」。
   <!-- touchpoint: ios-dev-047 kind=mixed -->
 - **詢問**：驗收數字，以及範圍是單畫面還是模組。收尾見 `handoff-checklist.md` §5。
@@ -204,6 +204,7 @@ ticket 數**只決定 `phase-workflow` 的輸出規模**（中型 4 份檔／大
 | 重 | 該情境的閘門 agent＋`review-swarm` → 統一修復 → `/ios-polish` → verification → 所選 Review 路線 → 人工 Code Review |
 
 六個閘門 agent 為 `swiftui-reviewer`、`ux-critique`、`resilience-auditor`、`perf-auditor`、`concurrency-auditor`、`architecture-auditor`，全部唯讀；依 §1 的情境調整名單。
+派 `ux-critique` 前，有 Xcode MCP 就先用 `RenderPreview` 截目標畫面的 Preview（至少一般、空狀態、Dark Mode、最大字級各一張），圖檔路徑放進它的輸入；agent 沒有 MCP 工具，自己截不到圖（§11）。
 
 其中前三個也是 Review 路線 A、B 的 specialist，輕重都要派；只有 C 不派。輕量流程省略完整閘門組、`review-swarm` 與 Phase 3 統一修復循環。完整收尾順序以 `handoff-checklist.md` 的「共通收尾」為準。
 

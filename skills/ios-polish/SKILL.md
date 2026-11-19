@@ -58,8 +58,8 @@ enum Spacing {
 ```
 
 **檢查方式**：
-- 用 Xcode Preview 的 grid overlay 驗證對齊
-- 在不同裝置尺寸上測試
+- 有 Xcode MCP 時，用 `RenderPreview` 截改前、改後的 Preview，對齊和間距的修改附這兩張圖當證據（`ios-dev` router §11）
+- 在不同裝置尺寸上測試；支援多視窗或 iPhone Duo 的畫面，寫法照 `app-resizability`（Xcode plugin），寫完跑 `duo-verify`
 - 用眼睛看——「感覺」不對的地方通常真的不對
 
 ### 2. Typography 精修
@@ -275,8 +275,8 @@ var body: some View {
 - [ ] 載入狀態清楚
 - [ ] 空狀態友善
 - [ ] 觸控目標最小 44x44pt
-- [ ] 對比度符合 WCAG AA
-- [ ] VoiceOver 可用
+- [ ] 對比度符合 WCAG AA（有 Xcode plugin 時用 `accessibility-sufficient-contrast-specialist` 取得判定；NEEDS VERIFICATION 的顏色要實際在 Light／Dark、Increase Contrast 下看過）
+- [ ] VoiceOver 可用（要在 App Store 標示支援時，`accessibility-voiceover-specialist` 判定 PASS）
 - [ ] Focus 指示器可見
 - [ ] 沒有 console warning 或 runtime issue
 - [ ] 沒有 Layout shift

@@ -617,6 +617,49 @@
         "轉介 /localize-strings，沒有當成情境 2 小功能"
       ],
       "guards": "router §0 第 0 步：補語系 → /localize-strings（2026-10-15 裁定）"
+    },
+    {
+      "id": 27,
+      "group": "邊界",
+      "prompt": "/ios-dev 讓使用者可以跟 Siri 說「開新對話」，直接開一個新的 Room，也要能放進捷徑 app",
+      "fixture": "base＋FixtureApp/Services/RoomService.swift（已有 createRoom()，還沒有任何 AppIntent）",
+      "expected": {
+        "scenario": [
+          "2",
+          "1"
+        ],
+        "content_axis": null,
+        "gate": null,
+        "review_route": null,
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "依 router §4 Apple framework 訊號（提到 Siri、捷徑）載入 app-intents-specialist",
+        "沒有因為 Package.swift 的 deployment target 是 iOS 17 就載入 swiftui-whats-new-27；App Intents 的 iOS 26／27 新 API 要用到才加 app-intents-whats-new-27"
+      ],
+      "guards": "router §4 Apple framework 訊號的 App Intents 那條、§9 Xcode plugin 沒裝時的處理",
+      "_note": "2026-11-19 原本另有一條「沒裝 Xcode plugin 時列進提醒行」：評分模型看不到執行環境有沒有裝 plugin，判不了，兩次都判失敗，已拿掉。Step 0 實際上也不會檢查 xcode-integration 的 skill 在不在，要測這條得做沒裝 plugin 的 fixture 環境。"
+    },
+    {
+      "id": 28,
+      "group": "典型",
+      "prompt": "/ios-dev 設定頁在 iPad 分割畫面和 iPhone Duo 展開成大螢幕時，版面要跟著視窗寬度調整，只動版面",
+      "fixture": "同案例 3：SettingsView.swift：body <80 行、沒有 isPresented",
+      "expected": {
+        "scenario": "3",
+        "content_axis": "畫面",
+        "gate": null,
+        "review_route": null,
+        "architecture": null,
+        "handoff": null
+      },
+      "expectations": [
+        "載入 swiftui-specialist、swiftui-ui-patterns，並依 router §4 Apple framework 訊號（分割畫面、iPhone Duo、視窗大小）加載 app-resizability",
+        "確認畫面或交棒提到完成時提醒跑 /duo-verify（router §10），不是自動跑",
+        "Phase 3 先跑 ux-critique 與 architecture-auditor，並提到派 ux-critique 前用 RenderPreview 截 Preview（Xcode MCP 可用時）"
+      ],
+      "guards": "router §1 情境 3 的載入行、§4 Apple framework 訊號的多視窗／Duo 那條、§10 app-resizability 與 duo-verify 的分工、§3 派 ux-critique 前截 Preview"
     }
   ],
   "_policy": "2026-09-19 使用者裁定：review 路線預設 B；確認畫面問要不要加 Codex（選了才走 A）；複雜 Bugfix 強制 A；C＝範圍單一、diff ≤50 行且風險三條全綠，使用者要求也不能放寬；純呈現畫面的風險第三條以「Preview 或截圖可前後對照」代替自動化測試；風險第三條＝這次改動寫得出可重現的測試（不要求事先已有）；資訊不足判不出風險三條時，所有情境都寫待定（預判 X，理由）。2026-10-15 使用者裁定：no-match 時直接回答或轉介、不出確認畫面；build 失敗→xcode-build-fixer、送審檢查→app-store-preflight-skills、補語系→localize-strings 都算 no-match；B 類（沒打 /ios-dev 的自動觸發）暫不做",

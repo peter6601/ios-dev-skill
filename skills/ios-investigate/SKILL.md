@@ -143,6 +143,14 @@ print("⚠️ DEBUG: originalTransactionId=\(tx.originalID), currentId=\(tx.id),
 
 執行重現步驟，拿實際輸出對照事先寫下的判準。
 
+**不改 code 的驗證方式**（有 Xcode MCP、Xcode 開著目標專案時；分工見 `ios-dev` router §11）：判準一樣先寫下來，再挑一種取證，不用加 `⚠️ DEBUG` log、也不用請使用者貼輸出：
+
+- **app 停在中斷點或 crash 現場**：`InvokeDebuggerCommand` 下 LLDB 指令（`bt all` 看所有 thread、`po` 看物件、`frame variable` 看區域變數、`thread list` 確認是不是 main thread）。
+- **要看 app 執行時印出的東西**：`RunProject` 跑起來、照重現步驟操作，再用 `GetConsoleOutput` 讀 console，`os_log` 的 `[error]`／`[fault]` 也在裡面。
+- **假設只跟一段純邏輯有關**（日期換算、排序、解碼、狀態機轉換）：用 `RunCodeSnippet` 單獨跑那段 code 餵邊界值，不用整個 app 重現。
+
+沒有 Xcode MCP，或 bug 只在實機上出現時，照上面加 log 的方式。
+
 ### 3.2 假設錯誤時
 
 回到 Phase 1，收集更多證據。**不要猜。**
@@ -192,22 +200,33 @@ Root cause 確認後：
 
 沒有親眼看過它失敗的 regression test，不知道它到底有沒有測到這個 bug。
 
-iOS 測試重點：
+iOS 測試重點：新寫的 regression test 用 Swift Testing。UI test（用 XCUIAutomation）和用 `measure { }` 量效能的測試不能用 Swift Testing，維持 XCTest。既有的測試檔是 XCTest 時，照該檔原本的寫法，不要順手改寫；要整批遷移時走 `modernize-tests`（Xcode plugin 附帶），並跟修復分開 commit。
+
 ```swift
-// XCTest 範例
-func testSubscriptionAttributionAfterAccountSwitch() async throws {
+import Testing
+
+@Test("帳號切換後訂閱仍歸給原帳號")
+func subscriptionAttributionAfterAccountSwitch() async throws {
     // Arrange: 模擬帳號切換情境
     // Act: 執行購買流程
-    // Assert: 驗證 originalTransactionId 正確歸戶
+    // Assert:
+    #expect(transaction.originalID == expectedOriginalID)
 }
 ```
 
 ### 4.4 跑完整測試
 
+依序選第一個可用的方式跑，並貼出結果：
+
+1. **XcodeBuildMCP**：`test_sim`（先 `session_show_defaults` 確認 scheme 和模擬器）。
+2. **Xcode MCP**（Xcode 開著目標專案時）：`RunAllTests`；只想先確認相關測試時用 `GetTestList` 找出來、`RunSomeTests` 跑。
+3. **命令列**：
+
 ```bash
-# 跑 test suite 並貼出結果
 xcodebuild test -scheme <Scheme> -destination 'platform=iOS Simulator,name=iPhone 16' | xcpretty
 ```
+
+同一台模擬器同時只給一個工具用，兩邊一起跑會互搶，結果不能信。機器有限制 xcodebuild 同時只能跑一個的規則（例如 hook 要求改走包裝腳本）時，照那條規則。
 
 不允許任何 regression。
 
@@ -301,10 +320,11 @@ DEBUG REPORT
 | 症狀 | 首選工具 |
 |------|---------|
 | Crash / EXC_BAD_ACCESS | Zombie Objects + Address Sanitizer |
-| Memory Leak | Instruments Leaks + Memory Graph Debugger |
+| Memory Leak | Instruments Leaks + Memory Graph Debugger；用命令列錄 trace 照 `xctrace` skill（Xcode plugin 附帶） |
+| Hang／卡頓／耗電（使用者裝置上） | Xcode MCP `GetTopFieldPerformanceIssues` → `GetFieldPerformanceIssueLogs`；本機重現就用 `xctrace` 錄 Time Profiler |
 | Data Race | Thread Sanitizer (TSan) |
 | Main Thread Violation | Main Thread Checker（Xcode 預設開啟） |
-| UI 不更新 | `Self._printChanges()` (SwiftUI) + Xcode Preview |
+| UI 不更新 | `Self._printChanges()` (SwiftUI) + Xcode MCP `RenderPreview` 截不同 state 的 Preview 對照 |
 | 網路問題 | Charles Proxy / Instruments Network |
 | StoreKit 問題 | StoreKit Configuration File + Sandbox 帳號 + Server Notification 日誌 |
 | Core Data | `-com.apple.CoreData.SQLDebug 1` launch argument |

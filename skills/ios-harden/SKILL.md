@@ -324,6 +324,7 @@ Button("送出") { submit() }
 
 > 這一段只列最常見的幾項。完整準則以 `ios-accessibility` skill 為準（「Agent Behavior Contract」與「Anti-Patterns to Avoid」兩段必讀），兩邊衝突時照它；沒裝就只照這一段。
 > 最常犯的三個：label 裡寫 trait 名稱（「關閉按鈕」→「關閉」）、每個元素都硬加 hint、用 `onTapGesture` 代替 `Button`。
+> 要在 App Store 標示支援 VoiceOver、Dynamic Type 或 Sufficient Contrast（Accessibility Nutrition Label）時，補完後再用 Xcode plugin 的 `accessibility-voiceover-specialist`、`accessibility-dynamic-type-specialist`、`accessibility-sufficient-contrast-specialist` 各跑一次，拿到 PASS 才算這一項做完；FAIL 照它的修法改。標示能不能過以這三份為準，寫法細節以 `ios-accessibility` 為準。沒有 Xcode plugin 就跳過，完成回報寫「Nutrition Label 未驗證」。
 
 **VoiceOver 支援**：
 
@@ -444,5 +445,7 @@ class ViewModel: ObservableObject {
 - [ ] **Dark Mode**：確認所有狀態在 Dark Mode 下正常
 - [ ] **背景/前景**：App 切換時狀態是否正確恢復
 - [ ] **Reduce Motion**：開啟減少動態效果測試
+
+有 Xcode MCP 時，Dynamic Type、Dark Mode、長文字、空狀態這幾項先用 `RenderPreview` 截對應 state 的 Preview（Preview 裡設好 `.dynamicTypeSize(.accessibility5)`、`.preferredColorScheme(.dark)`、假資料），截圖附進完成回報當證據；VoiceOver、網路、背景切換這些 Preview 看不出來的，照樣要實際跑。
 
 記住：你是在為 production 現實做強化，不是 demo 完美。預期用戶會輸入奇怪的資料、在操作中途失去網路、以意想不到的方式使用你的產品。把韌性建入每個元件中。

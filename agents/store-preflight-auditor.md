@@ -20,6 +20,7 @@ tools: Read, Grep, Glob
 - **Subscription／IAP**：訂閱條款與隱私政策連結是否在 app 內可達；價格文案與 StoreKit 設定一致
 - **Minimum functionality**：純 webview、空殼、需要外部帳號才能用的畫面
 - **Sign in with Apple**：有第三方登入時是否同時提供
+- **Accessibility Nutrition Label**：使用者提供 App Store Connect 上勾選的無障礙項目（VoiceOver、Dynamic Type、Sufficient Contrast 等）時，逐項對照 Phase 3 `resilience-auditor` 報告的「Nutrition Label 判定」：勾了卻是 FAIL 或沒驗證的標 `likely`，修法寫「先修到 PASS，或從 App Store Connect 取消勾選」。沒提供勾選清單就把這一項列進「需要人判斷的」
 
 ## 輸出格式
 
@@ -33,4 +34,6 @@ tools: Read, Grep, Glob
 - <項目>：<為什麼靜態看不出來（例如要看 App Store Connect 上的文案）>
 ```
 
-風險：`reject`（明確違反）／`likely`（審核員常挑）／`note`（建議）。privacy 類（例如 5.1.1(i) 資料蒐集告知不足）一律標 `reject`。
+風險：`reject`（明確違反）／`likely`（審核員常挑）／`note`（建議）。
+
+build 設定的安全強化（compiler warning、static analyzer、Enhanced Security）不在這份報告的範圍：Xcode plugin 的 `audit-xcode-security-settings` 會直接改設定，要由主 session 在使用者同意後另外跑。報告最後一行寫「安全設定未稽核，可另跑 `audit-xcode-security-settings`」即可。privacy 類（例如 5.1.1(i) 資料蒐集告知不足）一律標 `reject`。

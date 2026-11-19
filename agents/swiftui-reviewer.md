@@ -18,7 +18,17 @@ tools: Read, Grep, Glob
 
 1. `~/.claude/skills/swiftui-expert-skill/SKILL.md` — 記住其中的 Correctness Checklist（hard rules）與 topic routing table
 2. `~/.claude/skills/swiftui-expert-skill/references/latest-apis.md` — 過時 API 對照表
-3. 只在主 target ≥ iOS 17：SwiftUI Pro（見下一段）
+3. Apple 的 `swiftui-specialist`（見下面「Apple 官方標準」）
+4. 只在主 target ≥ iOS 17：SwiftUI Pro（見「第二套標準」）
+
+## Apple 官方標準：swiftui-specialist
+
+Xcode 27 匯出的 plugin 附帶。用 Glob 找 `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/*/claude/skills/swiftui-specialist/SKILL.md`，有多個 build 號時用最新的。plugin cache 底下的 `skills` 是 symlink，Glob 不會跟進去，所以不要從 cache 找。**找不到就跳過這整段**，並在報告「用了哪幾套標準」寫「Apple swiftui-specialist 未安裝，沒用」。
+
+1. 讀 `SKILL.md`，再依這次範圍讀 `references/` 裡對應的檔：資料流與 `@Observable` 讀 `dataflow.md`、`@Environment`／`@Entry` 讀 `environment.md`、`ForEach`／`List` 讀 `foreach.md`、view 拆分讀 `structure.md`、條件 modifier 讀 `modifiers.md`、使用者看得到的文字讀 `localization.md`、自訂 `Animatable` 讀 `animations.md`。
+2. **過時 API 兩邊都查**：`latest-apis.md` 之外，再用 Grep 在 `references/soft-deprecated-apis.md` 查這次範圍用到的 API。依 `soft-deprecation.md` 的範圍規則，只報這次改到的 view，沒改到的 view 用了 soft-deprecated API 不報。
+3. 主 target ≥ iOS 27，或範圍用到 iOS 27 的 API 時，另讀同一個 `skills/` 底下 `swiftui-whats-new-27/` 的 `SKILL.md` 與相關 references，查行為改變與 deprecation。
+4. **上面 7 個主題，Apple 版跟 swiftui-expert-skill 看法不同時，以 Apple 版為準**，在 finding 註明「依 Apple swiftui-specialist」。其餘主題（navigation、layout、scroll、focus、Charts、Liquid Glass、macOS、Preview）照 swiftui-expert-skill。Apple 版的建議一樣要先過第 0 步的 deployment target。
 
 ## 第二套標準：SwiftUI Pro（只在主 target ≥ iOS 17）
 
@@ -58,7 +68,7 @@ Review 過程中遇到特定主題的疑問（state、list identity、navigation
 - Preview 是否完整（各種 state、self-contained mock data）
 - 命名是否符合 Swift API Design Guidelines
 - 潛在的 memory leak 或 retain cycle（closure 捕獲 self、Timer、NotificationCenter observer）
-- 過時或 soft-deprecated API（對照 latest-apis.md，這是必查項）
+- 過時或 soft-deprecated API（對照 latest-apis.md 與 Apple 的 soft-deprecated-apis.md，這是必查項）
 
 ## 範圍界定
 
@@ -82,7 +92,7 @@ Review 過程中遇到特定主題的疑問（state、list identity、navigation
 - ...
 
 ## 統計
-- Deployment target 與這次用了哪幾套標準（swiftui-expert-skill；有沒有加 SwiftUI Pro）
+- Deployment target 與這次用了哪幾套標準（swiftui-expert-skill；有沒有加 Apple swiftui-specialist、SwiftUI Pro）
 - 掃描檔案數、各級別數量
 - 沒問題的部分一句話帶過即可
 ```

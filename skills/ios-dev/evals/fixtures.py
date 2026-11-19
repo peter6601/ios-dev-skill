@@ -517,6 +517,16 @@ struct ChatView: View {
 }
 # 21: the same ticket as case 7, asked for a different action (action-object contrast)
 CASES[21] = CASES[7]
+# 27: a service that already creates rooms, so an App Intent only has to call it
+CASES[27] = {"FixtureApp/Services/RoomService.swift": """import Foundation
+
+@MainActor
+protocol RoomService {
+    func createRoom() async throws -> Room
+}
+"""}
+# 28: the same SettingsView as case 3, asked to adapt to window size (iPad split view, iPhone Duo)
+CASES[28] = CASES[3]
 
 
 def build(case_id, dest):

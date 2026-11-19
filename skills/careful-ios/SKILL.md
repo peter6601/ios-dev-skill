@@ -9,6 +9,11 @@ hooks:
         - type: command
           command: "bash ${CLAUDE_SKILL_DIR}/bin/check-careful-ios.sh"
           statusMessage: "檢查破壞性指令..."
+    - matcher: "mcp__.*xcode.*__(XcodeRM|XcodeMV|XcodeWrite|UpdateTargetBuildSetting)"
+      hooks:
+        - type: command
+          command: "bash ${CLAUDE_SKILL_DIR}/bin/check-careful-xcode-mcp.sh"
+          statusMessage: "檢查 Xcode MCP 破壞性操作..."
 ---
 
 # /careful-ios — iOS 破壞性指令防護
@@ -43,6 +48,22 @@ hooks:
 | 刪除 Provisioning Profiles | `rm ~/Library/...Provisioning Profiles/` | 需從 Apple Developer Portal 重新下載 |
 | `pod deintegrate` | `pod deintegrate` | CocoaPods 從專案移除，xcworkspace 失效 |
 | `DROP TABLE` / `TRUNCATE`（交給資料庫執行時）| `sqlite3 app.db "DROP TABLE users"` | SQLite / Core Data 資料永久遺失；`echo`／`grep` 只是提到關鍵字不算 |
+
+### Xcode MCP（`xcrun mcpbridge`）
+
+這幾個操作不經過 Bash，由另一支 hook `bin/check-careful-xcode-mcp.sh` 檢查，規則跟上面同一套等級。
+
+| 等級 | Tool 與條件 | 風險 |
+|------|------|------|
+| 🚨 CRITICAL | `XcodeRM` 移除 `.xcodeproj`、`.xcworkspace`、`.entitlements`、`.xcprivacy`、`Info.plist` | 專案建不起來、capability 或隱私宣告消失 |
+| 🚨 CRITICAL | `XcodeMV` 搬動、改名上面那幾種檔（`copy` 不算） | build setting 裡寫死的路徑失效 |
+| 🚨 CRITICAL | `XcodeWrite` 整份覆寫上面那幾種檔 | 原本的 key 全部不見；改 Info.plist、entitlements 請用 `AddInfoPlist`、`AddEntitlement` |
+| ⚠️ DESTRUCTIVE | `XcodeRM` 移除其他檔或資料夾（預設會把檔案移到垃圾桶） | 檔案從專案和磁碟上消失 |
+| ⚠️ DESTRUCTIVE | `XcodeMV` 帶 `overwriteExisting` | 目的地原本的檔被蓋掉 |
+| ⚠️ DESTRUCTIVE | `UpdateTargetBuildSetting` 改 `CODE_SIGN_*`、`DEVELOPMENT_TEAM`、`PROVISIONING_PROFILE*`、`PRODUCT_BUNDLE_IDENTIFIER` | 簽章或 bundle id 對不上，無法安裝、上架 |
+| ⚡ CAUTION | `UpdateTargetBuildSetting` 刪掉任何一個 build setting（沒給值） | 退回預設值，行為可能悄悄改變 |
+
+`XcodeRM` 的路徑任何一段是 DerivedData、Pods、`.build` 等 cache 目錄時放行，名單跟 `rm -rf` 的安全例外相同。
 
 ### ⚡ CAUTION — 較低風險但值得注意
 

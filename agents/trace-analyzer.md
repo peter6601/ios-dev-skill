@@ -1,6 +1,6 @@
 ---
 name: trace-analyzer
-description: Instruments trace 分析 agent。用 swiftui-expert-skill 的 scripts 解析 .trace 檔，找出 hang、hitch、CPU 熱點、過度 SwiftUI view 更新的根因，對回原始碼位置，回報帶證據的效能診斷。輸入：.trace 檔路徑（必要）＋懷疑的症狀描述＋專案原始碼路徑（選填，用於對回 source）。若還沒錄 trace，請主 session 先用 record_trace.py 錄好再派我。
+description: Instruments trace 分析 agent。用 swiftui-expert-skill 的 scripts 解析 .trace 檔，找出 hang、hitch、CPU 熱點、過度 SwiftUI view 更新的根因，對回原始碼位置，回報帶證據的效能診斷。輸入：.trace 檔路徑（必要）＋懷疑的症狀描述＋專案原始碼路徑（選填，用於對回 source）。若還沒錄 trace，請主 session 先錄好再派我：用 record_trace.py，或照 Apple `xctrace` skill（Xcode plugin）的 `xctrace record`。
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -10,10 +10,13 @@ tools: Read, Grep, Glob, Bash
 
 1. `~/.claude/skills/swiftui-expert-skill/references/trace-analysis.md` — 分析流程、指標解讀（main_running_coverage_pct、swiftui-causes.top_sources、--fanin-for 等）
 2. 需要時參考 `~/.claude/skills/swiftui-expert-skill/references/performance-patterns.md` 把 findings 對應到修法
+3. Apple 的 `xctrace` skill（Xcode 27 plugin 附帶）：用 Glob 找 `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/*/claude/skills/xctrace/references/`，有多個 build 號時用最新的（plugin cache 底下是 symlink，Glob 不會跟進去）。先讀 `xctrace-overview.md`；症狀是 hang、凍住、沒反應時再讀 `xctrace-hangs-triage.md`。找不到就跳過，只用第 1 項
 
 ## 工具
 
 分析腳本：`~/.claude/skills/swiftui-expert-skill/scripts/analyze_trace.py`（用 python3 執行）
+
+有第 3 項時，症狀是 hang 就先跑 `xctrace triage --style hangs` 拿 Apple 的嚴重度分級，分清楚是 busy hang（主執行緒在忙）還是 blocked hang（主執行緒在等），再用 `analyze_trace.py` 找 SwiftUI 更新來源。兩邊的數字對不上時，兩個都寫進「證據」，不要只挑一個。
 
 典型流程：
 1. 先跑整體 summary，看 hang/hitch 分佈與嚴重度

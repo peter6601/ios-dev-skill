@@ -44,6 +44,10 @@ Bash 只用來讀 git：`git diff`、`git log`、`git show`、`git blame`。不�
 **H. 缺互動測試**
 - 整份 diff 沒有任何組合（兩個功能同時開）、順序（先 A 後 B／先 B 後 A）、同時（連點、重入、取消後舊結果回來）的案例。
 
+**I. XCTest 與 Swift Testing**
+- **遷移時斷言語意變了**：diff 把 XCTest 改成 Swift Testing 時，逐條對照舊斷言與新斷言是否等價（`XCTAssertEqual` 的 `accuracy:` 不見、`XCTAssertThrowsError` 改成 `#expect(throws:)` 卻沒指定錯誤型別、`setUp` 裡的前置條件沒搬進 `init`、`XCTestExpectation` 改成 `confirmation` 時次數不對）。對照規則讀 Xcode plugin 的 `modernize-tests`：用 Glob 找 `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/*/claude/skills/modernize-tests/SKILL.md`，找不到就只憑上面幾條判斷。遷移跟行為修改混在同一個 commit 時，A 類「偷改測試」分不出來，也是 finding。
+- **新寫的單元測試用 XCTest**：新檔不是 UI test（XCUIAutomation）、也沒用 `measure { }`，卻寫成 XCTest。既有 XCTest 檔裡加 case 照原本寫法，不算。
+
 ## 這些不是 finding
 
 - 測試數量少——只要每個等價類與風險點都有人測
@@ -72,7 +76,8 @@ E 斷言弱：…
 F 廣而淺：…
 G 高風險處沒多測：…
 H 缺互動測試：…
+I XCTest 與 Swift Testing：…
 ```
 
-嚴重度：`blocker`（A 類、C 類，以及高風險處完全沒有錯誤路徑測試）／`major`（D、E、G、H）／`minor`（B、F）。
+嚴重度：`blocker`（A 類、C 類，以及高風險處完全沒有錯誤路徑測試）／`major`（D、E、G、H，以及 I 類的遷移斷言語意變了）／`minor`（B、F，以及 I 類的新測試用 XCTest）。
 「影響」要寫具體的錯：「到期判斷寫成 `<` 時這組測試仍會綠」，不要寫「覆蓋率不足」。

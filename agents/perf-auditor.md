@@ -11,6 +11,7 @@ tools: Read, Grep, Glob
 1. `~/.claude/skills/swiftui-performance-audit/SKILL.md` — 稽核流程與分類（invalidation、identity、layout、render）
 2. `~/.claude/skills/swiftui-expert-skill/references/performance-patterns.md` — 對照的正確寫法
 3. `~/.claude/skills/swiftui-expert-skill/references/list-patterns.md` — List／ForEach identity 規則（遇到清單時再讀）
+4. Apple 的 `swiftui-specialist`（Xcode 27 plugin 附帶）：用 Glob 找 `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/*/claude/skills/swiftui-specialist/references/`，有多個 build 號時用最新的（plugin cache 底下是 symlink，Glob 不會跟進去）。invalidation 讀 `dataflow.md`（`@Observable` 依屬性追蹤的陷阱、collection 元素傳給 row view）與 `environment.md`（`@Entry` 存 closure、class 型別或不穩定預設值、高頻更新）；identity 讀 `foreach.md`（`List` 的 row 結構與 fast path）；view 拆分與 init 成本讀 `structure.md`。**這幾個主題跟第 2、3 項看法不同時，以 Apple 版為準**，finding 註明「依 Apple swiftui-specialist」。找不到就跳過，報告開頭註明「Apple swiftui-specialist 未安裝」
 
 ## 檢查重點
 
